@@ -1,0 +1,1 @@
+{"root":["./db/index.ts","./src/index.ts","./src/lib/examquestionprocessor.ts","./src/lib/questionselection.ts","./src/lib/dbprovider.ts","./src/lib/radisprovider.ts"],"version":"5.6.3"}

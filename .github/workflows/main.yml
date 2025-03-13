@@ -1,0 +1,99 @@
+
+# github ci/cd pipeline for backend and QuestionSelectorworker
+
+on: 
+  push:
+    branches: [ master ]
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend_changes: ${{steps.backend-changed.outputs.backend}}
+      worker_changes: ${{steps.worker-changed.outputs.worker}}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: check for chenges in backend 
+        id: backend-changed
+        uses: dorny/paths-filter@v3
+        with:
+          filters: 'backend/**'
+
+
+      - name: check for chenges in worker 
+        id: worker-changed
+        uses: dorny/paths-filter@v3
+        with:
+          filters: 
+            worker: 'worker/*'
+
+  backend:
+    needs: check-changes
+    runs-on: ubuntu-latest
+    if: needs.check-changes.outputs.backend_changed == 'true'
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+      - name: creating Docker image
+        run: |
+          cd backend
+          docker build -t subhajitgarai04/backend .
+
+      - name: Push Docker image
+        env:
+          DOCKER_USERNAME: ${{secret.DOCKER_USERNAME}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        run: |
+          sudo docker login -u $DOCKER_USERNAME --password-stdin
+          docker push subhajitgarai04/backend
+          docker logout
+      
+      - name: ssh log in and  Deploy backend to aws
+        env: 
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install sshpass
+          sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST '
+          sudo docker pull subhajitgarai04/backend &&
+          cd /Exam &&
+          sudo docker compose up -d --no-deps --build backend && exit
+          '
+            
+  worker:
+    needs: check-changes
+    runs-on: ubuntu-latest
+    if: needs.check-changes.outputs.worker_changed == 'true'
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+      - name: creating Docker image
+        run: |
+          cd worker
+          docker build -t subhajitgarai04/exam_worker .
+
+      - name: Push Docker image
+        env:
+          DOCKER_USERNAME: ${{secret.DOCKER_USERNAME}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        run: |
+          sudo docker login -u $DOCKER_USERNAME --password-stdin
+          docker push subhajitgarai04/exam_worker
+          docker logout
+      
+      - name: ssh log in and  Deploy worker to aws
+        env: 
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install sshpass
+          sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST '
+          sudo docker pull subhajitgarai04/exam_worker &&
+          cd /Exam &&
+          sudo docker compose up -d --no-deps --build exam_worker && exit

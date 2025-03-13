@@ -1,0 +1,4 @@
+node_modules
+.env
+dist
+/prisma/seed_prod.ts

@@ -1,0 +1,23 @@
+{
+  "name": "questionselectorworker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsc -b && node dist/index.js",
+    "build": "tsc --build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^6.4.1",
+    "ioredis": "^5.5.0",
+    "redis": "^4.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.6",
+    "prisma": "^6.4.1"
+  }
+}

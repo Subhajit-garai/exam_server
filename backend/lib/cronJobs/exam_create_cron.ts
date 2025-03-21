@@ -4,18 +4,26 @@ import { examManager } from "../examManager";
 import { Create_Exam_type, events } from "../types/EventTypes";
 import dayjs from "dayjs";
 
-
+const em = examManager.getInstance()
 export const createExam = async (event: events) => {
-    if (event.type == eventType.CREATE_EXAM) {
-  
+
+
+   // clear examManger cache
+
+   em.ClearCache_exmaManager();
+
+
+   console.log("examManager cache cleared");
+   
+  if (event.type == eventType.CREATE_EXAM) {
     let new_exam_names: string[][] = [];
     let new_exam_number;
     let create_exam_count_for_date: number[] = [];
     let dates: Date[] = [];
     const em = examManager.getInstance();
-  
+
     console.log("---> creating new exam");
-  
+
     let lastExam = await prisma.exam.findFirst({
       where: {
         name: {
@@ -32,18 +40,18 @@ export const createExam = async (event: events) => {
       },
       take: 1,
     });
-  
+
     let user = await prisma.user.findFirst({
       where: {
-        email:"bot1@exambuddys.in"
+        email: "bot1@exambuddys.in",
       },
       select: {
         id: true,
       },
     });
-  
+
     // console.log("user: ", user);
-  
+
     if (event.data.time_limit) {
       let days_count = 0;
       if (event.data.time_limit == "t") {
@@ -51,14 +59,13 @@ export const createExam = async (event: events) => {
       }
       days_count = parseInt(event.data.time_limit.split("+")[1]) + 1;
       console.log("days", days_count);
-  
+
       for (let index = 0; index < days_count; index++) {
-          // console.log("loop running", index);
-          
-  
+        // console.log("loop running", index);
+
         let day = dayjs().add(index, "day");
         // console.log("day", day.toDate());
-        
+
         let isExamExaist = await prisma.exam.findMany({
           where: {
             created_by: user?.id,
@@ -71,11 +78,10 @@ export const createExam = async (event: events) => {
             id: true,
           },
         });
-  
+
         // console.log("isExamExaist", isExamExaist);
         // console.log("isExamExaist length", isExamExaist.length);
-  
-        
+
         if (isExamExaist.length > 0) {
           // some exam has already been created
           if (isExamExaist.length >= event.data.count) {
@@ -83,27 +89,25 @@ export const createExam = async (event: events) => {
             // console.log("count", isExamExaist.flat());
           } else {
             // some exam has already  created so reduced exam creaction number
-  
+
             // console.log("hit");
-            
-            let dif = event.data.count - isExamExaist.length
-      
-          create_exam_count_for_date.push(dif);
+
+            let dif = event.data.count - isExamExaist.length;
+
+            create_exam_count_for_date.push(dif);
             dates.push(day.toDate());
           }
         } else {
           // no exam exists for this date create  new ones
           // console.log(" no exam exists for this date create  new ones",day.toDate());
-  
+
           create_exam_count_for_date.push(event.data.count);
           dates.push(day.toDate());
         }
-  
       }
     }
-    if(!create_exam_count_for_date.length){
+    if (!create_exam_count_for_date.length) {
       return console.log("all exam creation done , no need to create new ones");
-      
     }
     if (event.data.name === "autoincrement") {
       let new_exam_number_str = lastExam?.name?.split("@")[1];
@@ -120,14 +124,14 @@ export const createExam = async (event: events) => {
         new_exam_names.push(temp_name_array);
       }
     }
-  
+
     // console.log("create_exam_count_for_date: ", create_exam_count_for_date);
     // console.log("dates: ", dates);
     // console.log("names: ", new_exam_names);
-  
+
     // create exam in database is ok , create 3 exam for a date  now it create one a day
 
-    if(event.data.exam_pattern){
+    if (event.data.exam_pattern) {
       let is_exam_pattern_id_valid = await prisma.exam_pattern.findFirst({
         where: {
           id: event.data.exam_pattern,
@@ -135,31 +139,32 @@ export const createExam = async (event: events) => {
         select: {
           id: true,
         },
-      })
+      });
 
-      if(!is_exam_pattern_id_valid){
+      if (!is_exam_pattern_id_valid) {
         console.log("invalid exam_pattern id");
         let get_exam_pattern_id = await prisma.exam_pattern.findFirst({
-          where:{
-            title:"JECA@PATTERN"
+          where: {
+            title: "JECA@PATTERN",
           },
           select: {
             id: true,
           },
-        })
+        });
 
-        if(get_exam_pattern_id){
+        if (get_exam_pattern_id) {
           event.data.exam_pattern = get_exam_pattern_id.id;
-        }else{
-          throw new Error("Exam pattern not valid and given exampattern also not valid , add correct name ")
+        } else {
+          throw new Error(
+            "Exam pattern not valid and given exampattern also not valid , add correct name "
+          );
         }
       }
     }
-  
+
     let { duration, time, jointime } = event.data;
     for (let index = 0; index < create_exam_count_for_date.length; index++) {
       for (let idx = 0; idx < create_exam_count_for_date[index]; idx++) {
-
         let response = await prisma.exam.create({
           data: {
             name: new_exam_names[index][idx],
@@ -184,7 +189,7 @@ export const createExam = async (event: events) => {
             },
           },
         });
-  
+
         //   // send it into queue to process question
         let { id } = response;
         let Notifystatus = await em.getredisclient().push({
@@ -194,7 +199,7 @@ export const createExam = async (event: events) => {
         });
       }
     }
+  }
 
-}
-
-  };
+ 
+};

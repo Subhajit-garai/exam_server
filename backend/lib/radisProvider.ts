@@ -49,7 +49,15 @@ export class RedisProvider {
   set(id: string, data: any) {
     let taskdata: string;
     taskdata = JSON.stringify(data);
-    return this.redisClient.set(`question:${id}`, taskdata, "EX", 86400, "NX");
+    this.redisClient.set(`question:${id}`, taskdata, "EX", 86400, "XX" ,(err,success)=>{
+      if(err){
+        console.error("Redis SETXX Error:", err);
+      }
+
+      if(!success){
+        this.redisClient.set(`question:${id}`, taskdata, "EX", 86400, "NX")
+      }
+    })
 
   }
 

@@ -3,8 +3,8 @@ import { Task } from "./lib/types/types";
 
 // let task:Task = {
 //   type: 'CreateScore',
-//   examid: 'cm7slsupr000vbu2cbckyeg1e',
-//   userid: 'cm7slsumw0005bu2cdrcgvwbf'
+//   examid: 'cm8itwos50000bu8w9zvtb3wt',
+//   userid: 'cm81krw6v0000buqsekwipncs'
 // }
 const main = async () => {
   let manager = taskmanager.getInstance()

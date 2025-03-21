@@ -9,9 +9,16 @@ import { examManager } from "../../lib/examManager";
 import { ExamMetaData } from "../../lib/types";
 import { date } from "zod";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
 dayjs.extend(customParseFormat);
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 
 const em = examManager.getInstance();
 
@@ -633,9 +640,53 @@ export const getAvalibleExam = async (req: any, res: any) => {
     console.log("Error in exam controller", error);
   }
 };
+export const getExamsbyid = async (req: any, res: any) => {
+  try {
+    let response;
+    
+      response = await prisma.exam.findMany({
+        where: {
+          id: req.query.id
+        },
+        select: {
+          id: true,
+          name: true,
+          examname: true,
+          display_id: true,
+          exam_pattern: {
+            select: {
+              id: true,
+              total_questions: true,
+              syllabus: true,
+              difficulty: true,
+              format: true,
+            },
+          },
+          category: true,
+          status: true,
+          examtype: true,
+          starttime: true,
+          date: true,
+          duration: true,
+          jointime: true,
+        },
+      });
+    
+
+    res.json({
+      success: true,
+      message: `${response.length < 1 ? " No Exams found" : "All  Exams "} `,
+      data: response,
+    });
+  } catch (error) {
+    console.log("Error in exam controller", error);
+  }
+};
 export const getExams = async (req: any, res: any) => {
   try {
     let response;
+
+    let limit =  req.query.limit? req.query.limit : 15;
 
     if (req.query.starttime && req.query.endtime) {
       response = await prisma.exam.findMany({
@@ -702,6 +753,10 @@ export const getExams = async (req: any, res: any) => {
           duration: true,
           jointime: true,
         },
+        orderBy: {
+          date: "desc",
+        },
+        take:limit
       });
     }
 
@@ -771,12 +826,10 @@ export const examJoinRequestProcess = async (req: any, res: any) => {
         isUserVerified.verification.telegram
       )
     ) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: `The user needs to verify their account to take the given exam`,
-        });
+      return res.status(400).json({
+        success: false,
+        message: `The user needs to verify their account to take the given exam`,
+      });
     }
 
     let isUserGivenThisExam = await prisma.score.findFirst({
@@ -788,14 +841,14 @@ export const examJoinRequestProcess = async (req: any, res: any) => {
         id: true,
       },
     });
-
     //check here i can able to attempt multiple times
-    if (isUserGivenThisExam && !isUserGivenThisExam.id) {
+    // ********************************************************************************************************************** remove this comment 
+    if (isUserGivenThisExam && isUserGivenThisExam.id) {
       // console.log("isUserGivenThisExam", isUserGivenThisExam);
       console.log("user already given this exam");
       return res
         .status(400)
-        .json({ success: false, message: `user already given this exam` });
+        .json({ success: false, message: `You have already taken this exam. Please join the next one.` });
     }
 
     let response = await prisma.exam.findFirst({
@@ -818,34 +871,61 @@ export const examJoinRequestProcess = async (req: any, res: any) => {
     // transaction point 1) check user balance 2) deduct balance 3) add user to exam 4)send notification
 
     if (response.creationstatus === "Done") {
-      // console.log("debug started ");
-      let Date = dayjs(response.date) //.format("DD-MM-YYYY"); // Parse time correctly      
-      let isSame = dayjs().isSame(Date, "day");    //.format("DD-MM-YYYY")
-      let date= Date.format("DD-MM-YYYY")
+      let examDate = dayjs.utc(response.date).tz("Asia/Kolkata"); //.format("DD-MM-YYYY"); // Parse time correctly
+       let currentISTTime = dayjs.utc().tz("Asia/Kolkata");
+      
+      let isSame = currentISTTime.isSame(examDate, "day"); //.format("DD-MM-YYYY")
+      let date = examDate.format("DD-MM-YYYY");
+
+
       if (isSame) {
-        let startTime = dayjs(`${date} ${response.starttime}`, "DD-MM-YYYY hh:mm a");
-        let started = dayjs().isAfter(startTime);
-        if(started){
-          // process join time 
-          let joinTimeLimit = startTime.add(15, "minutes"); // Add 15 minutes        
-          let isExamJoinTimeExecd = dayjs().isAfter(joinTimeLimit);
-          if(isExamJoinTimeExecd){
-            return res
-            .status(400)
-            .json({ success: false, message: `Exam Joining Time is over` });
+        let startTime = dayjs.tz( 
+          `${date} ${response.starttime}`,
+          "DD-MM-YYYY hh:mm a",
+          "Asia/Kolkata"
+        );
+        let started = currentISTTime.isAfter(startTime);
+        
+        if (started) {
+          let jointime = response?.jointime as string;
+          if (jointime == "no limit") {
+            jointime = "00:15 m";
+          }          
+          const minutesMatch = jointime.match(/(\d+):(\d+)/); // Matches "00:15"
+          let joinTimeLimit
+          if (minutesMatch) {
+            const [_, hours, minutes] = minutesMatch.map(Number);
+            joinTimeLimit = startTime.add(hours, "hour").add(minutes, "minute");
+            
+          } else {
+            console.error("Invalid jointime format:", jointime);
           }
-        }else{
-          let remainingTime = Math.max(startTime.diff(dayjs(), "minutes"), 0);
-          console.log("Exam not started yet");
+
+         
+          let isExamJoinTimeExecd = currentISTTime.isAfter(joinTimeLimit);
+          
+          if (isExamJoinTimeExecd) {
+            return res
+              .status(400)
+              .json({ success: false, message: `Exam Joining Time is over` });
+          }
+        } else {
+          let remainingTime = Math.max(startTime.diff(currentISTTime, "minutes"), 0);          
           return res
-          .status(400)
-          .json({ success: false, message: `Exam not started yet , remining time is ${remainingTime} m` });
-        }        
-     }else{
-      return res
             .status(400)
-            .json({ success: false, message: `Exam Joining Time is over/not started` });
-     }
+            .json({
+              success: false,
+              message: `Exam not started yet , remining time is ${remainingTime} m`,
+            });
+        }
+      } else {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: `Exam Joining Time is over/not started`,
+          });
+      }
 
       // transtion
       let transaction = await prisma.$transaction(async (tx: any) => {

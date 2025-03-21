@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 
 
 
@@ -41,4 +42,7 @@ export type Task = {
   part: string,
   ans: string[],
   id: string
+}|{
+  type: "CreateQuiz";
+  userid: string;
 }

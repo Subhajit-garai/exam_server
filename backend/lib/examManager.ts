@@ -1,11 +1,7 @@
-
-
 import { userManager } from "./userManger";
-import { RedisProvider,  } from "./radisProvider";
-import { ExamQuestionsids, Task,} from "./types";
+import { RedisProvider } from "./radisProvider";
+import { ExamQuestionsids, Task } from "./types";
 import prisma from "../db";
-
-
 
 export class examManager {
   private static instance: examManager;
@@ -24,8 +20,6 @@ export class examManager {
 
   private constructor() {
     this.redisclient = RedisProvider.getInstance();
-
-
     this.questionsids = {};
     this.exam = [];
     this.user = userManager.getInstance();
@@ -46,6 +40,9 @@ export class examManager {
     let user = this.user.isuserexist(examid, userid);
     let number: number = parseInt(num);
     let questionid;
+
+    // console.log("exam ids ", this.exam);
+    // console.log("exam ids ", this.questionsids);
 
     if (exam && user) {
       let partdata = this.questionsids[examid][part];
@@ -78,20 +75,14 @@ export class examManager {
     }
   }
 
-  async submitExam(
-    examid: string,
-    userid: string,
-  ) {
-
-   return  await this.getredisclient().push({
+  async submitExam(examid: string, userid: string) {
+    return await this.getredisclient().push({
       type: "CreateScore",
       examid: examid,
-      userid: userid
+      userid: userid,
     });
   }
 
-
-  
   async submitAnswer(
     examid: string,
     userid: string,
@@ -99,12 +90,11 @@ export class examManager {
     ans: string[],
     number: number
   ) {
-
     let partdata = this.questionsids[examid][part];
-    let selectedId = partdata[number]
-    console.log("selectedId",selectedId);
-    
-   return  await this.getredisclient().push({
+    let selectedId = partdata[number];
+    console.log("selectedId", selectedId);
+
+    return await this.getredisclient().push({
       type: "AnsProcessing",
       examid: examid,
       userid: userid,
@@ -119,6 +109,8 @@ export class examManager {
     let allids: [] = [];
     let partinfo: any = {};
 
+    // here check is question and other info is already added , and if added then expiry time is > 2h
+
     Object.keys(data).map((d: any) => {
       Object.keys(data[d]).map((p: any) => {
         let ids = Object.values(data[d][p]).flat() as [];
@@ -132,8 +124,9 @@ export class examManager {
         allids = [...allids, ...ids];
       });
     });
-    this.questionsids[examid] = partinfo;
 
+    // this added into BE ceche --> change it to redis
+    this.questionsids[examid] = partinfo;
 
     if (allids.length > 0) {
       let res = await prisma.questions.findMany({
@@ -150,7 +143,7 @@ export class examManager {
       });
 
       if (res) {
-        res.forEach((question:any) => {
+        res.forEach((question: any) => {
           this.redisclient.set(`question:${question.id}`, question);
         });
         console.log("questions added to redis");
@@ -160,5 +153,18 @@ export class examManager {
     }
   } //end
 
-  removeexam(examid: string, data: any) {}
+  removeexam(examid: string) {
+    if (this.exam.includes(examid)) {
+      this.exam = this.exam.filter((id) => id !== examid);
+      delete this.questionsids[examid];
+      console.log("id removed ,", examid);
+    } else {
+      console.log("id not found,", examid);
+    }
+  }
+
+  ClearCache_exmaManager() {
+    this.exam = [];
+    this.questionsids = {};
+  }
 }

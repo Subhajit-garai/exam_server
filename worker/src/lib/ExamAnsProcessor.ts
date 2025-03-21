@@ -15,14 +15,14 @@ export class ExamAnsProcessor {
   AnsKeys: AnsKeysTypes;
   ExamPatternStore: any;
   private static instance: ExamAnsProcessor;
-  private examprocessor: ExamQuestionProcessor;
+  private questionprocessor: ExamQuestionProcessor;
   private ansclient: RedisProvider;
 
   private constructor() {
     this.AnsStore = {};
     this.AnsKeys = {};
     this.ExamPatternStore = {};
-    this.examprocessor = ExamQuestionProcessor.getInstance(5);
+    this.questionprocessor = ExamQuestionProcessor.getInstance(5);
     this.ansclient = RedisProvider.getInstance();
   }
 
@@ -38,17 +38,22 @@ export class ExamAnsProcessor {
 
   async getAnsKeys(examid: string) {
     try {
-    let Examsans;
-    if (!this.AnsStore.examid) {
-      Examsans = await this.examprocessor.getExamsAnsSet(examid);
-      this.AnsStore.examid = Examsans;
-      console.log("ans setted to ans Store");
-    } else {
-      Examsans = this.AnsStore.examid;
-    }
-
-    return Examsans;
-
+      let Examsans;
+      let isExist = await this.getansClient().getAnsSheet(examid);      
+      if (!isExist) {
+        Examsans = await this.questionprocessor.getExamsAnsSet(examid);
+        this.getansClient().setAnsSheet( Examsans ,examid ,18000);
+      } else {
+        Examsans = JSON.parse( isExist as string );
+      }
+      // demo structure 
+     /* {
+       id: string,
+        ans: [string],
+        status: string,
+        examid: string,
+      } */
+      return Examsans;
     } catch (error) {
       console.log("error in examprocesser -> getExamsAnsSet ", error);
     }
@@ -56,67 +61,42 @@ export class ExamAnsProcessor {
 
   async getExamPatternFormStore(examid: string) {
     try {
-    let Exampattern;
+      let Exampattern;
 
-    // exam pattern
+      // exam pattern
 
-    if (!this.ExamPatternStore.examid) {
-      let exam_pattern_id = await this.examprocessor.getExamPatternId(examid);
-      Exampattern = await this.examprocessor.getExamPattern(exam_pattern_id);
 
-      this.ExamPatternStore.examid = Exampattern;
-    } else {
-      Exampattern = this.ExamPatternStore.examid;
-    }
+      let isExist = await this.getansClient().getExamPattern(examid);      
+      if (!isExist) {
+        let exam_pattern_id = await this.questionprocessor.getExamPatternId(
+          examid
+        );
+        Exampattern = await this.questionprocessor.getExamPattern(
+          exam_pattern_id
+        );
+        this.getansClient().setExamPattern( Exampattern,examid,18000);
+      } else {
+        Exampattern = JSON.parse( isExist as string );
+      }
 
-    return Exampattern;
+      
+
+      return Exampattern;
     } catch (error) {
       console.log(error);
     }
   }
 
   async getUserAns(examid: string, userid: string) {
-
     try {
-    let Examsans;
-    let keys;
-    
-    if (!this.AnsStore.examid) {
-      Examsans = await this.examprocessor.getExamsAnsSet(examid);
-      this.AnsStore.examid = Examsans;
-      console.log("ans setted to ans Store");
-    } else {
-      Examsans = this.AnsStore.examid;
-    }
-
-    if (!this.AnsKeys.examid) {
-      keys = Examsans.map((ans: ansType) => {
-        return { id: ans.id, part: ans.part };
-      });
-      this.AnsKeys.examid = keys;
-      console.log("anskeys setted to ans Store");
-    } else {
-      keys = this.AnsKeys.examid;
-    }    
-    
-
-    let userkeys = keys.map((key: anskeyType) => {
-      let { part, id } = key;
-      return `${this.getansClient().StoerPrefix}:${examid}:${userid}:${part}:${id}`;
-    });
-    let userans: any = await this.getansClient().get(userkeys);
-
-    let formated_user_Ans = keys.map((key: anskeyType, i: number) => {
-      let ans: string | null = userans[i];
-      return { [key.id]: { ans: ans, part: key.part } }; // if multiple ans present --> { [key.id]: { ans: [ans], part: key.part } }
-    });
-
-    // store user ans data in to score table
-
-    
-    this.examprocessor.setUseransTodb(formated_user_Ans, examid, userid);
-
-    return formated_user_Ans;
+      let userans: any = await this.getansClient().getUserans(examid, userid);
+      /* { cm5nywh32003gbu5gbivsjwfk: { ans: ["1"], part: 'part1' } } */
+      if(userans) {
+         // store user ans data in to score table
+        this.questionprocessor.setUseransTodb(userans[1], examid, userid);
+        return userans[0];
+      }
+      return null
     } catch (error) {
       console.error("error in getUserAns", error);
     }
@@ -129,27 +109,22 @@ export class ExamAnsProcessor {
     not_attempt: number,
     Result: Right_Wrong_set_type,
     subject_wise_result: Right_Wrong_set_type,
-
+    all_parts_total_questions: number
   ) {
-    
     try {
-      
-      let isScore = await this.examprocessor.prisma.score.findFirst({
+      let isScore = await this.questionprocessor.prisma.score.findFirst({
         where: {
-          AND:[
-            {exam_id: examid},
-            {user_id: userid},
-          ]
+          AND: [{ exam_id: examid }, { user_id: userid }],
         },
       });
-  
+
       if (isScore) {
         // console.log("isSocre",isScore);
         console.log("user score already Stored");
         return 1;
       }
-  
-      let res = await this.examprocessor.prisma.score.create({
+
+      let res = await this.questionprocessor.prisma.score.create({
         data: {
           user_id: userid,
           exam_id: examid,
@@ -157,17 +132,17 @@ export class ExamAnsProcessor {
           score: Score,
           topic_wise_result: subject_wise_result,
           result: Result,
+          total_questions: all_parts_total_questions,
         },
       });
-  
-      if(!res){
-        return 0
+
+      if (!res) {
+        return 0;
       }
-  
-      return res    
+
+      return res;
     } catch (error) {
-      console.log("error in setUserScore --- > " ,error);
-      
+      console.log("error in setUserScore --- > ", error);
     }
   }
 }

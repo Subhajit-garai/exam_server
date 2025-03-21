@@ -185,6 +185,9 @@ export class ExamQuestionProcessor {
       this.count = 0; //debug  how many loop it takes to get the result
       let selectedElements: SelectQuestion_type = {};
 
+      // console.log("--------> questionset count" , questionset);
+      
+
       await new Promise<void>((resolve) => {
         const interval = setInterval(() => {
           if (this.Questions.length > 0) {
@@ -211,7 +214,8 @@ export class ExamQuestionProcessor {
       } else {
         throw new Error("Given some Subject isn't Supported ");
       }
-
+      // console.log("selectedElements" , selectedElements);
+      
       return selectedElements;
     } catch (error) {
       console.log("Error in selecteQuestionsNumber fn", error);

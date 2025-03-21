@@ -158,6 +158,35 @@ async function main() {
       password: await hashPasswordFn("tester@debsankar"),
     },
   });
+  const user5 = await prisma.user.create({
+    data: {
+      name: "Biraj",
+      email: "bir112277@gmail.com",
+      // role: "User",
+      prime: {
+        create: {
+          status: primeStatus.none,
+        },
+      },
+      telegram: {
+        create: {
+          telegramid: "12335494188",
+          last_update: new Date(),
+        },
+      },
+      blance: {
+        create: {
+          amount: 1000,
+          ticket: 100,
+          last_update: new Date(),
+        },
+      },
+      verification: {
+        create: {},
+      },
+      password: await hashPasswordFn("tester@Biraj"),
+    },
+  });
 
   // progress
 
@@ -174,6 +203,16 @@ async function main() {
   await prisma.progress.create({
     data:{
       userid:user3.id
+    }
+  })
+  await prisma.progress.create({
+    data:{
+      userid:user4.id
+    }
+  })
+  await prisma.progress.create({
+    data:{
+      userid:user5.id
     }
   })
   // Create Prime Memberships

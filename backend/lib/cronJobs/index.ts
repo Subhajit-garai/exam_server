@@ -1,12 +1,19 @@
 import { CronJob } from "cron";
 import prisma from "../../db/index";
 import { examManager } from "../examManager";
-import { Create_Exam_conditions_type, Create_Exam_data_type, Create_Exam_type, events, message_conditions, sendMessage_data } from "../types/EventTypes";
+import {
+  Create_Exam_conditions_type,
+  Create_Exam_data_type,
+  Create_Exam_type,
+  events,
+  message_conditions,
+  sendMessage_data,
+} from "../types/EventTypes";
 import { eventRuns, eventType, ExamStatus, UserRole } from "@prisma/client";
 import dayjs from "dayjs";
 import { createExam } from "./exam_create_cron";
 
-let examCofig: events = {
+let examConfig: events = {
   type: eventType.CREATE_EXAM,
   description: "Create new exam",
   data: {
@@ -28,9 +35,9 @@ let examCofig: events = {
   run_at: "02:00 am",
 };
 
- //end
+//end
 
-const processJob = async() => {
+const processJob = async () => {
   // db call and get event information
   // let datas = await prisma.events.findMany({})
 
@@ -39,21 +46,22 @@ const processJob = async() => {
   let parsedEvent: events | null = null;
   if (!event) return;
 
-if (event) {
-  switch (event.type) {
-    case eventType.CREATE_EXAM:
-      parsedEvent = {
-        id: event.id,
-        type: event.type, // Type assertion
-        description: event.description,
-        data: event.data as unknown as Create_Exam_data_type, // Convert JSON to TypeScript type
-        conditions: event.conditions as unknown as Create_Exam_conditions_type,
-        created_by: event.created_by as UserRole,
-        runs: event.runs as eventRuns,
-        run_at: event.run_at,
-    };
-      break;
-      case  eventType.SEND_MESSAGE :
+  if (event) {
+    switch (event.type) {
+      case eventType.CREATE_EXAM:
+        parsedEvent = {
+          id: event.id,
+          type: event.type, // Type assertion
+          description: event.description,
+          data: event.data as unknown as Create_Exam_data_type, // Convert JSON to TypeScript type
+          conditions:
+            event.conditions as unknown as Create_Exam_conditions_type,
+          created_by: event.created_by as UserRole,
+          runs: event.runs as eventRuns,
+          run_at: event.run_at,
+        };
+        break;
+      case eventType.SEND_MESSAGE:
         parsedEvent = {
           id: event.id,
           type: event.type, // Type assertion
@@ -63,24 +71,22 @@ if (event) {
           created_by: event.created_by as UserRole,
           runs: event.runs as eventRuns,
           run_at: event.run_at,
-      };
-      break;
-  
-    default:
-      break;
+        };
+        break;
+
+      default:
+        break;
+    }
   }
-    
-}
 
-if(!parsedEvent) return
+  if (!parsedEvent) return;
 
-  let events:events[] = [parsedEvent];
-
+  let events: events[] = [parsedEvent];
 
   events?.forEach((event) => {
     switch (event?.type) {
       case "CREATE_EXAM":
-        createExam(event );
+        createExam(event);
         break;
 
       default:
@@ -92,11 +98,16 @@ if(!parsedEvent) return
 // Start the job
 // job.start();
 
-
-
-
 const every_10_seconds = "10 * * * * *";
 const at_2_am = "0 2 * * *";
 console.log("Cron job started for exam creation at 2:00 am");
-const exam_create_job = new CronJob(at_2_am,()=>{createExam(examCofig)})
-exam_create_job.start()
+const exam_create_job = new CronJob(
+  at_2_am,
+  () => {
+    createExam(examConfig);
+  },
+  null,
+  true, // Auto-start the job
+  "Asia/Kolkata" // Timezone set to IST
+);
+exam_create_job.start();

@@ -23,6 +23,7 @@ const verifyBotToken = async(token: string) => {
 
 export const botauthenticate = async(req: any, res: any, next: () => any) => {  
   let token = req.headers.token;
+  // bot user jwt &&  bot token
   if (!token) {
     return res
       .status(401)

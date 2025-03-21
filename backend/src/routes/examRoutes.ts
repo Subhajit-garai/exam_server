@@ -20,6 +20,7 @@ import {
   ExamAttemptQuestionMetaData,
   getExamAnsForAnalisys,
   getUserAnsSetOfAnExam,
+  getExamsbyid,
 } from "../controllers/exam.controller";
 import { isAdmin } from "../../lib/auth";
 
@@ -34,6 +35,7 @@ examRouter.get("/findexam", findexam); // for -> tergeted exam
 
 examRouter.get("/joinrequest", examJoinRequestProcess); // for -> all exam
 examRouter.get("/getExams", getExams); // for -> all exam
+examRouter.get("/getexambyid", getExamsbyid); // for -> all exam   ----------------------> working
 examRouter.get("/data", joinedExamData); // for -> current  exam question data
 examRouter.get("/submitans", submitAnswerhandler); // for -> all exam
 examRouter.get("/finalsubmit", finalsubmitExam); // close final submit exam

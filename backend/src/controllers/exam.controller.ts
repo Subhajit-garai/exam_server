@@ -1,4 +1,4 @@
-import { ExamStatus, syllabusType } from "@prisma/client";
+import { ExamStatus, ExamType, syllabusType } from "@prisma/client";
 import prisma from "../../db";
 import {
   ExamCreateInputeSchema,
@@ -13,6 +13,7 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import { SubmitedQuestionAnsZodSchema } from "../zod/question.zod";
 
 dayjs.extend(customParseFormat);
 
@@ -216,7 +217,8 @@ export const getUserMetaDataforAnExam = async (req: any, res: any) => {
 export const gettokenSystem = async (req: any, res: any) => {
   try {
     let data;
-    let response = await prisma.syllabus.findFirst({});
+    let type = req.query.type;
+    let response = await prisma.entryChargeList.findFirst({})
 
     if (!response) {
       return res.status(400).json({
@@ -225,7 +227,16 @@ export const gettokenSystem = async (req: any, res: any) => {
       });
     }
 
-    let syllabus = response.topics;
+    switch (type) {
+      case ExamType.Contest: data = response.contest;
+        break;
+      // case ExamType.: data = response.quiz;
+      //   break;
+    
+      default:  data = response.exam;
+        break;
+    }
+
 
     res.json({
       success: true,
@@ -1079,16 +1090,21 @@ export const joinedExamData = async (req: any, res: any) => {
 
 export const submitAnswerhandler = async (req: any, res: any) => {
   try {
-    let examid = req.query.examid;
-    let number = req.query.number;
-    let part = req.query.part;
-    let ans = req.query.ans;
+    let data = SubmitedQuestionAnsZodSchema.safeParse(req.query)    
+    if(!data.success){
+      return res.status(400).json({
+        success: false,
+        message: "invalid data",
+      });
+    }
+    let { examid,number,part,ans,ismultiple} = data.data
     let userid = req.user;
+    let Ans = ans.split(",");  
 
     // console.log("ans", ans);
     // console.log("ans ty", typeof ans);
 
-    let status = await em.submitAnswer(examid, userid, part, ans, number);
+    let status = await em.submitAnswer(examid, userid, part, Ans, number,ismultiple);
     // call back to user
     if (status) {
       console.log("status", status);

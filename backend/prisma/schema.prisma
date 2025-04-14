@@ -11,20 +11,34 @@ datasource db {
 
 // new table 
 
-model botQuizTopic {
-  id             String   @id @unique @default(cuid())
-  quiztopic      String[]
-  rapidtopic     String[]
-  exam           String
-  question_count String   @default("0")
+model botQuizConfig {
+  id String @id @unique @default(cuid())
 
-  created_at DateTime @default(now())
+  quiztopic        String[]
+  rapidtopic       String[]
+  exam             String
+  nextQuestionTime Int      @default(40) // in seconds
+  quizOpenFor      Int      @default(60) // in seconds
+  question_count   String   @default("0")
+  created_by       String?
+  created_at       DateTime @default(now())
 }
 
-model bottoken {
-  id    String   @id @unique @default(cuid())
-  token String[]
+model botInfo {
+  id         String @id @unique @default(cuid())
+  botuser_id String @unique
+  token      String
+  webhook    Json?
 }
+
+/**
+ * webhook:{
+ * baseurl:"http://localhost:2000/",
+ * endpoint:{
+ * reciveQuizData: "/reciveQuizdata",
+ * startQuiz: "/startQuiz",
+ * }}
+ */
 
 /**
  * feature: "user-login",
@@ -141,6 +155,7 @@ model Order {
   userId            String // Link to your user model
   razorpay_order_id String   @unique
   amount            Int
+  token             Int      @default(0)
   status            String   @default("pending") // Track order status
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -221,6 +236,12 @@ model progress {
   topinexam       Int      @default(0)
   topinContest    Int      @default(0)
   openRegister    Int      @default(0)
+  lastExamid      String   @default("not seted")
+  lastContestid   String   @default("not seted")
+  lastQuizid      String   @default("not seted")
+  lastExamRank    Int      @default(0)
+  lastContestRank Int      @default(0)
+  lastQuizRank    Int      @default(0)
   time            DateTime @default(now()) @db.Timestamptz(6)
 
   @@index([userid]) // Faster queries by user
@@ -263,11 +284,13 @@ model Questions {
   topic              String
   explanation        String?              @default("no explanation added")
   links              String[]             @default([""])
+  is_multiple_ans    Boolean              @default(false)
   created_by         String
   difficulty         diffcultlevel
   created_at         DateTime             @default(now())
   status             QuestionStatus       @default(Processing)
   Exam_Questions_map Exam_Questions_map[]
+  weight             Int                  @default(0)
   User               User                 @relation(fields: [created_by], references: [id])
 }
 
@@ -295,6 +318,7 @@ model Exam_pattern {
   check            check?
   marks_values     Int[]
   neg_values       Int[]
+  is_multiple_ans  Int[]              @default([0, 0]) // 0 mean false 1 mean it is multiple value ans
   created_by       String
   Exam             Exam[]
   User             User               @relation(fields: [created_by], references: [id])
@@ -331,15 +355,15 @@ model Exam {
 }
 
 model quiz {
-  id              String  @id @unique @default(cuid())
-  display_id      String? @unique @default(nanoid(6))
-  quizRegister_id String? @default("Private quiz")
+  id              String        @id @unique @default(cuid())
+  display_id      String?       @unique @default(nanoid(6))
+  quizRegister_id String?       @default("Private quiz")
   name            String?       @default("No name")
   examname        String
   category        String
   questions       Json
   topics          String[]      @default([""])
-  total_questions Int           @default(0)  // 25 or 50 -> higher prime member
+  total_questions Int           @default(0) // 25 or 50 -> higher prime member
   created_at      DateTime?     @default(now())
   created_by      String        @default("No name")
   examtype        String        @default("quiz")

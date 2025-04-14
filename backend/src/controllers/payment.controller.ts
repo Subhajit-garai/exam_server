@@ -13,109 +13,128 @@ async function isPaymentProcessed(paymentId: string) {
 }
 
 export const checkout = async (req: any, res: any) => {
-  let userid = req.user;
-  const options = {
-    amount: Number(req.body.amount * 100),
-    currency: "INR",
-  };
-  const order = await razerpayinstance.orders.create(options);
+  try {
+    let userid = req.user;
+    let token = req.body.token;
+    const options = {
+      amount: Number(req.body.amount * 100),
+      currency: "INR",
+    };
+    const order = await razerpayinstance.orders.create(options);
 
-  await prisma.order.create({
-    data: {
-      razorpay_order_id: order.id,
-      amount: parseInt(order.amount as string),
-      userId: userid,
-    },
-  });
+    await prisma.order.create({
+      data: {
+        razorpay_order_id: order.id,
+        amount: parseInt(order.amount as string),
+        token: parseInt(token as string),
+        userId: userid,
+      },
+    });
 
-  res.status(200).json({
-    success: true,
-    order,
-  });
+    res.status(200).json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+
+    console.log("error in checkout " , error);
+    
+    res.status(400).json({
+      success: false,
+      message: "server Error",
+    });
+  }
 };
 
 export const paymentVerification = async (req: any, res: any) => {
-  
-  let payment = await prisma.$transaction(async (tx:any) => {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      req.body;
+  try {
+    let payment = await prisma.$transaction(async (tx: any) => {
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+        req.body;
 
-    if (await isPaymentProcessed(razorpay_payment_id)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Duplicate payment detected" });
-    }
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
+      if (await isPaymentProcessed(razorpay_payment_id)) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Duplicate payment detected" });
+      }
+      const body = razorpay_order_id + "|" + razorpay_payment_id;
 
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZERPAY_API_SECRET as string)
-      .update(body.toString())
-      .digest("hex");
+      const expectedSignature = crypto
+        .createHmac("sha256", process.env.RAZERPAY_API_SECRET as string)
+        .update(body.toString())
+        .digest("hex");
 
-    const isAuthentic = expectedSignature === razorpay_signature;
+      const isAuthentic = expectedSignature === razorpay_signature;
 
-    if (isAuthentic) {
-      const orderDetails = await razerpayinstance.orders.fetch(
-        razorpay_order_id
-      );
-      let { amount , status } = orderDetails;
+      if (isAuthentic) {
+        const orderDetails = await razerpayinstance.orders.fetch(
+          razorpay_order_id
+        );
+        let { amount, status } = orderDetails;
 
-      amount = typeof(amount) == "string" ? parseInt(amount):amount
+        amount = typeof amount == "string" ? parseInt(amount) : amount;
 
-      let user = await tx.order.update({
-        where: {
-          razorpay_order_id: razorpay_order_id,
-        },
-        data: {
-          status: status,
-        },
-        select: {
-          userId: true,
-        },
-      });
+        let user = await tx.order.update({
+          where: {
+            razorpay_order_id: razorpay_order_id,
+          },
+          data: {
+            status: status,
+          },
+          select: {
+            userId: true,
+            token: true,
+          },
+        });
 
+        let userid = user?.userId;
+        let token = user?.token;
+        // Database update here
 
-      let userid = user.userId;
+        await tx.payment.create({
+          data: {
+            razorpay_order_id,
+            razorpay_payment_id,
+            razorpay_signature,
+            amount: amount,
+            status: status,
+            userId: userid,
+          },
+        });
 
-      // Database update here
+        await prisma.blance.update({
+          where: {
+            userid: userid,
+          },
+          data: {
+            amount: {
+              increment: token,
+            },
+          },
+          select: {
+            amount: true,
+          },
+        });
 
-      await tx.payment.create({
-        data: {
-          razorpay_order_id,
-          razorpay_payment_id,
-          razorpay_signature,
-          amount: amount,
-          status: status,
-          userId: userid,
-        },
-      });
+        const referer = req.get("Referer");
 
-      await prisma.blance.update({
-        where:{
-          userid:userid
-        },
-        data:{
-          amount:{
-            increment:(amount/100)
-          }
-        },
-        select: {
-          amount: true
-        },
+        res.redirect(
+          `${referer}#/paymentsuccess?reference=${razorpay_payment_id}`
+        );
+      } else {
+        res.status(400).json({
+          success: false,
+          message: "User Payment not Valid",
+        });
+      }
+    });
+  } catch (error) {
+    console.log("error in paymentVerification " , error);
+    
+    res.status(400).json({
+      success: false,
+      message: "server Error",
+    });
 
-      });
-
-
-      const referer = req.get('Referer');
-      
-      res.redirect(
-        `${referer}#/paymentsuccess?reference=${razorpay_payment_id}`
-      );
-    } else {
-      res.status(400).json({
-        success: false,
-        message: "User Payment not Valid"
-      });
-    }
-  });
+  }
 };

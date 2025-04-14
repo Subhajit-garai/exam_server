@@ -47,7 +47,7 @@ export const QuestionProssingDataFetch = async (req: any, res: any) => {
 
 export const GetQuestionExplanation = async (req: any, res: any) => {
   try {
-    let questionid = req.params.question;
+    let questionid = req.query.questionid;
 
     let data = await prisma.questions.findFirst({
       where: { id: questionid },
@@ -55,7 +55,7 @@ export const GetQuestionExplanation = async (req: any, res: any) => {
         explanation: true,
         links: true,
       },
-    });
+    });    
     res.json({ success: true, message: "Question Explanation", data: data });
   } catch (error) {
     console.log("Error in metrix --->", error);

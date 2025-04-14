@@ -340,6 +340,15 @@ async function main() {
     }
   });
 
+  let botQuizConfig = await prisma.botQuizConfig.create({
+    data:{
+      exam:"JECA",
+      quiztopic:["UNIX"],
+      question_count:"25",
+      rapidtopic:["UNIX" , "OS"]
+    }
+  })
+
 
 
   console.log("Seeding completed.");

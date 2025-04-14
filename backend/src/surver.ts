@@ -4,7 +4,10 @@ import { questionRouter } from "./routes/questionsRoutes.js";
 import { CommonuserRoutes } from "./routes/CommonuserRoutes.js";
 import cookieParser from "cookie-parser";
 import { userauthenticate } from "../lib/auth.js";
+import { handleWebSocketConnection } from "../lib/WebSocket.js";
 import cors from "cors";
+import WebSocket, { WebSocketServer } from "ws";
+import http from "http";
 
 import { DataManageRouter } from "./routes/DataManageRouter.js";
 import { userRouter } from "./routes/userRouter.js";
@@ -13,29 +16,36 @@ import { metrixRoute } from "./routes/metrix.route.js";
 import { paymentRouter } from "./routes/paymentRouter.js";
 import { botRouter } from "./routes/botRouter.js";
 
-import "../lib/cronJobs/index"
+import "../lib/cronJobs/index";
+import { verifyToken } from "../lib/token.js";
+import { URLSearchParams } from "url";
+import { adminRouter } from "./routes/adminRouter.js";
 export const razerpayinstance = new Razorpay({
   key_id: process.env.RAZERPAY_API_KEY as string,
   key_secret: process.env.RAZERPAY_API_SECRET,
 });
 
 export const app = express();
-app.set('trust proxy', 'loopback')
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
+
+interface AuthenticatedWebSocket extends WebSocket {
+  user?: any; // Extend WebSocket to include 'user'
+}
+
+// app.set("trust proxy", "loopback");
+const trustProxy = process.env.TRUST_PROXY || 'false';
+app.set('trust proxy', trustProxy);
+
 const PORT = process.env.PORT || 3000;
 
-// app.use(
-//   cors({
-//     origin: ["http://localhost:3002", "http://localhost:3004",],
-//     credentials: true,
-//   })
-// );
+let allowedOriginsstr = process.env.ALLOWED_ORIGINS;
+const allowedOrigins = allowedOriginsstr?.split(",") || [
+  "http://localhost:3002",
+  "http://localhost:3004",
+];
 
-
-let  allowedOriginsstr = process.env.ALLOWED_ORIGINS
-const allowedOrigins = allowedOriginsstr?.split(",") || ["http://localhost:3002", "http://localhost:3004",]
-
-console.log("allowedOrigins",allowedOrigins);
-
+console.log("allowedOrigins", allowedOrigins);
 
 app.use(
   cors({
@@ -53,30 +63,59 @@ app.use(
   })
 );
 
-
 // "https://api.razorpay.com"
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/v1/bulk", DataManageRouter); // bulk insert
 
-app.get("/health",(req,res)=> {res.json({ message: "i'm healthy now after you ask"})})
+app.get("/health", (req, res) => {
+  res.json({ message: "i'm healthy now after you ask" });
+});
 
 app.use("/api/v1/user", CommonuserRoutes);
 app.use("/api/v1/payment", paymentRouter);
-app.use("/api/v1/bot",botRouter)
-
+app.use("/api/v1/bot", botRouter);
 
 app.use(userauthenticate);
+app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/user", userRouter);
-
 
 app.use("/api/v1/metrix", metrixRoute);
 app.use("/api/v1/exam", examRouter);
 app.use("/api/v1/question", questionRouter);
 
-app.listen(PORT, () => {
+
+
+// webscocket server 
+// wss.on("connection", (ws:AuthenticatedWebSocket,req) => {
+//  // ws auth
+//   const url = req?.url || "";
+//   const queryString = url.includes("?") ? url.split("?")[1] : "";
+//   const urlParams = new URLSearchParams(queryString);
+
+//   const token = urlParams.get("token");
+
+//   if (!token) {
+//     ws.send(JSON.stringify({ error: "No token provided" }));
+//     ws.close();
+//     return;
+//   }
+
+//   let decoded = verifyToken(token)
+//   if (!decoded) {
+//     ws.send(JSON.stringify({ error: "Invalid token" }));
+//     ws.close();
+//     return;
+//   }
+//   ws.user = decoded
+  
+//    // message handling
+//   handleWebSocketConnection(ws);
+// });
+
+server.listen(PORT, () => {
   console.log(`surver is listening on ${PORT}`);
 });

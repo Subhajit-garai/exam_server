@@ -68,7 +68,7 @@ export class examManager {
       // get data from redis
       if (questionid) {
         let question = await this.redisclient.get(`question:${questionid}`);
-        return { question, number };
+        return { question, number};  // add is multible ans 
       }
     } else {
       return null;
@@ -88,10 +88,12 @@ export class examManager {
     userid: string,
     part: string,
     ans: string[],
-    number: number
+    number: string,
+    ismultiple:boolean
   ) {
+    
     let partdata = this.questionsids[examid][part];
-    let selectedId = partdata[number];
+    let selectedId = partdata[parseInt(number)];
     console.log("selectedId", selectedId);
 
     return await this.getredisclient().push({
@@ -101,6 +103,8 @@ export class examManager {
       part: part,
       ans: ans,
       id: selectedId,
+      ismultiple:  ismultiple ?? false
+      // number: number,  // may add some feature which need question number
     });
   }
 
@@ -139,6 +143,7 @@ export class examManager {
           id: true,
           title: true,
           options: true,
+          is_multiple_ans:true
         },
       });
 
@@ -166,5 +171,15 @@ export class examManager {
   ClearCache_exmaManager() {
     this.exam = [];
     this.questionsids = {};
+  }
+
+
+  async getQuizdata(key: string) {
+    let data = await this.redisclient.get(key);
+    if (data) {
+      return data;
+    } else {
+      return null;
+    }
   }
 }

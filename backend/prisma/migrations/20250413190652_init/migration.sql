@@ -2,7 +2,7 @@
 CREATE TYPE "UserRole" AS ENUM ('Admin', 'User', 'Bot');
 
 -- CreateEnum
-CREATE TYPE "eventType" AS ENUM ('NEW_QUIZ_RUN', 'CREATE_QUIZ_CONTEST', 'SEND_MESSAGE');
+CREATE TYPE "eventType" AS ENUM ('NEW_QUIZ_RUN', 'CREATE_QUIZ_CONTEST', 'SEND_MESSAGE', 'CREATE_EXAM');
 
 -- CreateEnum
 CREATE TYPE "eventRuns" AS ENUM ('ONE', 'DAILY', 'WEEKLY', 'MONTHLY');
@@ -38,23 +38,28 @@ CREATE TYPE "examformate" AS ENUM ('Text', 'Image');
 CREATE TYPE "ExamType" AS ENUM ('Exam', 'Contest');
 
 -- CreateTable
-CREATE TABLE "botQuizTopic" (
+CREATE TABLE "botQuizConfig" (
     "id" TEXT NOT NULL,
     "quiztopic" TEXT[],
     "rapidtopic" TEXT[],
     "exam" TEXT NOT NULL,
+    "nextQuestionTime" INTEGER NOT NULL DEFAULT 40,
+    "quizOpenFor" INTEGER NOT NULL DEFAULT 60,
     "question_count" TEXT NOT NULL DEFAULT '0',
+    "created_by" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "botQuizTopic_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "botQuizConfig_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "bottoken" (
+CREATE TABLE "botInfo" (
     "id" TEXT NOT NULL,
-    "token" TEXT[],
+    "botuser_id" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "webhook" JSONB,
 
-    CONSTRAINT "bottoken_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "botInfo_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -119,8 +124,7 @@ CREATE TABLE "events" (
     "created_by" "UserRole" NOT NULL DEFAULT 'Bot',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "runs" "eventRuns" NOT NULL DEFAULT 'ONE',
-    "run_at" TEXT,
-    "last_run_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "run_at" TEXT NOT NULL,
 
     CONSTRAINT "events_pkey" PRIMARY KEY ("id")
 );
@@ -143,6 +147,7 @@ CREATE TABLE "Order" (
     "userId" TEXT NOT NULL,
     "razorpay_order_id" TEXT NOT NULL,
     "amount" INTEGER NOT NULL,
+    "token" INTEGER NOT NULL DEFAULT 0,
     "status" TEXT NOT NULL DEFAULT 'pending',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -171,7 +176,7 @@ CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "contactno" INTEGER DEFAULT 0,
+    "contactno" TEXT DEFAULT '0000000000',
     "password" TEXT NOT NULL,
     "primeid" TEXT NOT NULL,
     "telegramid" TEXT,
@@ -211,6 +216,12 @@ CREATE TABLE "progress" (
     "topinexam" INTEGER NOT NULL DEFAULT 0,
     "topinContest" INTEGER NOT NULL DEFAULT 0,
     "openRegister" INTEGER NOT NULL DEFAULT 0,
+    "lastExamid" TEXT NOT NULL DEFAULT 'not seted',
+    "lastContestid" TEXT NOT NULL DEFAULT 'not seted',
+    "lastQuizid" TEXT NOT NULL DEFAULT 'not seted',
+    "lastExamRank" INTEGER NOT NULL DEFAULT 0,
+    "lastContestRank" INTEGER NOT NULL DEFAULT 0,
+    "lastQuizRank" INTEGER NOT NULL DEFAULT 0,
     "time" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "progress_pkey" PRIMARY KEY ("id")
@@ -241,7 +252,7 @@ CREATE TABLE "blance" (
 CREATE TABLE "telegram" (
     "id" TEXT NOT NULL,
     "userid" TEXT,
-    "telegramid" INTEGER DEFAULT 0,
+    "telegramid" TEXT DEFAULT '0000000000',
     "last_update" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "telegram_pkey" PRIMARY KEY ("id")
@@ -255,13 +266,17 @@ CREATE TABLE "Questions" (
     "ans" TEXT[],
     "formate" "examformate" NOT NULL DEFAULT 'Text',
     "category" TEXT NOT NULL,
+    "sub_topic" TEXT NOT NULL DEFAULT 'none',
+    "history" TEXT[] DEFAULT ARRAY['']::TEXT[],
     "topic" TEXT NOT NULL,
     "explanation" TEXT DEFAULT 'no explanation added',
     "links" TEXT[] DEFAULT ARRAY['']::TEXT[],
+    "is_multiple_ans" BOOLEAN NOT NULL DEFAULT false,
     "created_by" TEXT NOT NULL,
     "difficulty" "diffcultlevel" NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status" "QuestionStatus" NOT NULL DEFAULT 'Processing',
+    "weight" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Questions_pkey" PRIMARY KEY ("id")
 );
@@ -294,6 +309,7 @@ CREATE TABLE "Exam_pattern" (
     "check" "check",
     "marks_values" INTEGER[],
     "neg_values" INTEGER[],
+    "is_multiple_ans" INTEGER[] DEFAULT ARRAY[0, 0]::INTEGER[],
     "created_by" TEXT NOT NULL,
 
     CONSTRAINT "Exam_pattern_pkey" PRIMARY KEY ("id")
@@ -314,12 +330,47 @@ CREATE TABLE "Exam" (
     "ansid" TEXT NOT NULL,
     "status" "ExamStatus" NOT NULL DEFAULT 'Private',
     "creationstatus" "CreationTypes" NOT NULL DEFAULT 'Processing',
-    "starttime" TIMESTAMP(3),
-    "timelimit" TIMESTAMP(3) NOT NULL,
-    "jointime" TIMESTAMP(3),
+    "starttime" TEXT DEFAULT '08:00 pm',
+    "jointime" TEXT DEFAULT '00:15 m',
+    "duration" TEXT NOT NULL DEFAULT '02:00 h',
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "stage" "ExamStage" NOT NULL DEFAULT 'Registration',
 
     CONSTRAINT "Exam_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "quiz" (
+    "id" TEXT NOT NULL,
+    "display_id" TEXT,
+    "quizRegister_id" TEXT DEFAULT 'Private quiz',
+    "name" TEXT DEFAULT 'No name',
+    "examname" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
+    "questions" JSONB NOT NULL,
+    "topics" TEXT[] DEFAULT ARRAY['']::TEXT[],
+    "total_questions" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "created_by" TEXT NOT NULL DEFAULT 'No name',
+    "examtype" TEXT NOT NULL DEFAULT 'quiz',
+    "ansid" TEXT NOT NULL,
+    "status" "ExamStatus" NOT NULL DEFAULT 'Private',
+    "creationstatus" "CreationTypes" NOT NULL DEFAULT 'Processing',
+    "starttime" TEXT DEFAULT '08:00 pm',
+    "duration" TEXT NOT NULL DEFAULT '02:00 h',
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "stage" "ExamStage" NOT NULL DEFAULT 'Registration',
+
+    CONSTRAINT "quiz_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "quizRegister" (
+    "id" TEXT NOT NULL,
+    "quiz_id" TEXT DEFAULT 'new_value_not_seted',
+    "users" TEXT[],
+
+    CONSTRAINT "quizRegister_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -379,10 +430,13 @@ CREATE TABLE "Exam_Questions_map" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "botQuizTopic_id_key" ON "botQuizTopic"("id");
+CREATE UNIQUE INDEX "botQuizConfig_id_key" ON "botQuizConfig"("id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "bottoken_id_key" ON "bottoken"("id");
+CREATE UNIQUE INDEX "botInfo_id_key" ON "botInfo"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "botInfo_botuser_id_key" ON "botInfo"("botuser_id");
 
 -- CreateIndex
 CREATE INDEX "timescale_score_time_idx" ON "timescale_score"("time" DESC);
@@ -493,6 +547,21 @@ CREATE UNIQUE INDEX "Exam_display_id_key" ON "Exam"("display_id");
 CREATE UNIQUE INDEX "Exam_ansid_key" ON "Exam"("ansid");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "quiz_id_key" ON "quiz"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "quiz_display_id_key" ON "quiz"("display_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "quiz_ansid_key" ON "quiz"("ansid");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "quizRegister_id_key" ON "quizRegister"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "quizRegister_quiz_id_key" ON "quizRegister"("quiz_id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "ContestRegister_id_key" ON "ContestRegister"("id");
 
 -- CreateIndex
@@ -551,6 +620,15 @@ ALTER TABLE "Exam" ADD CONSTRAINT "Exam_created_by_fkey" FOREIGN KEY ("created_b
 
 -- AddForeignKey
 ALTER TABLE "Exam" ADD CONSTRAINT "Exam_exam_pattern_id_fkey" FOREIGN KEY ("exam_pattern_id") REFERENCES "Exam_pattern"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "quiz" ADD CONSTRAINT "quiz_quizRegister_id_fkey" FOREIGN KEY ("quizRegister_id") REFERENCES "quizRegister"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "quiz" ADD CONSTRAINT "quiz_ansid_fkey" FOREIGN KEY ("ansid") REFERENCES "AnsSheet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "quiz" ADD CONSTRAINT "quiz_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ContestRegister" ADD CONSTRAINT "ContestRegister_examId_fkey" FOREIGN KEY ("examId") REFERENCES "Exam"("id") ON DELETE SET NULL ON UPDATE CASCADE;

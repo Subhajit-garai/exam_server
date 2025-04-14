@@ -19,5 +19,17 @@ export const QuestionProssingDataFetchZodSchema = z.object({
   formate: z.enum(["Text", "Image"]).optional(),
   status: z.enum(["Processing", "Done", "Duplicate", "Suspended"]).optional(),
 });
+export const SubmitedQuestionAnsZodSchema = z.object({
+  examid: z.string(),
+  ans: z.string(),
+  part: z.string(),
+  number: z.string(),
+  ismultiple: z.preprocess((val) => {
+    if (typeof val === "string") {
+      return val === "true";
+    }
+    return val;
+  }, z.boolean())
+});
 
 

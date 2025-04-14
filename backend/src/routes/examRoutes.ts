@@ -27,7 +27,7 @@ import { isAdmin } from "../../lib/auth";
 export const examRouter = Router();
 
 examRouter.get("/syllabus", getSyllabus);
-examRouter.get("/tokenSystem", gettokenSystem);
+examRouter.get("/tokensystem", gettokenSystem);
 
 // user
 examRouter.get("/category", getCategory);

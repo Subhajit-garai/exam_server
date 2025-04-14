@@ -209,6 +209,7 @@ export const userSignup = async (req: any, res: any) => {
         email: newUser.email,
       },
     });
+    
   } catch (error) {
     console.log("Error in userSignup", error);
 
@@ -448,7 +449,6 @@ export const usertelegramidValidationTokengen = async (req: any, res: any) => {
       });
     } else {
       console.log("---->", message_state);
-
       return res.status(401).json({
         success: false,
         message: "token not send , plz try again 2 ",

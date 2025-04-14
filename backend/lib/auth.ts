@@ -24,13 +24,20 @@ export const userauthenticate = (req: any, res: any, next: () => any) => {
 
 
 export const isAdmin = async(req:any , res:any ,next: ()=> any) =>{
-  try {
+  try {    
     let userid = req?.user
+
+    if(!userid) {
+      return res
+       .status(401)
+       .json({ success: false, message: "Authentication required" });
+    }
     let user  = await prisma.user.findUnique({
       where:{
         id:userid
       }
     })
+
     if (user){
         if(user.role == "Admin"){ //// remove (user.role == "User") , unless it give access admin 's power to all user 
           next();

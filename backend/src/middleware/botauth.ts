@@ -1,38 +1,38 @@
 import { hashPasswordFn, veryfyhashPasswordFn } from "../../lib/hash";
-import prisma from "../../db/index"
+import prisma from "../../db/index";
+import { verifyToken } from "../../lib/token";
 
-let BOT_TOKEN:string[]= [];
+const verifyBotToken = async (bot_userid: string, token: string) => {
+  let hashtoken = await prisma.botInfo.findFirst({
+    where: { id: bot_userid },
+    select: { token: true },
+  });
 
-const verifyBotToken = async(token: string) => {
+  if (!hashtoken) {
+    return false;
+  }
 
-    if (BOT_TOKEN.length < 1){
+  let status = await veryfyhashPasswordFn(token, hashtoken.token); // hash password
+  if (status) {
+    return true;
+  }
 
-        let tokens = await prisma.bottoken.findMany({select:{token:true}})
-        BOT_TOKEN = tokens.map((item:any)=> item.token).flat()
-    }
-    for (const hashtoken of BOT_TOKEN) {
-
-      let status = await veryfyhashPasswordFn(token, hashtoken);
-      if (status) {
-        return true;
-      }
-    }
- 
   return false;
 };
 
-export const botauthenticate = async(req: any, res: any, next: () => any) => {  
-  let token = req.headers.token;
+export const botauthenticate = async (req: any, res: any, next: () => any) => {
+  let token = req.headers.authorization;
   // bot user jwt &&  bot token
+  
   if (!token) {
     return res
       .status(401)
       .json({ success: false, message: "Authentication required" });
   }
   try {
-    let bot = await verifyBotToken(token);
+    let bot = verifyToken(token); // jwt 
+    req.bot_user = bot;
     if (!bot) {
-      
       return res
         .status(401)
         .json({ success: false, message: "Invalid or expired token" });

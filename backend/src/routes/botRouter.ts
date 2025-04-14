@@ -1,17 +1,18 @@
 import { Router } from "express";
 // import { SelectQuestion } from "../controllers/question.controller";
 import { botauthenticate } from "../middleware/botauth";
-import { addbotToken } from "../controllers/bot.controller";
-import { getquestionsset, sendQuizTopic, setrQuizTopic } from "../controllers/quiz.controller";
+import { getQuizData, getQuizTopic ,bot_login } from "../controllers/bot.controller";
 export const botRouter = Router();
 
 botRouter.get("/auth", botauthenticate, (req, res) => {
   res.json({ success: true, message: "bot validate successfully" });
 });
-botRouter.get("/getquestionsset", botauthenticate,getquestionsset);
-botRouter.get("/getquiztopic", botauthenticate, sendQuizTopic);
+
+
+botRouter.get("/getquiztopic", botauthenticate, getQuizTopic);
+
+botRouter.post("/getquestionsset", botauthenticate,getQuizData);  //  auto / daily quiz set
+botRouter.post("/login", bot_login);
 
 
 
-botRouter.post("/setquiztopic", botauthenticate, setrQuizTopic);
-botRouter.post("/setToken", addbotToken)

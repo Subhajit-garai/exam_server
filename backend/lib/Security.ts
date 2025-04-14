@@ -43,7 +43,7 @@ export const IsPurchasesOpen = async (req: any, res: any, next: () => any) => {
         return res.status(401).json({
           success: false,
           message:
-            "User token purchases are closed for now. Contact the admin for more info. We will inform you when it opens.",
+            "Token purchases are currently closed. Please contact the admin for more information. We’ll notify you once they reopen.",
         });
       }
     }

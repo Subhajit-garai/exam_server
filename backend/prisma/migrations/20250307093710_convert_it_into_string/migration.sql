@@ -1,7 +1,0 @@
--- AlterTable
-ALTER TABLE "User" ALTER COLUMN "contactno" SET DEFAULT '0000000000',
-ALTER COLUMN "contactno" SET DATA TYPE TEXT;
-
--- AlterTable
-ALTER TABLE "telegram" ALTER COLUMN "telegramid" SET DEFAULT '0000000000',
-ALTER COLUMN "telegramid" SET DATA TYPE TEXT;

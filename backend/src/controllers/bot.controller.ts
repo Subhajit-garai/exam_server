@@ -1,7 +1,5 @@
 import { hashPasswordFn, veryfyhashPasswordFn } from "../../lib/hash";
 import prisma from "../../db";
-import { examManager } from "../../lib/examManager";
-import { webhook_type } from "../../lib/types/botTypes";
 import { primeStatus, Prisma, UserRole } from "@prisma/client";
 import {
   bot_creat_quiz_data_ZodSchema,
@@ -9,8 +7,7 @@ import {
   update_botwebhook_ZodSchema,
 } from "../zod/bot.zod";
 import { genToken, verifyToken } from "../../lib/token";
-
-const em = examManager.getInstance();
+import { QuizeSetupFunction } from "../../lib/helper/TelegramQuiz";
 
 export const test = async (req: any, res: any) => {
   try {
@@ -19,16 +16,83 @@ export const test = async (req: any, res: any) => {
     console.log("Error in metrix --->", error);
   }
 };
+
+export const AllUserData = async (req: any, res: any) => {
+  try {
+    let role = req.query.role;
+
+    let users = await prisma.user.findMany({
+      where:{
+        role: role ?? "User"
+      },
+      select: {
+        telegram: {
+          select: {
+            telegramid: true,
+          },
+        },
+        prime: {
+          select: {
+            status: true,
+            expiry: true,
+          },
+        },
+      },
+    });
+
+    if (!users) {
+      return res
+        .status(404)
+        .json({ success: false, message: "no user found " });
+    }
+    res.json({ success: true, message: "success ", data: users });
+  } catch (error) {
+    console.log("Error in metrix --->", error);
+  }
+};
+
+export const IsprimeUser = async (req: any, res: any) => {
+  try {
+    let user_telegramid = req.query.telegramid;
+    let user = await prisma.user.findFirst({
+      where: {
+        telegram: {
+          telegramid: user_telegramid,
+        },
+      },
+      select: {
+        prime: {
+          select: {
+            status: true,
+          },
+        },
+      },
+    });
+    if (!user) {
+      return res.status(403).json({
+        success: false,
+        message: "user not found",
+      });
+    }
+    let isPrime = user.prime?.status == primeStatus.none ? false : true;
+
+    res.json({ success: true, message: "is user prime ", data: isPrime });
+  } catch (error) {
+    console.log("Error in IsprimeUser --->", error);
+  }
+};
+
 export const bot_login = async (req: any, res: any) => {
   try {
     const { email, password } = req.body;
+
     let responce = await prisma.user.findFirst({
       where: { email: email, role: UserRole.Bot },
       select: { id: true, password: true },
     });
 
     if (!responce) {
-      throw new Error("User not found");
+      throw new Error("bot_login not found");
     }
 
     let isVerified = veryfyhashPasswordFn(password, responce?.password);
@@ -39,79 +103,19 @@ export const bot_login = async (req: any, res: any) => {
     let newToken = genToken(responce.id);
     res.json({ success: true, message: "successful", data: newToken });
   } catch (error) {
-    console.log("Error in metrix --->", error);
+    console.log("Error in bot login --->", error);
   }
 };
 
 export const getQuizData = async (req: any, res: any) => {
   try {
-
-    console.log("req00",typeof(req.body.bot_provided_user_id));
+    let data = bot_creat_quiz_data_ZodSchema.safeParse(req.body);
     
-    let data = bot_creat_quiz_data_ZodSchema.safeParse(req.body)
 
-    if(!data.success){
-     return  res.status(403).json({ success: false, message: "invalid data" }); 
+    if (!data.success) {
+      return res.status(403).json({ success: false, message: "invalid data" });
     }
-
-    let {bot_provided_user_id , bot_provided_chat_id ,type ="quiz"} =data.data;
-
-    let totalQuetions: number = 0;
-    let quizTopics: string[] = [];
-
-    let bot_user = req.bot_user;
-
-    let quiz_config_data = await prisma.botQuizConfig.findFirst({});
-    
-    if (!quiz_config_data) {
-      // throw new Error("No quiz topic found");
-      return console.log("quiz config error" ,quiz_config_data);
-    }
-
-    if (type) {
-      switch (type) {
-        case "rapidquiz":
-          { console.log("rapidquiz");
-            quizTopics = quiz_config_data?.rapidtopic;
-            totalQuetions = parseInt(quiz_config_data?.question_count);
-          }
-          break;
-
-        default:
-          { console.log("quiz");
-          
-            quizTopics = quiz_config_data?.quiztopic;
-            totalQuetions = 1;
-          }
-          break;
-      }
-    }
-    console.log("bot user", bot_user);
-    
-    let bot_webhook = await prisma.botInfo.findFirst({
-      where: {
-        botuser_id: bot_user,
-      },
-    });
-    if (!bot_webhook) {
-      console.log("No bot webhook found");
-    }
-
-    let webhook: webhook_type = bot_webhook?.webhook as webhook_type;    
-    let cbUrl = `${webhook.baseurl}${webhook.endpoint.receiveQuizData}`;
-
-    let Notifystatus = await em.getredisclient().push({
-      //id :
-      type: "createQuiz",
-      cburl: cbUrl,
-      totalQuetions: totalQuetions,
-      topics: quizTopics,
-      userid: bot_provided_user_id,
-      chatid: bot_provided_chat_id,
-      nextQuestionTime: quiz_config_data.nextQuestionTime,
-      quizOpenFor: quiz_config_data.quizOpenFor,
-    });
-
+    let Notifystatus = await QuizeSetupFunction(req.bot_user, data.data);
 
     if (Notifystatus) {
       res.json({
@@ -122,12 +126,9 @@ export const getQuizData = async (req: any, res: any) => {
       res.status(400).json({ success: false, message: "server error" });
     }
   } catch (error) {
-    console.log("error in getQuizData in bot controller");
+    console.log("error in getQuizData in bot controller",error);
   }
 };
-
-
-
 
 export const getQuizTopic = async (req: any, res: any) => {
   try {
@@ -169,15 +170,12 @@ export const updateBotWebhook = async (req: any, res: any) => {
 
     let { bot_userid, name, newvalue, type } = data.data;
 
-
     let old_webhook_map = {
-      webhook:{
-        baseurl:"",
-        endpoint:{
-
-        }
-      }
-    }
+      webhook: {
+        baseurl: "",
+        endpoint: {},
+      },
+    };
     let old_webhook = await prisma.botInfo.findFirst({
       where: {
         botuser_id: bot_userid,
@@ -186,16 +184,14 @@ export const updateBotWebhook = async (req: any, res: any) => {
 
     if (!old_webhook?.webhook) {
       old_webhook_map.webhook = {
-        baseurl:"",
-        endpoint:{
-
-        }
-      }
-    }else{
+        baseurl: "",
+        endpoint: {},
+      };
+    } else {
       old_webhook_map.webhook = old_webhook.webhook as any;
     }
 
-    let newWebhookData = {}
+    let newWebhookData = {};
 
     switch (type) {
       case "endpoint":
@@ -215,14 +211,11 @@ export const updateBotWebhook = async (req: any, res: any) => {
         break;
 
       default:
-
-      newWebhookData = {
-        ...old_webhook_map.webhook, // Preserve existing structure
-        baseurl: newvalue,
-      };
-       
+        newWebhookData = {
+          ...old_webhook_map.webhook, // Preserve existing structure
+          baseurl: newvalue,
+        };
     }
-    
 
     let updated_webhook = await prisma.botInfo.update({
       where: {
@@ -246,7 +239,6 @@ export const updateBotWebhook = async (req: any, res: any) => {
     });
   }
 };
-
 
 export const createNewBot = async (req: any, res: any) => {
   try {

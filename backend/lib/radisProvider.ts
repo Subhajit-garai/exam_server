@@ -25,7 +25,7 @@ export class RedisProvider {
     // this.redisClient.connect();
   }
 
-  getclient() {
+  getclient(): Redis {
     return this.redisClient;
   }
 

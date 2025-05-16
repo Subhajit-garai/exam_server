@@ -2,11 +2,14 @@ import { eventRuns, eventType, UserRole } from "@prisma/client";
 import prisma from "../db";
 
 import { z } from "zod";
-import { events} from "./types/EventTypes";
+import { events } from "./types/EventTypes";
+import { isAdmin } from "./auth";
 
 const settingsSchema = z.object({
   status: z.string(),
 });
+
+
 
 export const IsPurchasesOpen = async (req: any, res: any, next: () => any) => {
   try {
@@ -28,7 +31,9 @@ export const IsPurchasesOpen = async (req: any, res: any, next: () => any) => {
         type: eventType.SEND_MESSAGE,
         description: "inform user that token-purchases is open ",
         data: { to: req.user, message: "token-purchases is open now" },
-        conditions: { when: { on:"appConfig",feature: "token-purchases", status: "open" } },
+        conditions: {
+          when: { on: "appConfig", feature: "token-purchases", status: "open" },
+        },
         created_by: UserRole.Admin,
         runs: eventRuns.ONE,
         run_at: "Any",
@@ -38,7 +43,7 @@ export const IsPurchasesOpen = async (req: any, res: any, next: () => any) => {
         data: {
           ...messageEvent,
         },
-      });      
+      });
       if (event) {
         return res.status(401).json({
           success: false,
@@ -48,15 +53,14 @@ export const IsPurchasesOpen = async (req: any, res: any, next: () => any) => {
       }
     }
   } catch (error) {
-    console.log("error " , error);
-    
+    console.log("error ", error);
+
     return res.status(401).json({
       success: false,
       message: "User login service is closed for now",
     });
   }
 };
-
 
 export const IsUserSignUpOpen = async (req: any, res: any, next: () => any) => {
   try {
@@ -104,11 +108,9 @@ export const IsUserLoginOpen = async (req: any, res: any, next: () => any) => {
     if (parsedSettings.success && parsedSettings.data.status === "open") {
       next();
     } else {
-      console.log("User login service is closed");
-      return res.status(401).json({
-        success: false,
-        message: "User login service is closed for now",
-      });
+      console.log("checking admin log in .....");
+      
+      await isAdmin(req,res,next ,"User login service is closed for now")
     }
   } catch (error) {
     return res.status(401).json({

@@ -1,8 +1,5 @@
-import { ResponseType } from "axios";
 import { verifyToken } from "./token";
-
 import prisma from "../db";
-import { Request, Response } from "express";
 
 export const userauthenticate = (req: any, res: any, next: () => any) => {
   let token = req.cookies.token;  
@@ -14,6 +11,7 @@ export const userauthenticate = (req: any, res: any, next: () => any) => {
   try {
     let user = verifyToken(token);
     req.user = user;
+    req.userRole = "User";
     next();
   } catch (error) {
     return res
@@ -22,34 +20,52 @@ export const userauthenticate = (req: any, res: any, next: () => any) => {
   }
 };
 
-
-export const isAdmin = async(req:any , res:any ,next: ()=> any) =>{
-  try {    
-    let userid = req?.user
-
-    if(!userid) {
-      return res
-       .status(401)
-       .json({ success: false, message: "Authentication required" });
+export const isAdmin = async (
+  req: any,
+  res: any,
+  next: () => any,
+  message = "Admin can access it!"
+) => {
+  try {
+    // with token
+    let user:any
+   
+    if(req.user){
+      user = await prisma.user.findFirst({
+        where: {
+          id: req.user,
+        },
+        select: {
+          id: true,
+          role: true,
+        },
+      });
+  
+    }else{
+      user = await prisma.user.findFirst({
+        where: {
+          email: req.body.email,
+        },
+        select: {
+          id: true,
+          role: true,
+        },
+      });
+  
     }
-    let user  = await prisma.user.findUnique({
-      where:{
-        id:userid
+    if (user) {
+      if (user.role == "Admin") {
+        req.userRole = "Admin";
+        next();
+      } else {
+        throw new Error(message);
       }
-    })
-
-    if (user){
-        if(user.role == "Admin"){ //// remove (user.role == "User") , unless it give access admin 's power to all user 
-          next();
-        }
-        else{
-
-          throw new Error("Admin can access it!")
-        }
+    } else {
+      return res
+        .status(401)
+        .json({ success: false, message: "Authentication required" });
     }
   } catch (error) {
-    return res
-      .status(401)
-      .json({ success: false, message: error });
+    return res.status(401).json({ success: false, message: message ?? "Authentication required" });
   }
-}
+};

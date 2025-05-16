@@ -1,3 +1,4 @@
+import { ExamType } from "@prisma/client";
 import z, { date } from "zod";
 
 export const singupZodSchema = z.object({
@@ -20,6 +21,7 @@ export const usertelegramidValidationZodSchema = z.object({
 
 export const validateTokenZodSchema = z.object({
   token: z.string(),
+  email: z.string().email().optional(),
 });
 
 export const forgotpasswordZodSchema = z.object({
@@ -64,5 +66,19 @@ export const ExamCreateInputeSchema = z.object({
   jointime:z.string().optional(),
   duration: z.string().optional(),
   date: z.string(),
+  
+});
+export const ExamCreateInputeSchema_tyoe_2 = z.object({
+  name: z.string(),
+  examname: z.string(),
+  category: z.string(),
+  exam_pattern_id: z.string(),
+  status: z.enum(["Private", "Public"]),
+  starttime:z.string(),
+  jointime:z.string().optional(),
+  duration: z.string().optional(),
+  date: z.string(),
+  mock_questions_set_id: z.string(), // new
+  examtype: z.nativeEnum(ExamType) // new
   
 });

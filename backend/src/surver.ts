@@ -20,6 +20,9 @@ import "../lib/cronJobs/index";
 import { verifyToken } from "../lib/token.js";
 import { URLSearchParams } from "url";
 import { adminRouter } from "./routes/adminRouter.js";
+import { IssueRouter } from "./routes/IssueRouter.js";
+import { eventRouter } from "./routes/eventRouter.js";
+import { paymentVerification } from "./controllers/payment.controller.js";
 export const razerpayinstance = new Razorpay({
   key_id: process.env.RAZERPAY_API_KEY as string,
   key_secret: process.env.RAZERPAY_API_SECRET,
@@ -34,7 +37,8 @@ interface AuthenticatedWebSocket extends WebSocket {
 }
 
 // app.set("trust proxy", "loopback");
-const trustProxy = process.env.TRUST_PROXY || 'false';
+const trustProxy = process.env.TRUST_PROXY || 1;
+
 app.set('trust proxy', trustProxy);
 
 const PORT = process.env.PORT || 3000;
@@ -63,24 +67,31 @@ app.use(
   })
 );
 
-// "https://api.razorpay.com"
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
+
+
 app.use("/api/v1/bulk", DataManageRouter); // bulk insert
+
+// inportent , it is veryfy and access survece 
+
+app.post("/api/v1/payment/paymentverification", paymentVerification);
+
 
 app.get("/health", (req, res) => {
   res.json({ message: "i'm healthy now after you ask" });
 });
 
 app.use("/api/v1/user", CommonuserRoutes);
-app.use("/api/v1/payment", paymentRouter);
 app.use("/api/v1/bot", botRouter);
 
 app.use(userauthenticate);
+app.use("/api/v1/payment", paymentRouter);
 app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/issue", IssueRouter);
+app.use("/api/v1/event", eventRouter);
 app.use("/api/v1/user", userRouter);
 
 app.use("/api/v1/metrix", metrixRoute);

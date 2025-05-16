@@ -313,15 +313,32 @@ export const useremailValidationTokenVerify = async (req: any, res: any) => {
     }
 
     let transtion = await prisma.$transaction(async (tx: any) => {
-      let { token } = data.data;
+      let { token} = data.data;
       let token_hash = Createhash(token);
 
-      let User = await tx.user.findUnique({
-        where: {
-          id: req.user,
-          forgotpasswordToken: token_hash,
-        },
-      });
+      let User:any       
+      if(req.user){
+        
+        User= await tx.user.findUnique({
+          where: {
+            id: req.user,
+            forgotpasswordToken: token_hash,
+          },
+        });
+      }
+      else{
+
+        console.log("email" , data.data.email);
+        
+        User= await tx.user.findUnique({
+          where: {
+            email: data.data.email,
+            forgotpasswordToken: token_hash,
+          },
+        });
+
+        req.user = User.id
+      }
 
       if (User) {
         if (User?.resetTokenExpires < new Date()) {
@@ -332,14 +349,14 @@ export const useremailValidationTokenVerify = async (req: any, res: any) => {
         }
       }
 
-      await tx.user.update({
-        where: {
-          id: req.user,
-        },
-        data: {
-          forgotpasswordToken: "-1",
-        },
-      });
+      // await tx.user.update({
+      //   where: {
+      //     id: req.user,
+      //   },
+      //   data: {
+      //     forgotpasswordToken: "-1",
+      //   },
+      // });
 
       await tx.verification.update({
         where: {
@@ -350,12 +367,16 @@ export const useremailValidationTokenVerify = async (req: any, res: any) => {
         },
       });
 
+      setCookie(res ,req.user)
+
       res.status(200).json({
         success: true,
         message: "user email validate  successfully ",
       });
     });
   } catch (error) {
+    console.log("-------------> " , error);
+    
     return res.status(404).json({
       success: false,
       message: "Server Error , Try again later ",
@@ -698,13 +719,15 @@ export const userSignin = async (req: any, res: any) => {
     }
 
     // send token
-
-    setCookie(res, User.id);
+    // if email token is veryfy then send token
+    // setCookie(res, User.id);
 
     res.status(200).json({
       success: true,
-      message: "user login successfully ",
+      message: "User needs to verify their email. ",
+      email:email
     });
+
   } catch (error) {
     console.log("Error in user sign in", error);
 

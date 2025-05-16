@@ -1,6 +1,6 @@
 
 import {Router} from 'express'
-import { createQuestion, getAllQuestions, getQuestion, getQuestionalldata, GetQuestionExplanation, QuestionProssingDataFetch } from "../controllers/question.controller"
+import { Create_Mock_question_set, createQuestion, getAllQuestions, getQuestion, getQuestionalldatabyID, GetQuestionExplanation, QuestionProssingDataFetch, updateQuestion } from "../controllers/question.controller"
 import { isAdmin } from '../../lib/auth'
 
 
@@ -11,10 +11,12 @@ questionRouter.post('/admin/create',isAdmin,createQuestion)
 
 questionRouter.get("/getquestionexplanation" ,GetQuestionExplanation)
 questionRouter.get("/:id" ,isAdmin,getQuestion)
-questionRouter.get("/alldata/:id" ,isAdmin,getQuestionalldata)
+questionRouter.get("/alldata/:id" ,isAdmin,getQuestionalldatabyID)
 questionRouter.get("/admin/allquestions" ,isAdmin,getAllQuestions)
 // new in development
 questionRouter.post("/admin/prossing" ,isAdmin,QuestionProssingDataFetch)
+questionRouter.put("/admin/update" ,isAdmin,updateQuestion)
+questionRouter.put("/admin/createmock" ,isAdmin,Create_Mock_question_set)
 
 // edit question 
 // delete question

@@ -2,10 +2,19 @@
 CREATE TYPE "UserRole" AS ENUM ('Admin', 'User', 'Bot');
 
 -- CreateEnum
-CREATE TYPE "eventType" AS ENUM ('NEW_QUIZ_RUN', 'CREATE_QUIZ_CONTEST', 'SEND_MESSAGE', 'CREATE_EXAM');
+CREATE TYPE "eventType" AS ENUM ('RUN_NEW_QUIZ', 'CREATE_QUIZ_CONTEST', 'SEND_MESSAGE', 'CREATE_EXAM');
 
 -- CreateEnum
 CREATE TYPE "eventRuns" AS ENUM ('ONE', 'DAILY', 'WEEKLY', 'MONTHLY');
+
+-- CreateEnum
+CREATE TYPE "IssueType" AS ENUM ('QUESTION', 'UI', 'EXAM', 'PAYMENT', 'LOGIN', 'SIGNUP');
+
+-- CreateEnum
+CREATE TYPE "primeStatus" AS ENUM ('none', 'bronze', 'silver', 'gold');
+
+-- CreateEnum
+CREATE TYPE "purchaseType" AS ENUM ('subcription', 'token');
 
 -- CreateEnum
 CREATE TYPE "ExamStage" AS ENUM ('Registration', 'Started', 'Ended');
@@ -17,10 +26,7 @@ CREATE TYPE "diffcultlevel" AS ENUM ('Easy', 'Medium', 'Hard');
 CREATE TYPE "check" AS ENUM ('Normal', 'Hybrid');
 
 -- CreateEnum
-CREATE TYPE "primeStatus" AS ENUM ('none', 'bronze', 'silver', 'gold');
-
--- CreateEnum
-CREATE TYPE "QuestionStatus" AS ENUM ('Processing', 'Done', 'Duplicate', 'Suspended');
+CREATE TYPE "Status" AS ENUM ('Created', 'Processing', 'Done', 'Duplicate', 'Suspended', 'Close');
 
 -- CreateEnum
 CREATE TYPE "CreationTypes" AS ENUM ('Processing', 'Done', 'Suspended');
@@ -32,10 +38,23 @@ CREATE TYPE "ExamStatus" AS ENUM ('Public', 'Private');
 CREATE TYPE "syllabusType" AS ENUM ('Generic', 'Syllabus');
 
 -- CreateEnum
-CREATE TYPE "examformate" AS ENUM ('Text', 'Image');
+CREATE TYPE "examformate" AS ENUM ('Text', 'Image', 'Code');
 
 -- CreateEnum
-CREATE TYPE "ExamType" AS ENUM ('Exam', 'Contest');
+CREATE TYPE "ExamType" AS ENUM ('Exam', 'Contest', 'Mock', 'Subject', 'Dpp', 'Quiz');
+
+-- CreateTable
+CREATE TABLE "copon" (
+    "id" TEXT NOT NULL,
+    "token" INTEGER NOT NULL DEFAULT 0,
+    "count" INTEGER NOT NULL DEFAULT 0,
+    "cupon" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "accessby" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "created_by" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "copon_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "botQuizConfig" (
@@ -115,6 +134,23 @@ CREATE TABLE "AppConfig" (
 );
 
 -- CreateTable
+CREATE TABLE "Issue" (
+    "id" TEXT NOT NULL,
+    "type" "IssueType" NOT NULL,
+    "note" TEXT,
+    "IssueDetails" JSONB NOT NULL,
+    "status" "Status" NOT NULL DEFAULT 'Created',
+    "upVote" INTEGER NOT NULL DEFAULT 0,
+    "downVote" INTEGER NOT NULL DEFAULT 0,
+    "priorityVote" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "creator_role" "UserRole" NOT NULL DEFAULT 'User',
+    "created_by" TEXT,
+
+    CONSTRAINT "Issue_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "events" (
     "id" TEXT NOT NULL,
     "type" "eventType" NOT NULL,
@@ -136,18 +172,54 @@ CREATE TABLE "EntryChargeList" (
     "exam" INTEGER,
     "contest" INTEGER,
     "quiz" INTEGER,
+    "mock" INTEGER,
+    "dpp" INTEGER,
+    "subject" INTEGER,
     "created_by" TEXT,
 
     CONSTRAINT "EntryChargeList_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
+CREATE TABLE "SubcriptionChargelist" (
+    "id" TEXT NOT NULL,
+    "gold" INTEGER,
+    "bronze" INTEGER,
+    "silver" INTEGER,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_by" TEXT,
+
+    CONSTRAINT "SubcriptionChargelist_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subcriptionOffers" (
+    "id" TEXT NOT NULL,
+    "markedPrice" INTEGER NOT NULL,
+    "discount" INTEGER NOT NULL,
+    "type" "purchaseType" NOT NULL,
+    "title" TEXT NOT NULL,
+    "price" INTEGER NOT NULL,
+    "token" INTEGER,
+    "time" TEXT,
+    "offerActive" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "offerInActive" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "btncolor" TEXT NOT NULL DEFAULT '',
+    "created_by" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "subcriptionOffers_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Order" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "razorpay_order_id" TEXT NOT NULL,
+    "order_id" TEXT NOT NULL,
+    "type" "purchaseType" NOT NULL DEFAULT 'token',
     "amount" INTEGER NOT NULL,
-    "token" INTEGER NOT NULL DEFAULT 0,
+    "token" INTEGER DEFAULT 0,
+    "subcription" TEXT DEFAULT '',
     "status" TEXT NOT NULL DEFAULT 'pending',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -192,6 +264,15 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "prime" (
+    "id" TEXT NOT NULL,
+    "status" "primeStatus" NOT NULL DEFAULT 'none',
+    "expiry" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "prime_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "verification" (
     "id" TEXT NOT NULL,
     "contactno" BOOLEAN NOT NULL DEFAULT false,
@@ -228,16 +309,6 @@ CREATE TABLE "progress" (
 );
 
 -- CreateTable
-CREATE TABLE "prime" (
-    "id" TEXT NOT NULL,
-    "userid" TEXT,
-    "status" "primeStatus" NOT NULL DEFAULT 'none',
-    "expiry" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "prime_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "blance" (
     "id" TEXT NOT NULL,
     "userid" TEXT NOT NULL,
@@ -263,6 +334,7 @@ CREATE TABLE "Questions" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "options" TEXT[],
+    "extra" JSONB,
     "ans" TEXT[],
     "formate" "examformate" NOT NULL DEFAULT 'Text',
     "category" TEXT NOT NULL,
@@ -275,7 +347,7 @@ CREATE TABLE "Questions" (
     "created_by" TEXT NOT NULL,
     "difficulty" "diffcultlevel" NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "status" "QuestionStatus" NOT NULL DEFAULT 'Processing',
+    "status" "Status" NOT NULL DEFAULT 'Processing',
     "weight" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Questions_pkey" PRIMARY KEY ("id")
@@ -316,6 +388,22 @@ CREATE TABLE "Exam_pattern" (
 );
 
 -- CreateTable
+CREATE TABLE "mock_questions_set" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "questions" JSONB,
+    "exam_pattern_id" TEXT DEFAULT 'no exam pattern seted',
+    "question_difficulty_weight" JSONB,
+    "question_subject_count" JSONB,
+    "question_part_count" JSONB,
+    "status" "CreationTypes" NOT NULL DEFAULT 'Processing',
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "mock_questions_set_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Exam" (
     "id" TEXT NOT NULL,
     "display_id" TEXT,
@@ -323,10 +411,11 @@ CREATE TABLE "Exam" (
     "examname" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "questions" JSONB NOT NULL,
+    "examtype" "ExamType" NOT NULL DEFAULT 'Exam',
+    "mockSetId" TEXT,
     "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "created_by" TEXT NOT NULL,
     "exam_pattern_id" TEXT NOT NULL,
-    "examtype" "ExamType" NOT NULL DEFAULT 'Exam',
     "ansid" TEXT NOT NULL,
     "status" "ExamStatus" NOT NULL DEFAULT 'Private',
     "creationstatus" "CreationTypes" NOT NULL DEFAULT 'Processing',
@@ -335,8 +424,29 @@ CREATE TABLE "Exam" (
     "duration" TEXT NOT NULL DEFAULT '02:00 h',
     "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "stage" "ExamStage" NOT NULL DEFAULT 'Registration',
+    "register_id" TEXT NOT NULL DEFAULT '',
 
     CONSTRAINT "Exam_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ContestRegister" (
+    "id" TEXT NOT NULL,
+    "examId" TEXT DEFAULT 'new_value_not_seted',
+    "count" INTEGER NOT NULL DEFAULT 0,
+    "users" TEXT[] DEFAULT ARRAY[]::TEXT[],
+
+    CONSTRAINT "ContestRegister_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AnsSheet" (
+    "id" TEXT NOT NULL,
+    "ans" JSONB,
+    "examId" TEXT,
+    "status" "CreationTypes" NOT NULL DEFAULT 'Processing',
+
+    CONSTRAINT "AnsSheet_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -368,28 +478,10 @@ CREATE TABLE "quiz" (
 CREATE TABLE "quizRegister" (
     "id" TEXT NOT NULL,
     "quiz_id" TEXT DEFAULT 'new_value_not_seted',
-    "users" TEXT[],
+    "count" INTEGER NOT NULL DEFAULT 0,
+    "users" TEXT[] DEFAULT ARRAY[]::TEXT[],
 
     CONSTRAINT "quizRegister_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "ContestRegister" (
-    "id" TEXT NOT NULL,
-    "examId" TEXT DEFAULT 'new_value_not_seted',
-    "users" TEXT[],
-
-    CONSTRAINT "ContestRegister_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "AnsSheet" (
-    "id" TEXT NOT NULL,
-    "ans" JSONB,
-    "examId" TEXT,
-    "status" "CreationTypes" NOT NULL DEFAULT 'Processing',
-
-    CONSTRAINT "AnsSheet_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -402,32 +494,8 @@ CREATE TABLE "UserAns" (
     CONSTRAINT "UserAns_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "Exam_user_attend_map" (
-    "id" TEXT NOT NULL,
-    "exam_id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
-
-    CONSTRAINT "Exam_user_attend_map_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Exam_pattern_map" (
-    "id" TEXT NOT NULL,
-    "exam_id" TEXT NOT NULL,
-    "exam_pattern_id" TEXT NOT NULL,
-
-    CONSTRAINT "Exam_pattern_map_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Exam_Questions_map" (
-    "id" TEXT NOT NULL,
-    "exam_id" TEXT NOT NULL,
-    "questions_ids" TEXT NOT NULL,
-
-    CONSTRAINT "Exam_Questions_map_pkey" PRIMARY KEY ("id")
-);
+-- CreateIndex
+CREATE UNIQUE INDEX "copon_id_key" ON "copon"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "botQuizConfig_id_key" ON "botQuizConfig"("id");
@@ -460,6 +528,9 @@ CREATE UNIQUE INDEX "score_user_id_exam_id_key" ON "score"("user_id", "exam_id")
 CREATE UNIQUE INDEX "AppConfig_feature_key" ON "AppConfig"("feature");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Issue_id_key" ON "Issue"("id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "events_id_key" ON "events"("id");
 
 -- CreateIndex
@@ -475,7 +546,13 @@ CREATE INDEX "events_run_at_idx" ON "events"("run_at");
 CREATE UNIQUE INDEX "EntryChargeList_id_key" ON "EntryChargeList"("id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Order_razorpay_order_id_key" ON "Order"("razorpay_order_id");
+CREATE UNIQUE INDEX "SubcriptionChargelist_id_key" ON "SubcriptionChargelist"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "subcriptionOffers_id_key" ON "subcriptionOffers"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Order_order_id_key" ON "Order"("order_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "payment_id_key" ON "payment"("id");
@@ -505,6 +582,9 @@ CREATE UNIQUE INDEX "User_verificationid_key" ON "User"("verificationid");
 CREATE UNIQUE INDEX "User_progressid_key" ON "User"("progressid");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "prime_id_key" ON "prime"("id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "verification_id_key" ON "verification"("id");
 
 -- CreateIndex
@@ -512,9 +592,6 @@ CREATE UNIQUE INDEX "progress_userid_key" ON "progress"("userid");
 
 -- CreateIndex
 CREATE INDEX "progress_userid_idx" ON "progress"("userid");
-
--- CreateIndex
-CREATE UNIQUE INDEX "prime_id_key" ON "prime"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "blance_id_key" ON "blance"("id");
@@ -538,6 +615,9 @@ CREATE UNIQUE INDEX "Syllabus_examname_key" ON "Syllabus"("examname");
 CREATE UNIQUE INDEX "Exam_pattern_id_key" ON "Exam_pattern"("id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "mock_questions_set_id_key" ON "mock_questions_set"("id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Exam_id_key" ON "Exam"("id");
 
 -- CreateIndex
@@ -545,6 +625,15 @@ CREATE UNIQUE INDEX "Exam_display_id_key" ON "Exam"("display_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Exam_ansid_key" ON "Exam"("ansid");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ContestRegister_id_key" ON "ContestRegister"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ContestRegister_examId_key" ON "ContestRegister"("examId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AnsSheet_id_key" ON "AnsSheet"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "quiz_id_key" ON "quiz"("id");
@@ -562,25 +651,7 @@ CREATE UNIQUE INDEX "quizRegister_id_key" ON "quizRegister"("id");
 CREATE UNIQUE INDEX "quizRegister_quiz_id_key" ON "quizRegister"("quiz_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ContestRegister_id_key" ON "ContestRegister"("id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "ContestRegister_examId_key" ON "ContestRegister"("examId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "AnsSheet_id_key" ON "AnsSheet"("id");
-
--- CreateIndex
 CREATE UNIQUE INDEX "UserAns_id_key" ON "UserAns"("id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Exam_user_attend_map_id_key" ON "Exam_user_attend_map"("id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Exam_pattern_map_id_key" ON "Exam_pattern_map"("id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Exam_Questions_map_id_key" ON "Exam_Questions_map"("id");
 
 -- AddForeignKey
 ALTER TABLE "leaderboard" ADD CONSTRAINT "leaderboard_exam_id_fkey" FOREIGN KEY ("exam_id") REFERENCES "Exam"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -613,6 +684,9 @@ ALTER TABLE "Questions" ADD CONSTRAINT "Questions_created_by_fkey" FOREIGN KEY (
 ALTER TABLE "Exam_pattern" ADD CONSTRAINT "Exam_pattern_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Exam" ADD CONSTRAINT "Exam_register_id_fkey" FOREIGN KEY ("register_id") REFERENCES "ContestRegister"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Exam" ADD CONSTRAINT "Exam_ansid_fkey" FOREIGN KEY ("ansid") REFERENCES "AnsSheet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -629,24 +703,3 @@ ALTER TABLE "quiz" ADD CONSTRAINT "quiz_ansid_fkey" FOREIGN KEY ("ansid") REFERE
 
 -- AddForeignKey
 ALTER TABLE "quiz" ADD CONSTRAINT "quiz_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ContestRegister" ADD CONSTRAINT "ContestRegister_examId_fkey" FOREIGN KEY ("examId") REFERENCES "Exam"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Exam_user_attend_map" ADD CONSTRAINT "Exam_user_attend_map_exam_id_fkey" FOREIGN KEY ("exam_id") REFERENCES "Exam"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Exam_user_attend_map" ADD CONSTRAINT "Exam_user_attend_map_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Exam_pattern_map" ADD CONSTRAINT "Exam_pattern_map_exam_id_fkey" FOREIGN KEY ("exam_id") REFERENCES "Exam"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Exam_pattern_map" ADD CONSTRAINT "Exam_pattern_map_exam_pattern_id_fkey" FOREIGN KEY ("exam_pattern_id") REFERENCES "Exam_pattern"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Exam_Questions_map" ADD CONSTRAINT "Exam_Questions_map_exam_id_fkey" FOREIGN KEY ("exam_id") REFERENCES "Exam"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Exam_Questions_map" ADD CONSTRAINT "Exam_Questions_map_questions_ids_fkey" FOREIGN KEY ("questions_ids") REFERENCES "Questions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,9 +1,16 @@
 import { Router } from "express";
-import { paymentVerification } from "../controllers/payment.controller";
+import { checkout, checkoutSubcription, getSubcriptionAndOffer, paymentVerification } from "../controllers/payment.controller";
+import { IsPurchasesOpen } from "../../lib/Security";
 
 export const paymentRouter = Router();
 
-paymentRouter.post("/paymentverification", paymentVerification);
+
+paymentRouter.get("/getkey",IsPurchasesOpen, (req: any, res: any) =>
+  res.status(200).json({ key: process.env.RAZERPAY_API_KEY })
+);
+paymentRouter.get("/offer" , getSubcriptionAndOffer)
+paymentRouter.post("/Checkout",IsPurchasesOpen, checkout);
+paymentRouter.post("/subscriptioncheckout",IsPurchasesOpen, checkoutSubcription);
 
 const allowedIPs = [
   "52.66.75.174",
@@ -28,15 +35,3 @@ function checkIP(req: any, res: any, next: () => any) {
   }
 }
 
-// for rate limiting
-
-// import rateLimit from "express-rate-limit";
-
-// const paymentLimiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   max: 10, // Limit each IP to 10 requests per windowMs
-// });
-
-// app.post("/verify-payment", paymentLimiter, (req, res) => {
-//   // Payment verification logic
-// });

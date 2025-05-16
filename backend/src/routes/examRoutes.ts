@@ -8,7 +8,7 @@ import {
   getSyllabus,
   getAvalibleExamPattern,
   CreateExam,
-  CreateContest,
+  // CreateContest,
   deletexams,
   getExams,
   examJoinRequestProcess,
@@ -21,6 +21,7 @@ import {
   getExamAnsForAnalisys,
   getUserAnsSetOfAnExam,
   getExamsbyid,
+  CreateExam_type,
 } from "../controllers/exam.controller";
 import { isAdmin } from "../../lib/auth";
 
@@ -47,7 +48,8 @@ examRouter.get("/avalibleExamPattern", isAdmin, getAvalibleExamPattern); // for 
 examRouter.post("/createpattern", isAdmin, CreateNewExamPattern);
 examRouter.post("/createsyllabus", isAdmin, CreateSyllabus);
 examRouter.post("/create", isAdmin, CreateExam);
-examRouter.post("/create/contest", isAdmin, CreateContest);
+examRouter.post("/createv2", isAdmin, CreateExam_type);   //----------------------> working
+// examRouter.post("/create/contest", isAdmin, CreateContest);
 
 // leader board of an exam
 examRouter.get("/usermetadataforanexam", getUserMetaDataforAnExam)

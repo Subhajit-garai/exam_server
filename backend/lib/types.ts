@@ -39,16 +39,20 @@ export type Task =
       part: string;
       ans: string[];
       id: string;
-      ismultiple:boolean;
-
+      ismultiple: boolean;
     }
   | {
-    type: "createQuiz";
-    cburl:string,
-    chatid: number,
-    userid: number,
-    topics: string[],
-    totalQuetions: number,
-    nextQuestionTime: number,
-    quizOpenFor: number,
-  }
+      type: "createQuiz";
+      cburl: string;
+      chatid: number;
+      userid: number;
+      topics: string[];
+      totalQuetions: number;
+      nextQuestionTime: number;
+      quizOpenFor: number;
+    }
+  | {
+      type: "CreateDpp";
+      topics: string[];
+      totalQuetions: number;
+    };

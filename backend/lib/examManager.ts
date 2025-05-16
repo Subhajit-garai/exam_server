@@ -132,6 +132,8 @@ export class examManager {
     // this added into BE ceche --> change it to redis
     this.questionsids[examid] = partinfo;
 
+    // question data which are send / cache in redis
+
     if (allids.length > 0) {
       let res = await prisma.questions.findMany({
         where: {
@@ -143,7 +145,10 @@ export class examManager {
           id: true,
           title: true,
           options: true,
-          is_multiple_ans:true
+          is_multiple_ans:true,
+          extra:true,
+          formate:true,
+          topic:true,
         },
       });
 

@@ -11,6 +11,17 @@ datasource db {
 
 // new table 
 
+model copon {
+  id       String   @id @unique @default(cuid())
+  token    Int      @default(0) // if offer 
+  count    Int      @default(0)
+  cupon    String[] @default([])
+  accessby String[] @default([])
+
+  created_by String?
+  created_at DateTime @default(now())
+}
+
 model botQuizConfig {
   id String @id @unique @default(cuid())
 
@@ -111,9 +122,10 @@ model AppConfig {
 }
 
 enum eventType {
-  NEW_QUIZ_RUN
+  RUN_NEW_QUIZ
   CREATE_QUIZ_CONTEST
   SEND_MESSAGE
+  CREATE_DPP
   CREATE_EXAM
 }
 
@@ -122,6 +134,30 @@ enum eventRuns {
   DAILY
   WEEKLY
   MONTHLY
+}
+
+enum IssueType {
+  QUESTION
+  UI
+  EXAM
+  PAYMENT
+  LOGIN
+  SIGNUP
+}
+
+model Issue {
+  id           String    @id @unique @default(cuid())
+  type         IssueType
+  note         String?
+  IssueDetails Json
+  status       Status    @default(Created)
+  upVote       Int       @default(0)
+  downVote     Int       @default(0)
+  priorityVote Int       @default(0)
+
+  created_at   DateTime @default(now())
+  creator_role UserRole @default(User)
+  created_by   String?
 }
 
 model events {
@@ -147,18 +183,61 @@ model EntryChargeList {
   exam       Int?
   contest    Int?
   quiz       Int?
+  mock       Int?
+  dpp        Int?
+  subject    Int?
   created_by String?
 }
 
+enum primeStatus {
+  none
+  bronze
+  silver
+  gold
+}
+
+model SubcriptionChargelist {
+  id         String   @id @unique @default(cuid())
+  gold       Int?
+  bronze     Int?
+  silver     Int?
+  created_at DateTime @default(now())
+  created_by String?
+}
+
+enum purchaseType {
+  subcription
+  token
+}
+
+model subcriptionOffers {
+  id            String       @id @unique @default(cuid())
+  markedPrice   Int
+  discount      Int //  40 -> 40 % off /discount
+  type          purchaseType
+  title         String
+  price         Int
+  token         Int? // if offer 
+  time          String? // if subcription
+  offerActive   String[]     @default([])
+  offerInActive String[]     @default([])
+  btncolor      String       @default("")
+
+  created_by String?
+  created_at DateTime @default(now())
+}
+
 model Order {
-  id                String   @id @default(cuid())
-  userId            String // Link to your user model
-  razorpay_order_id String   @unique
-  amount            Int
-  token             Int      @default(0)
-  status            String   @default("pending") // Track order status
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id          String       @id @default(cuid())
+  userId      String // Link to your user model
+  order_id    String       @unique // if it is payment then it store rezorpay_order_id
+  type        purchaseType @default(token)
+  amount      Int
+  token       Int?         @default(0)
+  subcription String?      @default("")
+  status      String       @default("pending") // Track order status
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   User User @relation(fields: [userId], references: [id])
 }
@@ -185,7 +264,6 @@ model User {
   email               String   @unique
   contactno           String?  @default("0000000000") // only india
   password            String
-  primeid             String   @unique
   telegramid          String?  @unique
   verificationid      String?  @unique
   progressid          String?  @unique
@@ -194,26 +272,27 @@ model User {
   forgotpasswordToken String? // forget password
   resetTokenExpires   DateTime @default(now()) // forget password
   accesstoken         String[] @default([]) // only one device access token
-
-  Exam                 Exam[]
-  Exam_pattern         Exam_pattern[]
-  Exam_user_attend_map Exam_user_attend_map[]
-  Questions            Questions[]
-  prime                prime                  @relation(fields: [primeid], references: [id])
-  telegram             telegram?              @relation(fields: [telegramid], references: [id])
-  verification         verification?          @relation(fields: [verificationid], references: [id])
-  blance               blance?
-  Order                Order[]
-  payment              payment[]
-  leaderboard          leaderboard[]
-  quiz                 quiz[]
+  Exam         Exam[]
+  Exam_pattern Exam_pattern[]
+  Questions    Questions[]
+  telegram     telegram?      @relation(fields: [telegramid], references: [id])
+  verification verification?  @relation(fields: [verificationid], references: [id])
+  blance       blance?
+  Order        Order[]
+  payment      payment[]
+  leaderboard  leaderboard[]
+  quiz         quiz[]
+  prime        prime?
 }
 
-// model UserStats {  // example for if i  want to create a grph of user join and left
-//   id        String   @id @unique @default(cuid())
-//   userId    String
-//   join_at   DateTime @default(now()) // Partitioning column
-// }
+model prime {
+  id     String      @id @unique @default(cuid())
+  status primeStatus @default(none)
+  userid String      @unique
+  expiry DateTime    @default(now())
+  User   User        @relation(fields: [userid], references: [id])
+}
+
 model verification {
   id        String  @id @unique @default(cuid())
   contactno Boolean @default(false)
@@ -244,15 +323,7 @@ model progress {
   lastQuizRank    Int      @default(0)
   time            DateTime @default(now()) @db.Timestamptz(6)
 
-  @@index([userid]) // Faster queries by user
-}
-
-model prime {
-  id     String      @id @unique @default(cuid())
-  userid String?
-  status primeStatus @default(none)
-  expiry DateTime    @default(now())
-  User   User?
+  // @@index([userid]) // Faster queries by user
 }
 
 model blance {
@@ -273,25 +344,25 @@ model telegram {
 }
 
 model Questions {
-  id                 String               @id @unique @default(cuid())
-  title              String
-  options            String[]
-  ans                String[]
-  formate            examformate          @default(Text)
-  category           String
-  sub_topic          String               @default("none")
-  history            String[]             @default([""])
-  topic              String
-  explanation        String?              @default("no explanation added")
-  links              String[]             @default([""])
-  is_multiple_ans    Boolean              @default(false)
-  created_by         String
-  difficulty         diffcultlevel
-  created_at         DateTime             @default(now())
-  status             QuestionStatus       @default(Processing)
-  Exam_Questions_map Exam_Questions_map[]
-  weight             Int                  @default(0)
-  User               User                 @relation(fields: [created_by], references: [id])
+  id              String        @id @unique @default(cuid())
+  title           String
+  options         String[]
+  extra           Json? // { "code":{void main (0) {}}}
+  ans             String[]
+  formate         examformate   @default(Text)
+  category        String
+  sub_topic       String        @default("none")
+  history         String[]      @default([""])
+  topic           String
+  explanation     String?       @default("no explanation added")
+  links           String[]      @default([""])
+  is_multiple_ans Boolean       @default(false)
+  created_by      String
+  difficulty      diffcultlevel
+  created_at      DateTime      @default(now())
+  status          Status        @default(Processing)
+  weight          Int           @default(0)
+  User            User          @relation(fields: [created_by], references: [id])
 }
 
 model Syllabus {
@@ -303,55 +374,104 @@ model Syllabus {
 }
 
 model Exam_pattern {
-  id               String             @id @unique @default(cuid())
-  title            String?
-  format           examformate        @default(Text)
-  examname         String
-  category         String
-  syllabus         syllabusType       @default(Syllabus)
-  topics           String[]
-  difficulty       diffcultlevel      @default(Easy)
-  part             Boolean?
-  checkbox         Boolean?
-  part_Count       Int                @default(1)
-  total_questions  Int[]
-  check            check?
-  marks_values     Int[]
-  neg_values       Int[]
-  is_multiple_ans  Int[]              @default([0, 0]) // 0 mean false 1 mean it is multiple value ans
-  created_by       String
-  Exam             Exam[]
-  User             User               @relation(fields: [created_by], references: [id])
-  Exam_pattern_map Exam_pattern_map[]
+  id              String        @id @unique @default(cuid())
+  title           String?
+  format          examformate   @default(Text) // it not needed 
+  examname        String
+  category        String
+  syllabus        syllabusType  @default(Syllabus)
+  topics          String[]
+  difficulty      diffcultlevel @default(Easy)
+  part            Boolean?
+  checkbox        Boolean?
+  part_Count      Int           @default(1)
+  total_questions Int[]
+  check           check?
+  marks_values    Int[]
+  neg_values      Int[]
+  is_multiple_ans Int[]         @default([0, 0]) // 0 mean false 1 mean it is multiple value ans
+  created_by      String
+  Exam            Exam[]
+  User            User          @relation(fields: [created_by], references: [id])
 }
 
+model mock_questions_set {
+  id              String  @id @unique @default(cuid())
+  name            String
+  description     String
+  questions       Json?
+  exam_pattern_id String? @default("no exam pattern seted")
+
+  question_difficulty_weight Json? // { "easy": 0, "medium": 0, "hard": 0 }
+  question_subject_count     Json? // { "OS": 0, "DBMS": 0, "C": 0 }
+  question_part_count        Json? // { "part1": 0, "part2": 0 }
+  status                     CreationTypes @default(Processing)
+  created_at                 DateTime      @default(now())
+}
+
+// model dpp {
+//   id             String   @id @default(cuid())
+//   title          String
+//   examname       String
+//   category       String
+//   total_question Int      @default(5)
+//   topics         String[]
+//   testtype       TestType @default(Dpp)
+
+//   questions      Json
+//   created_by     String
+//   start_time     String        @default("10 h")
+//   date           DateTime      @default(now())
+//   end_time       String        @default("10 h")
+//   status         ExamStatus    @default(Public)
+//   creationstatus CreationTypes @default(Processing)
+
+//   created_at DateTime @default(now())
+// }
+
 model Exam {
-  id                   String                 @id @unique @default(cuid())
-  display_id           String?                @unique @default(nanoid(6))
-  name                 String?                @default("No name")
-  examname             String
-  category             String
-  questions            Json
-  created_at           DateTime?              @default(now())
-  created_by           String
-  exam_pattern_id      String
-  examtype             ExamType               @default(Exam)
-  ansid                String                 @unique
-  status               ExamStatus             @default(Private)
-  creationstatus       CreationTypes          @default(Processing)
-  starttime            String?                @default("08:00 pm") //or no limit // -> it start time , at this time you can join the exam , and join process open starttime + jointime 
-  jointime             String?                @default("00:15 m") // Open HH:MM:SS
-  duration             String                 @default("02:00 h") // HH:MM   it is time  user can give or mark ans  , ans accept onlt starttime+jointime+timelimit+ 00:10 min
-  date                 DateTime               @default(now())
-  stage                ExamStage              @default(Registration)
-  ContestRegister      ContestRegister?
-  AnsSheet             AnsSheet               @relation(fields: [ansid], references: [id])
-  User                 User                   @relation(fields: [created_by], references: [id])
-  exam_pattern         Exam_pattern           @relation(fields: [exam_pattern_id], references: [id])
-  Exam_Questions_map   Exam_Questions_map[]
-  Exam_pattern_map     Exam_pattern_map[]
-  Exam_user_attend_map Exam_user_attend_map[]
-  leaderboard          leaderboard[]
+  id              String          @id @unique @default(cuid())
+  display_id      String?         @unique @default(nanoid(6))
+  name            String?         @default("No name")
+  examname        String
+  category        String
+  questions       Json
+  examtype        ExamType        @default(Exam)
+  mockSetId       String? // if examtype is Mock then it get mockset questions 
+  created_at      DateTime?       @default(now())
+  created_by      String
+  exam_pattern_id String
+  ansid           String          @unique
+  status          ExamStatus      @default(Private)
+  creationstatus  CreationTypes   @default(Processing)
+  starttime       String?         @default("08:00 pm") //or no limit // -> it start time , at this time you can join the exam , and join process open starttime + jointime 
+  jointime        String?         @default("00:15 m") // Open HH:MM:SS
+  duration        String          @default("02:00 h") // HH:MM   it is time  user can give or mark ans  , ans accept onlt starttime+jointime+timelimit+ 00:10 min
+  date            DateTime        @default(now())
+  stage           ExamStage       @default(Registration)
+  register_id     String          @default("")
+  ContestRegister ContestRegister @relation(fields: [register_id], references: [id])
+  AnsSheet        AnsSheet        @relation(fields: [ansid], references: [id])
+  User            User            @relation(fields: [created_by], references: [id])
+  exam_pattern    Exam_pattern    @relation(fields: [exam_pattern_id], references: [id])
+  leaderboard     leaderboard[]
+}
+
+model ContestRegister {
+  id     String   @id @unique @default(cuid())
+  examId String?   @default("new_value_not_seted")
+  count  Int      @default(0)
+  users  String[] @default([])
+  Exam   Exam[]
+}
+
+model AnsSheet {
+  id     String        @id @unique @default(cuid())
+  ans    Json?
+  examId String?
+  status CreationTypes @default(Processing)
+  Exam   Exam?
+  quiz   quiz?
 }
 
 model quiz {
@@ -388,24 +508,9 @@ enum ExamStage {
 model quizRegister {
   id      String   @id @unique @default(cuid())
   quiz_id String?  @unique @default("new_value_not_seted")
-  users   String[]
+  count   Int      @default(0)
+  users   String[] @default([])
   quiz    quiz[]
-}
-
-model ContestRegister {
-  id     String   @id @unique @default(cuid())
-  examId String?  @unique @default("new_value_not_seted")
-  users  String[]
-  exam   Exam?    @relation(fields: [examId], references: [id])
-}
-
-model AnsSheet {
-  id     String        @id @unique @default(cuid())
-  ans    Json?
-  examId String?
-  status CreationTypes @default(Processing)
-  Exam   Exam?
-  quiz   quiz?
 }
 
 model UserAns {
@@ -413,30 +518,6 @@ model UserAns {
   ans    Json
   examId String
   userId String
-}
-
-model Exam_user_attend_map {
-  id      String @id @unique @default(cuid())
-  exam_id String
-  user_id String
-  exam    Exam   @relation(fields: [exam_id], references: [id])
-  user    User   @relation(fields: [user_id], references: [id])
-}
-
-model Exam_pattern_map {
-  id              String       @id @unique @default(cuid())
-  exam_id         String
-  exam_pattern_id String
-  exam            Exam         @relation(fields: [exam_id], references: [id])
-  exam_pattern    Exam_pattern @relation(fields: [exam_pattern_id], references: [id])
-}
-
-model Exam_Questions_map {
-  id            String    @id @unique @default(cuid())
-  exam_id       String
-  questions_ids String
-  exam          Exam      @relation(fields: [exam_id], references: [id])
-  questions     Questions @relation(fields: [questions_ids], references: [id])
 }
 
 enum diffcultlevel {
@@ -450,18 +531,13 @@ enum check {
   Hybrid
 }
 
-enum primeStatus {
-  none
-  bronze
-  silver
-  gold
-}
-
-enum QuestionStatus {
+enum Status {
+  Created
   Processing
   Done
   Duplicate
   Suspended
+  Close
 }
 
 enum CreationTypes {
@@ -483,9 +559,20 @@ enum syllabusType {
 enum examformate {
   Text
   Image
+  Code
 }
 
 enum ExamType {
-  Exam
-  Contest
+  Exam // dynamic exam set 
+  Contest // compeations
+  Mock // for fixed question set like 2024 jeca set 
+  Subject // for topic 30 question
+  Dpp
+  Quiz
 }
+
+// enum TestType {
+//   Dpp // dynamic exam set 
+//   Subject // for topic 30 question 
+//   Quiz
+// }

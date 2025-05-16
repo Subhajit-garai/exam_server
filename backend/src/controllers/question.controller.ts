@@ -1,8 +1,10 @@
 import { diffcultlevel } from "@prisma/client";
 import prisma from "../../db/index";
 import {
+  mockQuestionSetZodSchema,
   questionInputZodSchema,
   QuestionProssingDataFetchZodSchema,
+  questionUpdateZodSchema,
 } from "../zod/question.zod";
 
 export const test = async (req: any, res: any) => {
@@ -10,6 +12,95 @@ export const test = async (req: any, res: any) => {
     res.json({ success: true, message: "message", data: "data" });
   } catch (error) {
     console.log("Error in metrix --->", error);
+  }
+};
+export const Create_Mock_question_set = async (req: any, res: any) => {
+  try {
+    let data = mockQuestionSetZodSchema.safeParse(req.body);
+    if (!data.success) {
+      console.log("data.error", data.error);
+
+      return res.status(401).json({
+        success: false,
+        message: "inpute format/value invalid ",
+      });
+    }
+
+    console.log("req.body", req.body);
+    console.log("data", data.data);
+
+    res.json({ success: true, message: "message", data: "data" });
+  } catch (error) {
+    console.log("Error in metrix --->", error);
+  }
+};
+
+export const updateQuestion = async (req: any, res: any) => {
+  try {
+    let user = await prisma.user.findUnique({
+      where: {
+        id: req.user,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    console.log("req.body", req.body);
+
+    let data = questionUpdateZodSchema.safeParse(req.body);
+    if (!data.success) {
+      console.log("data.error", data.error);
+
+      return res.status(401).json({
+        success: false,
+        message: "inpute format/value invalid ",
+      });
+    }
+    // let {
+    //   id,
+    //   title,
+    //   options,
+    //   ans,
+    //   formate,
+    //   category,
+    //   topic,
+    //   difficulty,
+    //   explanation,
+    // } = data.data;
+
+    console.log("date", Date.now().toString());
+
+    let question = await prisma.questions.update({
+      where: {
+        id: req.params.id,
+      },
+      data: {
+        ...data.data,
+        ...(data.data.extra ? { extra: data.data.extra } : {}),
+      },
+    });
+
+    if (!question) {
+      return res.status(400).json({
+        message: "Question not updated ",
+      });
+    }
+
+    res.status(200).json({
+      message: "Question updation successfull",
+    });
+  } catch (error) {
+    console.log("error : ", error);
+
+    res.status(500).json({
+      error: error,
+      message: "surver error",
+    });
   }
 };
 
@@ -34,10 +125,9 @@ export const QuestionProssingDataFetch = async (req: any, res: any) => {
         ...(difficulty && { difficulty: difficulty }),
         ...(status && { status: status }),
       },
-      take:1
+      take: 1,
     });
-    if(data){
-
+    if (data) {
       res.json({ success: true, message: "message", data: data });
     }
   } catch (error) {
@@ -55,7 +145,7 @@ export const GetQuestionExplanation = async (req: any, res: any) => {
         explanation: true,
         links: true,
       },
-    });    
+    });
     res.json({ success: true, message: "Question Explanation", data: data });
   } catch (error) {
     console.log("Error in metrix --->", error);
@@ -189,7 +279,8 @@ export const getQuestion = async (req: any, res: any) => {
     });
   }
 };
-export const getQuestionalldata = async (req: any, res: any) => {
+
+export const getQuestionalldatabyID = async (req: any, res: any) => {
   try {
     let QuestionId = req.params.id;
     let responce = await prisma.questions.findUnique({
@@ -216,16 +307,43 @@ export const getQuestionalldata = async (req: any, res: any) => {
 };
 export const getAllQuestions = async (req: any, res: any) => {
   try {
-    let responce = await prisma.questions.findMany({});
+    let query = req.query;
+
+    const pageNumber = parseInt(query.page) || 1;
+    const questionsPerPage = 10;
+
+    let responce = await prisma.questions.findMany({
+      where: {
+        ...(query.category && { category: query.category.toUpperCase() }),
+        ...(query.topic && { topic: query.topic.toUpperCase() }),
+        ...(query.difficulty && { difficulty: query.difficulty }),
+        ...(query.formate && { formate: query.formate }),
+        ...(query.status && { status: query.status }),
+      },
+      skip: (pageNumber - 1) * questionsPerPage,
+      take: questionsPerPage,
+      orderBy: { id: "asc" },
+    });
+
     if (!responce) {
       return res.status(400).json({
         message: "questions not found",
       });
     }
 
+    const total = await prisma.questions.count({
+      where: {
+        ...(query.category && { category: query.category.toUpperCase() }),
+        ...(query.topic && { topic: query.topic.toUpperCase() }),
+        ...(query.difficulty && { difficulty: query.difficulty }),
+        ...(query.formate && { formate: query.formate }),
+        ...(query.status && { status: query.status }),
+      },
+    });
+
     res.status(200).json({
       success: true,
-      data: responce,
+      data: {questions: responce, total: total },
     });
   } catch (error) {
     res.status(500).json({

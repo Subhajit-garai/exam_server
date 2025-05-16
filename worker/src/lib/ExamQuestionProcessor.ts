@@ -7,7 +7,11 @@ interface QuestionsId {
   topic: string;
   ids: string[];
 }
-export type QuestionsIDS_type = QuestionsId[];
+// export type QuestionsIDS_type = QuestionsId[];
+export type QuestionsIDS_type = {
+  normal: QuestionsId[];
+  multipleAns: QuestionsId[];
+};
 
 export class ExamQuestionProcessor {
   Questions: QuestionsIDS_type;
@@ -17,7 +21,10 @@ export class ExamQuestionProcessor {
   private static instance: ExamQuestionProcessor;
 
   private constructor(refreshtime: number) {
-    this.Questions = [];
+    this.Questions = {
+      normal: [],
+      multipleAns: [],
+    };
     // this.totalQusestions = 0;
     // this.subject = [];
     this.refreshtime = refreshtime;
@@ -50,15 +57,30 @@ export class ExamQuestionProcessor {
 
   private async updateQuestionIds() {
     try {
-      let topicQuestions = await this.prisma
-        .$queryRaw`SELECT topic, ARRAY_AGG(id) AS ids FROM "Questions"  GROUP BY topic; `;
-      let responce: QuestionsIDS_type = await topicQuestions;
-      if (!responce) {
-        responce = [];
+      let topicNormalAnsQuestions = await this.prisma
+        .$queryRaw`SELECT topic, ARRAY_AGG(id) AS ids FROM "Questions"  WHERE is_multiple_ans = false AND status = 'Done' GROUP BY topic; `;
+      let topicMultiplaAnsQuestions = await this.prisma
+        .$queryRaw`SELECT topic, ARRAY_AGG(id) AS ids FROM "Questions"  WHERE is_multiple_ans = true AND status = 'Done' GROUP BY topic; `;
+
+      let NormalAnsQuestions: QuestionsId[] = await topicNormalAnsQuestions;
+      let MultiplaAnsQuestions: QuestionsId[] = await topicMultiplaAnsQuestions;
+
+      if (!NormalAnsQuestions) {
+        NormalAnsQuestions = [];
       }
-      this.Questions = responce;
+      if (!MultiplaAnsQuestions) {
+        MultiplaAnsQuestions = [];
+      }
+
+      this.Questions.multipleAns = MultiplaAnsQuestions;
+      this.Questions.normal = NormalAnsQuestions;
+
+      console.log(" normal " ,  NormalAnsQuestions.length);
+      console.log(" multipleAns " , MultiplaAnsQuestions.length);
+      
     } catch (error) {
       console.log("Error while Fatching Questions");
+      console.log(error);
     }
   }
 
@@ -177,45 +199,93 @@ export class ExamQuestionProcessor {
 
   selectQuestions = async (
     totalQusestions: number,
-    subject: string[]
+    subject: string[],
+    is_multiple_ans: any
   ): Promise<SelectQuestion_type | null> => {
     try {
+      // console.log('is_multiple_ans' , is_multiple_ans);  ok  1,0
+
       subject = subject.map((sub: string) => sub.toUpperCase());
-      let questionset = this.selecteQuestionsNumber(totalQusestions, subject);      
+      let questionset = this.selecteQuestionsNumber(totalQusestions, subject); //questionset  { OS: 2, DBMS: 2, UNIX: 1 }
+
+      // console.log("questionset", questionset);
+      // console.log("subject", subject);
+
       this.count = 0; //debug  how many loop it takes to get the result
       let selectedElements: SelectQuestion_type = {};
 
-      // console.log("--------> questionset count" , questionset);
-      
-
-      await new Promise<void>((resolve) => {
+      await new Promise<void>((resolve,reject) => {
+        let count = 10;
         const interval = setInterval(() => {
-          if (this.Questions.length > 0) {
+          if (
+            this.Questions.normal.length > 0 &&
+            this.Questions.multipleAns.length > 0
+          ) {
             clearInterval(interval); // Stop the interval when the condition is met
             resolve(); // Resolve the promise
+          } else {
+            count--;
+            if (!count) {
+              console.log("run");
+              if (
+                this.Questions.normal.length > 0 ||
+                this.Questions.multipleAns.length > 0
+              ) {
+                clearInterval(interval); // Stop the interval when the condition is met
+                resolve();
+              }else{
+                reject(new Error("Questions not found in DB"));
+              }
+            }
           }
         }, 1000); // Check every 1 second
       });
 
-      if (Object.keys(questionset).length <= this.Questions.length) {
-        this.Questions.forEach((topic) => {
-          Object.keys(questionset).map((selectedTopic) => {
-            if (topic.topic == selectedTopic) {
-              let shuffled = [...topic.ids].sort(() => Math.random() - 0.5); // Shuffle elements
-              shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
-              shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
-              selectedElements[topic.topic] = [
-                ...shuffled.slice(0, questionset[topic.topic]),
-              ];              
-            }
+      // select question id
+
+      if (is_multiple_ans) {
+        let Questions = this.Questions.multipleAns; // multiple ans  questions
+
+        if (Object.keys(questionset).length <= Questions.length) {
+          Questions.forEach((topic) => {
+            Object.keys(questionset).map((selectedTopic) => {
+              if (topic.topic == selectedTopic) {
+                let shuffled = [...topic.ids].sort(() => Math.random() - 0.5); // Shuffle elements
+                shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
+                shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
+                selectedElements[topic.topic] = [
+                  ...shuffled.slice(0, questionset[topic.topic]),
+                ];
+              }
+            });
           });
-        });
-        // console.log("inside" ,selectedElements);
+        } else {
+          throw new Error(
+            "Given some Subject isn't Supported  in multiple_ans question selection"
+          );
+        }
       } else {
-        throw new Error("Given some Subject isn't Supported ");
+        let Questions = this.Questions.normal; // normal ans  questions
+        if (Object.keys(questionset).length <= Questions.length) {
+          Questions.forEach((topic) => {
+            Object.keys(questionset).map((selectedTopic) => {
+              if (topic.topic == selectedTopic) {
+                let shuffled = [...topic.ids].sort(() => Math.random() - 0.5); // Shuffle elements
+                shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
+                shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
+                selectedElements[topic.topic] = [
+                  ...shuffled.slice(0, questionset[topic.topic]),
+                ];
+              }
+            });
+          });
+        } else {
+          throw new Error(
+            "Given some Subject isn't Supported  in question selection"
+          );
+        }
       }
-      // console.log("selectedElements" , selectedElements);
-      
+
       return selectedElements;
     } catch (error) {
       console.log("Error in selecteQuestionsNumber fn", error);
@@ -237,7 +307,9 @@ export class ExamQuestionProcessor {
         console.log("exampattern is ", data);
         return data.exam_pattern_id;
       } else {
-        throw new Error("data not found");
+        // console.log("examid", examid);
+        // console.log("data", data);
+        // throw new Error("exampattern id not found");
       }
     } catch (error) {
       console.log(error);
@@ -253,7 +325,7 @@ export class ExamQuestionProcessor {
       if (data) {
         return data;
       } else {
-        throw new Error("data not found");
+        throw new Error(" exampattern data not found");
       }
     } catch (error) {
       console.log(error);
@@ -293,6 +365,27 @@ export class ExamQuestionProcessor {
     }
   }
 
+  async getQuestions(ids: string[]) {
+    try {
+      let res = await this.prisma.questions.findMany({
+        where: {
+          id: { in: ids }, // Match all question IDs
+        },
+        select: {
+          ans: true, // Only retrieve the 'answers' field
+          id: true,
+          topic: true,
+          explanation: true,
+          title: true,
+          options: true,
+        },
+      });
+
+      return res;
+    } catch (error) {
+      console.log(error);
+    }
+  }
   async getQuestionsAns(ids: string[]) {
     try {
       let res = await this.prisma.questions.findMany({
@@ -301,9 +394,8 @@ export class ExamQuestionProcessor {
         },
         select: {
           ans: true, // Only retrieve the 'answers' field
-          id: true, 
-          topic:true
-
+          id: true,
+          topic: true,
         },
       });
 
@@ -324,7 +416,7 @@ export class ExamQuestionProcessor {
           ans: true,
         },
       });
-      
+
       return ansset.ans.flat();
     } catch (error) {
       console.log("error in examprocesser -> getExamsAnsSet ", error);
@@ -341,19 +433,19 @@ export class ExamQuestionProcessor {
       });
 
       if (isAnsExist) {
-        console.log("ans already added for this user .. -> ",userid);
+        console.log("ans already added for this user .. -> ", userid);
         return true;
       }
-      let res  = await this.prisma.userAns.create({
-        data:{
+      let res = await this.prisma.userAns.create({
+        data: {
           ans: formated_user_Ans,
-          examId:examid,
-          userId:userid
-        }
-      })
+          examId: examid,
+          userId: userid,
+        },
+      });
 
-      if(res){
-        return res
+      if (res) {
+        return res;
       }
       // console.log("ans added .....",res);
     } catch (error) {

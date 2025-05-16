@@ -9,24 +9,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
 // new table 
 
-model botQuizTopic {
+model botQuizConfig {
   id             String   @id @unique @default(cuid())
+
   quiztopic      String[]
   rapidtopic     String[]
-  exam           String
-  question_count String   @default("0")
-
+  exam           String  
+  nextQuestionTime Int    @default(40)   // in seconds
+  quizOpenFor Int    @default(60)   // in seconds
+   question_count String   @default("0")
+  created_by  String?
   created_at DateTime @default(now())
 }
 
-model bottoken {
-  id    String   @id @unique @default(cuid())
-  token String[]
+model botInfo {
+  id        String @id @unique @default(cuid())
+  botuser_id String @unique
+  token     String
+  webhook   Json?
 }
+
+/**
+ * webhook:{
+ * baseurl:"http://localhost:2000/",
+ * endpoint:{
+ * reciveQuizData: "/reciveQuizdata",
+ * startQuiz: "/startQuiz",
+ * }}
+ */
 
 /**
  * feature: "user-login",
@@ -36,7 +48,7 @@ model bottoken {
  * },
  * },
  */
- enum UserRole {
+enum UserRole {
   Admin
   User
   Bot
@@ -119,10 +131,11 @@ model events {
   data        Json
   conditions  Json
 
-  created_by  UserRole    @default(Bot)
-  created_at  DateTime  @default(now())
-  runs        eventRuns @default(ONE) // ones / daily
-  run_at      String // Exact time to run (if applicable) // or Any for the current/any time
+  created_by UserRole  @default(Bot)
+  created_at DateTime  @default(now())
+  runs       eventRuns @default(ONE) // ones / daily
+  run_at     String // Exact time to run (if applicable) // or Any for the current/any time
+
   @@index([type]) // Index for faster filtering by event type
   @@index([runs]) // Index for scheduling queries
   @@index([run_at]) // Index for scheduling queries
@@ -142,6 +155,7 @@ model Order {
   userId            String // Link to your user model
   razorpay_order_id String   @unique
   amount            Int
+  token             Int      @default(0)
   status            String   @default("pending") // Track order status
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -162,14 +176,14 @@ model payment {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   userId              String // Link to your user model
-  User User @relation(fields: [userId], references: [id])
+  User                User     @relation(fields: [userId], references: [id])
 }
 
 model User {
   id                  String   @id @unique @default(cuid())
   name                String
   email               String   @unique
-  contactno           String?  @default("0000000000")  // only india
+  contactno           String?  @default("0000000000") // only india
   password            String
   primeid             String   @unique
   telegramid          String?  @unique
@@ -192,6 +206,7 @@ model User {
   Order                Order[]
   payment              payment[]
   leaderboard          leaderboard[]
+  quiz                 quiz[]
 }
 
 // model UserStats {  // example for if i  want to create a grph of user join and left
@@ -246,7 +261,7 @@ model blance {
 model telegram {
   id          String   @id @unique @default(cuid())
   userid      String?
-  telegramid  String?     @default("0000000000") // change it to teleid --> telegramid
+  telegramid  String?  @default("0000000000") // change it to teleid --> telegramid
   last_update DateTime @default(now())
   User        User?
 }
@@ -258,6 +273,8 @@ model Questions {
   ans                String[]
   formate            examformate          @default(Text)
   category           String
+  sub_topic          String               @default("none")
+  history            String[]             @default([""])
   topic              String
   explanation        String?              @default("no explanation added")
   links              String[]             @default([""])
@@ -266,6 +283,7 @@ model Questions {
   created_at         DateTime             @default(now())
   status             QuestionStatus       @default(Processing)
   Exam_Questions_map Exam_Questions_map[]
+  weight             Int                  @default(0)
   User               User                 @relation(fields: [created_by], references: [id])
 }
 
@@ -293,6 +311,7 @@ model Exam_pattern {
   check            check?
   marks_values     Int[]
   neg_values       Int[]
+  is_multiple_ans       Int[]        @default([0,0])  // 0 mean false 1 mean it is multiple value ans
   created_by       String
   Exam             Exam[]
   User             User               @relation(fields: [created_by], references: [id])
@@ -313,10 +332,10 @@ model Exam {
   ansid                String                 @unique
   status               ExamStatus             @default(Private)
   creationstatus       CreationTypes          @default(Processing)
-  starttime            String?                @default("08:00 pm")//or no limit // -> it start time , at this time you can join the exam , and join process open starttime + jointime 
-  jointime             String?                @default("00:15 m")  // Open HH:MM:SS
-  duration             String                 @default("02:00 h")  // HH:MM   it is time  user can give or mark ans  , ans accept onlt starttime+jointime+timelimit+ 00:10 min
-  date                 DateTime                  @default(now())
+  starttime            String?                @default("08:00 pm") //or no limit // -> it start time , at this time you can join the exam , and join process open starttime + jointime 
+  jointime             String?                @default("00:15 m") // Open HH:MM:SS
+  duration             String                 @default("02:00 h") // HH:MM   it is time  user can give or mark ans  , ans accept onlt starttime+jointime+timelimit+ 00:10 min
+  date                 DateTime               @default(now())
   stage                ExamStage              @default(Registration)
   ContestRegister      ContestRegister?
   AnsSheet             AnsSheet               @relation(fields: [ansid], references: [id])
@@ -328,10 +347,42 @@ model Exam {
   leaderboard          leaderboard[]
 }
 
+model quiz {
+  id              String        @id @unique @default(cuid())
+  display_id      String?       @unique @default(nanoid(6))
+  quizRegister_id String?       @default("Private quiz")
+  name            String?       @default("No name")
+  examname        String
+  category        String
+  questions       Json
+  topics          String[]      @default([""])
+  total_questions Int           @default(0) // 25 or 50 -> higher prime member
+  created_at      DateTime?     @default(now())
+  created_by      String        @default("No name")
+  examtype        String        @default("quiz")
+  ansid           String        @unique
+  status          ExamStatus    @default(Private)
+  creationstatus  CreationTypes @default(Processing)
+  starttime       String?       @default("08:00 pm") //or no limit // -> it start time , at this time you can join the exam , and join process open starttime + jointime 
+  duration        String        @default("02:00 h") // aprox end time // HH:MM   it is time  user can give or mark ans  , ans accept onlt starttime+jointime+timelimit+ 00:10 min
+  date            DateTime      @default(now())
+  stage           ExamStage     @default(Registration)
+  quizRegister    quizRegister? @relation(fields: [quizRegister_id], references: [id])
+  AnsSheet        AnsSheet      @relation(fields: [ansid], references: [id])
+  User            User          @relation(fields: [created_by], references: [id])
+}
+
 enum ExamStage {
   Registration
   Started
   Ended
+}
+
+model quizRegister {
+  id      String   @id @unique @default(cuid())
+  quiz_id String?  @unique @default("new_value_not_seted")
+  users   String[]
+  quiz    quiz[]
 }
 
 model ContestRegister {
@@ -347,6 +398,7 @@ model AnsSheet {
   examId String?
   status CreationTypes @default(Processing)
   Exam   Exam?
+  quiz   quiz?
 }
 
 model UserAns {
@@ -415,8 +467,6 @@ enum ExamStatus {
   Public
   Private
 }
-
-
 
 enum syllabusType {
   Generic

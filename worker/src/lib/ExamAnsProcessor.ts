@@ -91,9 +91,11 @@ export class ExamAnsProcessor {
     try {
       let userans: any = await this.getansClient().getUserans(examid, userid);
       /* { cm5nywh32003gbu5gbivsjwfk: { ans: ["1"], part: 'part1' } } */
+
+      
       if(userans) {
          // store user ans data in to score table
-        this.questionprocessor.setUseransTodb(userans[1], examid, userid);
+        this.questionprocessor.setUseransTodb(userans[1], examid, userid);        
         return userans[0];
       }
       return null
@@ -112,6 +114,10 @@ export class ExamAnsProcessor {
     all_parts_total_questions: number
   ) {
     try {
+
+
+      console.log("in data base save function  score is ", Score);
+      
       let isScore = await this.questionprocessor.prisma.score.findFirst({
         where: {
           AND: [{ exam_id: examid }, { user_id: userid }],

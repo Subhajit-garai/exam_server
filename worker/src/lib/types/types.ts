@@ -18,7 +18,20 @@ export type Task = {
     userid: string,
     part: string,
     ans: string[],
-    id: string
+    id: string,
+    ismultiple:boolean
+
+  }| {
+    type: "createQuiz";
+    cburl:string,
+    chatid: number,
+    userid: number,
+    topics: string[],
+    totalQuetions: number,
+    nextQuestionTime: number,
+    quizOpenFor: number,
+    ismultiple:boolean
+
   }
   
 
@@ -27,6 +40,7 @@ export type Task = {
     id:string,
     ans: string[],
     part: string,
+    topic: string
   }
   export type anskeyType = {
     id:string,
@@ -49,3 +63,6 @@ export type Task = {
   export type Right_Wrong_set_type ={
     [key:string]:Right_Wrong
   }
+
+
+  

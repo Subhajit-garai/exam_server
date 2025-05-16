@@ -72,10 +72,15 @@ export class RedisProvider {
 
     if (data.type === "AnsProcessing") {
       let ansData: string;
-      let { examid, userid, part, ans, id } = data;
+      let { examid, userid, part, ans, id, ismultiple } = data;
 
       if (typeof ans != "string") {
-        ansData = JSON.stringify(data);
+        // ansData = JSON.stringify(ansdata);
+        if (ismultiple) {
+          ansData = ans.join(",");  // multiple ans ["1","2","3"]  --> "1,2,3"
+        } else {
+          ansData = ans[0]; // single ans 
+        }
       } else {
         ansData = ans;
       }
@@ -98,18 +103,15 @@ export class RedisProvider {
 
       /* [ { cm5nywh32003gbu5gbivsjwfk: { ans: null, part: 'part1' } ]*/
 
-      const ans_array = keys.map((key, index) =>
-        {
-          let keyArr = key.split(":");
-          let questionid= keyArr[4]
-          let part = keyArr[3]
-          let ans = values[index]
-            return ({
-              [questionid]: {ans:ans ,part:part}
-            })
-
-         });
-
+      const ans_array = keys.map((key, index) => {
+        let keyArr = key.split(":");
+        let questionid = keyArr[4];
+        let part = keyArr[3];
+        let ans = values[index];
+        return {
+          [questionid]: { ans: ans, part: part },
+        };
+      });
 
       /*  { cm5nywh32003gbu5gbivsjwfk: { ans: null, part: 'part1' } , {} }*/
 
@@ -120,7 +122,9 @@ export class RedisProvider {
           const part = keyArr[3];
           let answer = values[index];
 
-          if(answer === null){ answer = 'null';}
+          if (answer === null) {
+            answer = "null";
+          }
 
           if (questionid) {
             acc[questionid] = { ans: answer, part: part };
@@ -131,8 +135,8 @@ export class RedisProvider {
         {}
       );
       // console.log("ans", ans);
-      
-      return [ans,ans_array];
+
+      return [ans, ans_array];
     }
   }
   // async getans(keys: string[]) {

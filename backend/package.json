@@ -14,6 +14,7 @@
     "studio": "npx prisma studio ",
     "seed": "ts-node  prisma/seed.ts",
     "seed:prod": "ts-node  prisma/seed_prod.ts",
+    "seed:mockset:tregger": "ts-node  prisma/tregger/mockSetChecker.ts",
     "seed:rmtable": "ts-node  prisma/removeAlltables.ts",
     "seed:test": "ts-node  prisma/seed_prod_test.ts"
   },

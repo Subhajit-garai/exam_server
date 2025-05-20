@@ -16,7 +16,7 @@ questionRouter.get("/admin/allquestions" ,isAdmin,getAllQuestions)
 // new in development
 questionRouter.post("/admin/prossing" ,isAdmin,QuestionProssingDataFetch)
 questionRouter.put("/admin/update" ,isAdmin,updateQuestion)
-questionRouter.put("/admin/createmock" ,isAdmin,Create_Mock_question_set)
+questionRouter.post("/admin/mockset/create" ,isAdmin,Create_Mock_question_set)
 
 // edit question 
 // delete question

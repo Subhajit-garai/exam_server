@@ -26,10 +26,30 @@ export const Create_Mock_question_set = async (req: any, res: any) => {
       });
     }
 
+
+
+
     console.log("req.body", req.body);
     console.log("data", data.data);
 
-    res.json({ success: true, message: "message", data: "data" });
+    let responce  =  await prisma.mock_questions_set.create({
+      data:{
+        name: data.data.name,
+        exam: data.data.exam,
+        category: data.data.category,
+        description: data.data.description,
+        pattern: data.data.pattern,
+        
+      }
+    })
+
+    if (!responce) {
+      return res.status(400).json({
+        message: " mock set not created ",
+      });
+    }
+
+    res.json({ success: true, message: "message", data: responce });
   } catch (error) {
     console.log("Error in metrix --->", error);
   }
@@ -308,9 +328,9 @@ export const getQuestionalldatabyID = async (req: any, res: any) => {
 export const getAllQuestions = async (req: any, res: any) => {
   try {
     let query = req.query;
-
+    
     const pageNumber = parseInt(query.page) || 1;
-    const questionsPerPage = 10;
+    const questionsPerPage = 12;
 
     let responce = await prisma.questions.findMany({
       where: {
@@ -343,7 +363,7 @@ export const getAllQuestions = async (req: any, res: any) => {
 
     res.status(200).json({
       success: true,
-      data: {questions: responce, total: total },
+      data: {questions: responce, total: total ,currentPage:pageNumber},
     });
   } catch (error) {
     res.status(500).json({

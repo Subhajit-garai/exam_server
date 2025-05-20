@@ -2,7 +2,7 @@
 CREATE TYPE "UserRole" AS ENUM ('Admin', 'User', 'Bot');
 
 -- CreateEnum
-CREATE TYPE "eventType" AS ENUM ('RUN_NEW_QUIZ', 'CREATE_QUIZ_CONTEST', 'SEND_MESSAGE', 'CREATE_EXAM');
+CREATE TYPE "eventType" AS ENUM ('RUN_NEW_QUIZ', 'CREATE_QUIZ_CONTEST', 'SEND_MESSAGE', 'CREATE_DPP', 'CREATE_EXAM');
 
 -- CreateEnum
 CREATE TYPE "eventRuns" AS ENUM ('ONE', 'DAILY', 'WEEKLY', 'MONTHLY');
@@ -250,7 +250,6 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "contactno" TEXT DEFAULT '0000000000',
     "password" TEXT NOT NULL,
-    "primeid" TEXT NOT NULL,
     "telegramid" TEXT,
     "verificationid" TEXT,
     "progressid" TEXT,
@@ -267,6 +266,7 @@ CREATE TABLE "User" (
 CREATE TABLE "prime" (
     "id" TEXT NOT NULL,
     "status" "primeStatus" NOT NULL DEFAULT 'none',
+    "userid" TEXT NOT NULL,
     "expiry" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "prime_pkey" PRIMARY KEY ("id")
@@ -391,9 +391,11 @@ CREATE TABLE "Exam_pattern" (
 CREATE TABLE "mock_questions_set" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "exam" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "questions" JSONB,
-    "exam_pattern_id" TEXT DEFAULT 'no exam pattern seted',
+    "pattern" TEXT DEFAULT 'no exam pattern seted',
     "question_difficulty_weight" JSONB,
     "question_subject_count" JSONB,
     "question_part_count" JSONB,
@@ -570,9 +572,6 @@ CREATE UNIQUE INDEX "User_id_key" ON "User"("id");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_primeid_key" ON "User"("primeid");
-
--- CreateIndex
 CREATE UNIQUE INDEX "User_telegramid_key" ON "User"("telegramid");
 
 -- CreateIndex
@@ -585,13 +584,13 @@ CREATE UNIQUE INDEX "User_progressid_key" ON "User"("progressid");
 CREATE UNIQUE INDEX "prime_id_key" ON "prime"("id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "prime_userid_key" ON "prime"("userid");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "verification_id_key" ON "verification"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "progress_userid_key" ON "progress"("userid");
-
--- CreateIndex
-CREATE INDEX "progress_userid_idx" ON "progress"("userid");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "blance_id_key" ON "blance"("id");
@@ -630,9 +629,6 @@ CREATE UNIQUE INDEX "Exam_ansid_key" ON "Exam"("ansid");
 CREATE UNIQUE INDEX "ContestRegister_id_key" ON "ContestRegister"("id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ContestRegister_examId_key" ON "ContestRegister"("examId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "AnsSheet_id_key" ON "AnsSheet"("id");
 
 -- CreateIndex
@@ -666,13 +662,13 @@ ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") RE
 ALTER TABLE "payment" ADD CONSTRAINT "payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_primeid_fkey" FOREIGN KEY ("primeid") REFERENCES "prime"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_telegramid_fkey" FOREIGN KEY ("telegramid") REFERENCES "telegram"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_verificationid_fkey" FOREIGN KEY ("verificationid") REFERENCES "verification"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "prime" ADD CONSTRAINT "prime_userid_fkey" FOREIGN KEY ("userid") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "blance" ADD CONSTRAINT "blance_userid_fkey" FOREIGN KEY ("userid") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

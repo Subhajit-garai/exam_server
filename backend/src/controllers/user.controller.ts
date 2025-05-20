@@ -209,7 +209,6 @@ export const userSignup = async (req: any, res: any) => {
         email: newUser.email,
       },
     });
-    
   } catch (error) {
     console.log("Error in userSignup", error);
 
@@ -313,31 +312,28 @@ export const useremailValidationTokenVerify = async (req: any, res: any) => {
     }
 
     let transtion = await prisma.$transaction(async (tx: any) => {
-      let { token} = data.data;
+      let { token } = data.data;
       let token_hash = Createhash(token);
 
-      let User:any       
-      if(req.user){
-        
-        User= await tx.user.findUnique({
+      let User: any;
+      if (req.user) {
+        User = await tx.user.findUnique({
           where: {
             id: req.user,
             forgotpasswordToken: token_hash,
           },
         });
-      }
-      else{
+      } else {
+        console.log("email", data.data.email);
 
-        console.log("email" , data.data.email);
-        
-        User= await tx.user.findUnique({
+        User = await tx.user.findUnique({
           where: {
             email: data.data.email,
             forgotpasswordToken: token_hash,
           },
         });
 
-        req.user = User.id
+        req.user = User.id;
       }
 
       if (User) {
@@ -367,7 +363,7 @@ export const useremailValidationTokenVerify = async (req: any, res: any) => {
         },
       });
 
-      setCookie(res ,req.user)
+      setCookie(res, req.user);
 
       res.status(200).json({
         success: true,
@@ -375,8 +371,8 @@ export const useremailValidationTokenVerify = async (req: any, res: any) => {
       });
     });
   } catch (error) {
-    console.log("-------------> " , error);
-    
+    console.log("-------------> ", error);
+
     return res.status(404).json({
       success: false,
       message: "Server Error , Try again later ",
@@ -725,9 +721,8 @@ export const userSignin = async (req: any, res: any) => {
     res.status(200).json({
       success: true,
       message: "User needs to verify their email. ",
-      email:email
+      email: email,
     });
-
   } catch (error) {
     console.log("Error in user sign in", error);
 

@@ -31849,7 +31849,7 @@
       "Code": "void main() {\n    int x = 4 * 5 / 2 + 9;\n}"
     },
     "ans": [
-      "19"
+      "3"
     ],
     "formate": "Code",
     "category": "CS",
@@ -33736,12 +33736,12 @@
       "All of the options"
     ],
     "extra": {
-      "Code": "for(;;)"
+      
     },
     "ans": [
       "4"
     ],
-    "formate": "Code",
+    "formate": "Text",
     "category": "CS",
     "sub_topic": "Loop Control",
     "history": [

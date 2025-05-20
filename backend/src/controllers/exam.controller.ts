@@ -528,7 +528,7 @@ export const CreateExam_type = async (req: any, res: any) => {
           throw new Error("Mock exam set not found");
         }
         // chect exam_pattern_id and mock_questions_set_id are same or not
-        if (exam_pattern_id !== mock_questions_set[0]?.exam_pattern_id) {
+        if (exam_pattern_id !== mock_questions_set[0]?.pattern) {
           throw new Error("Mock exam set and exam pattern are not same");
         }
         // question_subject_count check all subjects are present or not

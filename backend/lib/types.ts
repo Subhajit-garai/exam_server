@@ -11,8 +11,8 @@ export type ExamMetaData = {
   topperScore: number;
 };
 
-export type Questions = { [part: string]: string[] };
-export type ExamQuestionsids = { [examid: string]: Questions };
+export type Questions_type = { [part: string]: string[] };
+export type ExamQuestionsids = { [examid: string]: Questions_type };
 
 export type Task =
   | {

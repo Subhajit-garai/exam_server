@@ -398,12 +398,14 @@ model Exam_pattern {
 model mock_questions_set {
   id              String  @id @unique @default(cuid())
   name            String
+  exam            String
+  category            String
   description     String
   questions       Json?
-  exam_pattern_id String? @default("no exam pattern seted")
+  pattern String? @default("no exam pattern seted")
 
-  question_difficulty_weight Json? // { "easy": 0, "medium": 0, "hard": 0 }
-  question_subject_count     Json? // { "OS": 0, "DBMS": 0, "C": 0 }
+  question_difficulty_weight Json? // { "Easy": 0, "MEDIUM": 0, "HARD": 0 }
+  question_topic_count     Json? // { "OS": 0, "DBMS": 0, "C": 0 }
   question_part_count        Json? // { "part1": 0, "part2": 0 }
   status                     CreationTypes @default(Processing)
   created_at                 DateTime      @default(now())

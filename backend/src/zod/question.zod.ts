@@ -69,7 +69,9 @@ export const SubmitedQuestionAnsZodSchema = z.object({
 
 export const mockQuestionSetZodSchema = z.object({
   name: z.string(),
+  exam: z.string(),
+  category: z.string(),
   description: z.string(),
-  exam_pattern_id: z.string().optional(),
+  pattern: z.string().optional(),
   questions: z.record(z.string(), z.array(z.string())).optional(),
 });

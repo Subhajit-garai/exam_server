@@ -378,6 +378,8 @@ export class ExamQuestionProcessor {
           explanation: true,
           title: true,
           options: true,
+          extra: true,
+          formate:true,
         },
       });
 

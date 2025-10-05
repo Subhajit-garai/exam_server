@@ -1,3 +1,4 @@
+import { ExamType } from "@prisma/client";
 import dayjs from "dayjs";
 export type ExamMetaData = {
   examid: string;
@@ -19,6 +20,7 @@ export type Task =
       type: "CreateExam";
       examid: string;
       userid: string;
+      examtype: ExamType;
     }
   | {
       type: "CreateScore";
@@ -38,13 +40,20 @@ export type Task =
       userid: string;
       part: string;
       ans: string[];
-      id: string;
+      number: string; // remove later
       ismultiple: boolean;
+    }
+  | {
+      type: "MockSetProcessing";
+      mockid: string;
+      action: string;
+      // status: string;
     }
   | {
       type: "createQuiz";
       cburl: string;
       chatid: number;
+      thread_id?: number;
       userid: number;
       topics: string[];
       totalQuetions: number;

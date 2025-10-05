@@ -1,0 +1,31 @@
+model subcriptionOffers {
+  id             String       @id @unique @default(cuid())
+  markedPrice    Int
+  discount       Int //  40 -> 40 % off /discount
+  type           purchaseType
+  title          String
+  price          Int
+  token          Int? // if offer
+  isExamBased    Boolean      @default(false)
+  target_exam_id String?
+  tierId         String?
+  time           String? // if subcription
+  offerActive    String[]     @default([])
+  offerInActive  String[]     @default([])
+  btncolor       String       @default("")
+  created_by     String?
+  created_at     DateTime     @default(now())
+
+  target_exam TargetExam? @relation(fields: [target_exam_id], references: [id])
+  tier        Tier?       @relation(fields: [tierId], references: [id])
+}
+
+model coupon {
+  id         String   @id @unique @default(cuid())
+  token      Int      @default(0) // if offer 
+  count      Int      @default(0)
+  cupon      String[] @default([])
+  accessby   String[] @default([])
+  created_by String?
+  created_at DateTime @default(now())
+}

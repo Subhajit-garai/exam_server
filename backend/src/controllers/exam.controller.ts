@@ -1,19 +1,26 @@
-import { ExamStatus, ExamType, syllabusType } from "@prisma/client";
+import { ExamStatus, ExamType, syllabusType, Visibility } from "@prisma/client";
 import prisma from "../../db";
 import {
   ExamCreateInputeSchema,
-  ExamCreateInputeSchema_tyoe_2,
   ExampatternInputZodSchema,
   SyllabusInputZodSchema,
 } from "../zod/user.zod";
 import { examManager } from "../../lib/examManager";
 import { ExamMetaData } from "../../lib/types";
 import { SubmitedQuestionAnsZodSchema } from "../zod/question.zod";
+
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { TokenDeduction } from "./payment.controller";
+import { getServiceCharge, TokenDeduction } from "../../lib/helper/payment";
+import { asyncHandler } from "../../lib/helper/asyncHandler";
+import {
+  create_targated_exam_year_zodSchemea,
+  create_targated_exam_zodSchemea,
+  updare_targated_exam_year_zodSchemea,
+} from "../zod/exam.zod";
+import { ZodDataSafeParse } from "../../lib/ZodTypeChecker";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -21,13 +28,135 @@ dayjs.extend(timezone);
 
 const em = examManager.getInstance();
 
-export const test = async (req: any, res: any) => {
+export const test = asyncHandler(async (req: any, res: any) => {
+  res.json({
+    success: true,
+    message: " created successfuly",
+    data: "data",
+  });
+});
+
+// in dev
+export const deletexams = async (req: any, res: any) => {
   try {
-    res.json({ success: true, message: "message", data: "data" });
+    let response = await prisma.exam.deleteMany({});
+
+    res.json({
+      success: true,
+      message: `  Exam  removed`,
+      for: response,
+    });
   } catch (error) {
-    console.log("Error in metrix --->", error);
+    console.log("Error in exam controller", error);
   }
 };
+
+// done
+
+export const update_targeted_exam_year = asyncHandler(
+  async (req: any, res: any) => {
+    let processedData = updare_targated_exam_year_zodSchemea.safeParse(
+      req.body
+    );
+
+    if (!processedData.success) {
+      throw ZodDataSafeParse(processedData);
+    }
+
+    let isTargetdExam_Year = await prisma.examYear.findUnique({
+      where: {
+        id: processedData.data.exam_year_id,
+      },
+    });
+
+    if (!isTargetdExam_Year) {
+      throw new Error("Porvided exam year id is invalid ");
+    }
+
+    let updated_target_exam_year = await prisma.examYear.update({
+      where: {
+        id: processedData.data?.exam_year_id,
+      },
+      data: {
+        ...(processedData.data.category
+          ? { category: processedData.data.category }
+          : undefined),
+        ...(processedData.data.registrationOpenDate
+          ? { registrationOpenDate: processedData.data.registrationOpenDate }
+          : undefined),
+        ...(processedData.data.registrationCloseDate
+          ? { registrationCloseDate: processedData.data.registrationCloseDate }
+          : undefined),
+        ...(processedData.data.registrationOpenDate
+          ? { registrationOpenDate: processedData.data.registrationOpenDate }
+          : undefined),
+        ...(processedData.data.registrationCloseDate
+          ? { registrationCloseDate: processedData.data.registrationCloseDate }
+          : undefined),
+        ...(processedData.data.notes
+          ? { notes: processedData.data.notes }
+          : undefined),
+        ...(processedData.data.status
+          ? { status: processedData.data.status }
+          : undefined),
+        ...(processedData.data.slug
+          ? { slug: processedData.data.slug }
+          : undefined),
+      },
+    });
+
+    if (!updated_target_exam_year) {
+      throw new Error("updated_target_exam_year not  updated  ");
+    }
+
+    res.json({
+      success: true,
+      message: "  updated_target_exam_year successfuly",
+      data: updated_target_exam_year,
+    });
+  }
+);
+
+export const create_targeted_exam = asyncHandler(async (req: any, res: any) => {
+  let processedata = create_targated_exam_zodSchemea.safeParse(req.body);
+  if (!processedata.success) {
+    throw ZodDataSafeParse(processedata, true);
+  }
+  let {examScope , ...rest} = processedata.data;
+  let target_exam = await prisma.targetExam.create({
+    data: {
+      ...rest,
+      examType: examScope
+    },
+  });
+
+  return res.json({
+    success: true,
+    message: "targated_exam created successfuly",
+    data: target_exam.name,
+  });
+});
+export const create_targeted_exam_year = asyncHandler(
+  async (req: any, res: any) => {
+    let processedata = create_targated_exam_year_zodSchemea.safeParse(req.body);
+    if (!processedata.success) {
+      throw ZodDataSafeParse(processedata, true);
+    }
+
+    let target_exam_year = await prisma.examYear.create({
+      data: {
+        ...processedata.data,
+      },
+    });
+
+    if (!target_exam_year) throw new Error("targated_exam_year not created ");
+    return res.json({
+      success: true,
+      message: "targated_exam_year created successfuly",
+      data: target_exam_year.year,
+    });
+  }
+);
 
 export const getUserAnsSetOfAnExam = async (req: any, res: any) => {
   try {
@@ -50,31 +179,95 @@ export const getUserAnsSetOfAnExam = async (req: any, res: any) => {
 };
 
 export const ExamAnsGenerator = async (examid: string) => {
-  let data: any = await prisma.exam.findFirst({
+  let examdata: any = await prisma.exam.findFirst({
     where: { id: examid },
     select: {
-      questions: true,
+      examtype: true,
+      mockSetId: true,
     },
   });
 
   let allids: [] = [];
   let partinfo: any = {};
+  let data: any;
 
-  Object.keys(data).map((d: any) => {
-    Object.keys(data[d]).map((p: any) => {
-      let ids = Object.values(data[d][p]).flat() as [];
+  if (!examdata) {
+    throw new Error("provided exam information incorrect ");
+  }
+  let { examtype, questions, mockSetId } = examdata;
 
-      if (!partinfo[p]) {
-        partinfo[p] = {};
+  switch (examtype) {
+    case "Mock":
+      {
+        if (!mockSetId) {
+          console.log("in mock ans set generator :- mock set is null");
+        }
+        // let mocksetData = await prisma.mock_questions_set.findFirst({
+        //   where: { id: mockSetId },
+        //   select: {
+        //     questions: true,
+        //   },
+        // });
+
+        let questions = await prisma.mock_question_map.findMany({
+          where: {
+            mockid: mockSetId,
+          },
+        });
+
+        data = questions;
       }
-      ids.map((id: any, i) => {
-        partinfo[p][i + 1] = id;
-      });
-      allids = [...allids, ...ids];
+      break;
+    case "PYQ":
+      {
+        if (!mockSetId) {
+          console.log("in pyq ans set generator :- mock set is null");
+        }
+        // let mocksetData = await prisma.mock_questions_set.findFirst({
+        //   where: { id: mockSetId },
+        //   select: {
+        //     questions: true,
+        //   },
+        // });
+
+        let questions = await prisma.mock_question_map.findMany({
+          where: {
+            mockid: mockSetId,
+          },
+        });
+        data = questions;
+      }
+      break;
+    case "Exam":
+      data = questions;
+
+      break;
+    case "Dpp":
+      data = questions;
+
+      break;
+
+    default:
+      console.log("invalid or incorrect exam type");
+
+      break;
+  }
+
+  Object.keys(data).map((p: any) => {
+    let ids = Object.values(data[p]).flat() as [];
+
+    if (!partinfo[p]) {
+      partinfo[p] = {};
+    }
+    ids.map((id: any, i) => {
+      partinfo[p][i + 1] = id;
     });
+    allids = [...allids, ...ids];
   });
 
   // this.questionsids[examid] = partinfo;
+  // console.log("allids.length -->", allids.length);
+  // console.log("allids -->", allids);
 
   if (allids.length > 0) {
     let res = await prisma.questions.findMany({
@@ -90,14 +283,18 @@ export const ExamAnsGenerator = async (examid: string) => {
         ans: true,
         topic: true,
         difficulty: true,
+        is_multiple_ans: true,
         // explanation: true,
         // links: true,
       },
     });
 
     if (res) {
+      // console.log("here ---->");
+
       return res;
     } else {
+      // console.log("i ---->");
       return null;
     }
   }
@@ -106,6 +303,7 @@ export const ExamAnsGenerator = async (examid: string) => {
 export const getExamAnsForAnalisys = async (req: any, res: any) => {
   try {
     let examid = req.query.examid;
+
     let generatedAns = await ExamAnsGenerator(examid);
     if (generatedAns) {
       res.json({ success: true, message: "Ans Sended", data: generatedAns });
@@ -136,9 +334,6 @@ export const ExamAttemptQuestionMetaData = async (req: any, res: any) => {
     console.log("Error in metrix --->", error);
   }
 };
-
-// processing
-// in dev
 
 export const getUserMetaDataforAnExam = async (req: any, res: any) => {
   try {
@@ -209,33 +404,11 @@ export const getUserMetaDataforAnExam = async (req: any, res: any) => {
   }
 };
 
-// complete
-// token system
-
 export const gettokenSystem = async (req: any, res: any) => {
   try {
     let data;
     let type = req.query.type;
-    let response = await prisma.entryChargeList.findFirst({});
-
-    if (!response) {
-      return res.status(400).json({
-        success: false,
-        message: `tokenSystem not avalible`,
-      });
-    }
-
-    switch (type) {
-      case ExamType.Contest:
-        data = response.contest;
-        break;
-      // case ExamType.: data = response.quiz;
-      //   break;
-
-      default:
-        data = response.exam;
-        break;
-    }
+    data = await getServiceCharge(undefined, type, req.user);
 
     res.json({
       success: true,
@@ -243,6 +416,8 @@ export const gettokenSystem = async (req: any, res: any) => {
       data: data,
     });
   } catch (error) {
+    console.log("error -> ", error);
+
     return res.status(400).json({
       success: false,
       message: `tokenSystem not created`,
@@ -265,7 +440,6 @@ export const CreateSyllabus = async (req: any, res: any) => {
     let response = await prisma.syllabus.create({
       data: {
         category,
-        examname,
         topics,
       },
     });
@@ -291,13 +465,51 @@ export const CreateSyllabus = async (req: any, res: any) => {
   }
 };
 
+export const getSyllabusByid = async (req: any, res: any) => {
+  try {
+    let syllabusid = req.query.syllabusid;
+
+    let response = await prisma.syllabus.findFirst({
+      where: {
+        id: syllabusid,
+      },
+    });
+
+    if (!response) {
+      return res
+        .status(400)
+        .json({ success: false, message: `Syllabus  not exist` });
+    }
+
+    let syllabus = response?.topics;
+
+    res.json({
+      success: true,
+      message: `Syllabus data`,
+      syllabus: syllabus,
+    });
+  } catch (error) {
+    console.log("Error in getsyllabus", error);
+  }
+};
 export const getSyllabus = async (req: any, res: any) => {
   try {
     let exam = req.query.syllabus;
 
-    let response = await prisma.syllabus.findMany({
+    let target_exam = await prisma.targetExam.findFirst({
       where: {
-        examname: exam.toUpperCase(),
+        name: exam.toUpperCase(),
+      },
+    });
+
+    if (!target_exam) throw new Error("target exam not present ! Error");
+
+    let response = await prisma.subject.findMany({
+      where: {
+        target_exam_id: target_exam.id,
+      },
+      select: {
+        shortName: true,
       },
     });
 
@@ -307,7 +519,10 @@ export const getSyllabus = async (req: any, res: any) => {
         .json({ success: false, message: `Syllabus for ${exam} not exist` });
     }
 
-    let syllabus = response[0]?.topics;
+
+    console.log(response);
+    
+    let syllabus = response?.flat();
 
     res.json({
       success: true,
@@ -323,6 +538,8 @@ export const CreateNewExamPattern = async (req: any, res: any) => {
   try {
     let data = ExampatternInputZodSchema.safeParse(req.body);
     if (!data.success) {
+      console.log("data error", data.error);
+
       return res.status(401).json({
         success: false,
         message: "given credential/input   invalid ",
@@ -348,9 +565,24 @@ export const CreateNewExamPattern = async (req: any, res: any) => {
     let user = req.user;
 
     if (checkbox) {
+      let target_exam = await prisma.targetExam.findFirst({
+        where: {
+          name: examname.toUpperCase(),
+        },
+      });
+
+      // let response2 = await prisma.subject.findMany({
+      //   where: {
+      //     traget_exam_id: target_exam?.id,
+      //   },
+      //   select: {
+      //     shortName: true,
+      //   },
+      // });
+
       let response = await prisma.syllabus.findFirst({
         where: {
-          examname: examname.toUpperCase(),
+          target_exam_id: target_exam?.id,
         },
       });
 
@@ -392,93 +624,15 @@ export const CreateNewExamPattern = async (req: any, res: any) => {
   }
 };
 
+// working here
 export const CreateExam = async (req: any, res: any) => {
   try {
-    // console.log(req.body)
-
     let data = ExamCreateInputeSchema.safeParse(req.body);
-    let user = req.user;
 
-    if (!data.success) {
-      return res.status(401).json({
-        success: false,
-        message: "given credential/input   invalid ",
-      });
-    }
-    let {
-      name,
-      examname,
-      exam_pattern_id,
-      status,
-      category,
-      duration,
-      date,
-      jointime,
-      starttime,
-    } = data.data;
 
-    let response = await prisma.exam.create({
-      data: {
-        name,
-        examname,
-        status,
-        category,
-        starttime: starttime ? starttime : "no limit",
-        jointime: jointime ? jointime : "no limit",
-        duration: duration ? duration : "02:00 h",
-        date: date,
-        questions: {},
-        exam_pattern: {
-          connect: { id: exam_pattern_id },
-        },
-        User: {
-          connect: { id: user }, // createdby
-        },
-        AnsSheet: {
-          create: {
-            ans: {},
-          },
-        },
-        ContestRegister: {
-          create: {},
-        },
-      },
-    });
-
-    if (!response) {
-      return res.status(500).json({
-        success: false,
-        message: "Exam not created , try again later ",
-      });
-    }
-
-    // send it into queue to process question
-    let { id } = response;
-    let Notifystatus = await em.getredisclient().push({
-      type: "CreateExam",
-      examid: id,
-      userid: user,
-    });
-    // call back to user
-    if (Notifystatus) {
-      console.log("Notifystatus", Notifystatus);
-      console.log("exam Created ....");
-    }
-
-    // end
-    res.json({
-      success: true,
-      message: "New Exam Pattern Created Successful",
-    });
-  } catch (error) {
-    console.log("CreateExam ERROR", error);
-  }
-};
-
-// working here
-export const CreateExam_type = async (req: any, res: any) => {
-  try {
-    let data = ExamCreateInputeSchema_tyoe_2.safeParse(req.body);
+    console.log("req.body -->", req.body);
+    console.log("error -->", data.error);
+    
 
     let user = req.user;
 
@@ -493,7 +647,7 @@ export const CreateExam_type = async (req: any, res: any) => {
       name,
       examname,
       exam_pattern_id,
-      status,
+      Visibility,
       category,
       duration,
       date,
@@ -504,95 +658,153 @@ export const CreateExam_type = async (req: any, res: any) => {
     } = data.data;
 
     let response;
+    let Notifystatus;
 
     switch (examtype) {
       case "Mock":
-        // check all mock exam set is ready or not
+        {
+          // check all mock exam set is ready or not
+          console.log("---------------->", mock_questions_set_id);
 
-        // check mock exam question set  meet  exam pattern requirement or not
+          if (!mock_questions_set_id) throw new Error("Mock set id not found");
 
-        let exam_pattern_data = await prisma.exam_pattern.findFirst({
-          where: { id: exam_pattern_id },
-        });
+          let exam_pattern_data = await prisma.exam_pattern.findFirst({
+            where: { id: exam_pattern_id },
+          });
 
-        if (!exam_pattern_data) throw new Error("exam pattern not found");
+          if (!exam_pattern_data) throw new Error("exam pattern not found");
 
-        let { total_questions, part_Count, topics } = exam_pattern_data;
-        let mock_questions_set = await prisma.mock_questions_set.findMany({
-          where: {
-            id: mock_questions_set_id,
-          },
-        });
+          let { total_questions, part_Count, topics } = exam_pattern_data;
 
-        if (!mock_questions_set) {
-          throw new Error("Mock exam set not found");
+          let mock_questions_set = await prisma.mock_questions_set.findFirst({
+            where: {
+              id: mock_questions_set_id,
+            },
+          });
+
+          if (!mock_questions_set) {
+            throw new Error("Mock exam set not found");
+          } else {
+            // if (mock_questions_set.status !== "Done") {
+            //   throw new Error(
+            //     `Mock exam set's Question sets not fully configured status -> ${mock_questions_set.status}`
+            //   );
+            // }
+          }
+          // chect exam_pattern_id and mock_questions_set_id are same or not
+          if (exam_pattern_data.title !== mock_questions_set?.pattern) {
+            throw new Error("Mock exam set and exam pattern are not same");
+          }
+
+          total_questions.map((part: number, indx: number) => {
+            if (part !== mock_questions_set?.total_questions[indx]) {
+              throw new Error(
+                `Mock set part total_Question not match part --> ${indx + 1}`
+              );
+            }
+          });
+
+          response = await prisma.exam.create({
+            data: {
+              name,
+              examname,
+              Visibility,
+              category,
+              examtype: examtype,
+              starttime: "no limit",
+              jointime: "no limit",
+              duration: duration ? duration : "02:00 h",
+              mockSetId: mock_questions_set_id,
+              date: date,
+              // questions: {},
+              exam_pattern: {
+                connect: { id: exam_pattern_id },
+              },
+              User: {
+                connect: { id: user }, // createdby
+              },
+              AnsSheet: {
+                create: {
+                  ans: [],
+                },
+              },
+              ContestRegister: {
+                create: {},
+              },
+            },
+          });
+
+          if (!response) {
+            return res.status(500).json({
+              success: false,
+              message: `${examtype} not created , try again later `,
+            });
+          }
+
+          let { id } = response;
+          Notifystatus = await em.getredisclient().push({
+            //id :
+            type: "CreateExam",
+            examid: id,
+            userid: user,
+            examtype: response.examtype,
+          });
         }
-        // chect exam_pattern_id and mock_questions_set_id are same or not
-        if (exam_pattern_id !== mock_questions_set[0]?.pattern) {
-          throw new Error("Mock exam set and exam pattern are not same");
-        }
-        // question_subject_count check all subjects are present or not
-
-        // let is_all_topic_are_present =  Object.keys().every()
-
-        // question_part_count check all part are present or not
-
-        // question count are equel or not
-
-        // check mock exam set is ready or not
-
         break;
 
       default:
-        response = await prisma.exam.create({
-          data: {
-            name,
-            examname,
-            status,
-            category,
-            examtype: examtype,
-            starttime: starttime ? starttime : "no limit",
-            jointime: jointime ? jointime : "no limit",
-            duration: duration ? duration : "02:00 h",
-            date: date,
-            questions: {},
-            exam_pattern: {
-              connect: { id: exam_pattern_id },
-            },
-            User: {
-              connect: { id: user }, // createdby
-            },
-            AnsSheet: {
-              create: {
-                ans: [],
+        {
+          response = await prisma.exam.create({
+            data: {
+              name,
+              examname,
+              Visibility,
+              category,
+              examtype: examtype,
+              starttime: starttime ? starttime : "no limit",
+              jointime: jointime ? jointime : "no limit",
+              duration: duration ? duration : "02:00 h",
+              date: date,
+              // questions: {},
+              exam_pattern: {
+                connect: { id: exam_pattern_id },
+              },
+              User: {
+                connect: { id: user }, // createdby
+              },
+              AnsSheet: {
+                create: {
+                  ans: [],
+                },
+              },
+              ContestRegister: {
+                create: {},
               },
             },
-            ContestRegister: {
-              create: {},
-            },
-          },
-        });
+          });
 
-        if (!response) {
-          return res.status(500).json({
-            success: false,
-            message: `${examtype} not created , try again later `,
+          if (!response) {
+            return res.status(500).json({
+              success: false,
+              message: `${examtype} not created , try again later `,
+            });
+          }
+          // send it into queue to process question
+          let { id } = response;
+          Notifystatus = await em.getredisclient().push({
+            //id :
+            type: "CreateExam",
+            examid: id,
+            userid: user,
+            examtype: response.examtype,
           });
         }
-        // send it into queue to process question
-        let { id } = response;
-        let Notifystatus = await em.getredisclient().push({
-          //id :
-          type: "CreateExam",
-          examid: id,
-          userid: user,
-        });
-        // call back to user
-        if (Notifystatus) {
-          console.log(`${examtype} Created ....`);
-        }
-
         break;
+    }
+
+    // call back to user
+    if (Notifystatus) {
+      console.log(`${examtype} Created ....`);
     }
 
     // end
@@ -601,8 +813,12 @@ export const CreateExam_type = async (req: any, res: any) => {
       success: true,
       message: `New ${examtype}  Created Successful`,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.log("CreateExam ERROR", error);
+    return res.status(500).json({
+      success: false,
+      message: error?.message,
+    });
   }
 };
 
@@ -660,46 +876,36 @@ export const findexam = async (req: any, res: any) => {
   }
 };
 
-export const deletexams = async (req: any, res: any) => {
-  try {
-    let response = await prisma.exam.deleteMany({});
+export const getAvalibleExam = asyncHandler(async (req: any, res: any) => {
+  let category = req.query.category.toUpperCase();
 
-    res.json({
-      success: true,
-      message: `  Exam  removed`,
-      for: response,
-    });
-  } catch (error) {
-    console.log("Error in exam controller", error);
+  let response = await prisma.targetExam.findMany({
+    where: {
+      category: category,
+    },
+    select: {
+      name: true,
+      id: true,
+    },
+  });
+
+  if (!(response.length > 0)) {
+    throw new Error("Can not find any exam");
   }
-};
-export const getAvalibleExam = async (req: any, res: any) => {
-  try {
-    let response = await prisma.syllabus.findMany({});
 
-    if (!(response.length > 0)) {
-      return res
-        .status(400)
-        .json({ success: false, message: `Can not find any exam` });
-    }
+  let AvalibleExam = new Set(); // // for --> AvalibleExam
 
-    let AvalibleExam = new Set(); // // for --> AvalibleExam
-    response.map((c: any) => {
-      // console.log("c.examname",c.examname);
-      AvalibleExam.add(c.examname);
-    });
+  response.map((c: any) => {
+    AvalibleExam.add(c.name);
+  });
 
-    // console.log("AvalibleExam",AvalibleExam);
+  return res.json({
+    success: true,
+    message: ` avalible Exam  names`,
+    data: { names: [...AvalibleExam] },
+  });
+});
 
-    res.json({
-      success: true,
-      message: ` alalible Exam  names`,
-      for: [...AvalibleExam],
-    });
-  } catch (error) {
-    console.log("Error in exam controller", error);
-  }
-};
 export const getExamsbyid = async (req: any, res: any) => {
   try {
     let response;
@@ -723,9 +929,11 @@ export const getExamsbyid = async (req: any, res: any) => {
           },
         },
         category: true,
-        status: true,
+        Visibility: true,
         examtype: true,
         starttime: true,
+        creationstatus: true,
+
         date: true,
         duration: true,
         jointime: true,
@@ -749,18 +957,24 @@ export const getExamsbyid = async (req: any, res: any) => {
 export const getExams = async (req: any, res: any) => {
   try {
     let response;
-    let type = req.query.type;    
-    let limit = req.query.limit ? req.query.limit : 10;
+    let total;
+    let type = req.query.type;
+    let page = req.query.page ?? 1;
+    let limit = req.query.limit
+      ? typeof req.query.limit === "string"
+        ? parseInt(req.query.limit)
+        : req.query.limit
+      : 10;
+    let order: "desc" | "asc" = req.query.order === "asc" ? "asc" : "desc";
+
+    const pageNumber = page ? parseInt(page) : 1;
 
     if (req.query.starttime && req.query.endtime) {
       response = await prisma.exam.findMany({
         where: {
           AND: [
             {
-              OR: [
-                { created_by: req.user },
-                { status: ExamStatus.Public },
-              ],
+              OR: [{ created_by: req.user }, { Visibility: Visibility.Public }],
             },
             {
               date: {
@@ -769,8 +983,8 @@ export const getExams = async (req: any, res: any) => {
               },
             },
           ],
-          ...(type ? { examtype: type } : {}) 
-
+          ...(type ? { examtype: type } : {}),
+          creationstatus: "Done",
         },
         select: {
           id: true,
@@ -787,9 +1001,10 @@ export const getExams = async (req: any, res: any) => {
             },
           },
           category: true,
-          status: true,
+          Visibility: true,
           examtype: true,
           starttime: true,
+          creationstatus: true,
           date: true,
           duration: true,
           jointime: true,
@@ -798,13 +1013,35 @@ export const getExams = async (req: any, res: any) => {
               count: true,
             },
           },
+        },
+
+        skip: (pageNumber - 1) * limit,
+        take: limit,
+        orderBy: { date: order },
+      });
+
+      total = await prisma.exam.count({
+        where: {
+          AND: [
+            {
+              OR: [{ created_by: req.user }, { Visibility: Visibility.Public }],
+            },
+            {
+              date: {
+                gte: req.query.starttime, // Greater than or equal to startTime
+                lte: req.query.endtime, // Less than or equal to endTime
+              },
+            },
+          ],
+          ...(type ? { examtype: type } : {}),
+          creationstatus: "Done",
         },
       });
     } else {
       response = await prisma.exam.findMany({
         where: {
-          OR: [{ created_by: req.user }, { status: ExamStatus.Public }],
-           ...(type ? { examtype: type } : {}) 
+          OR: [{ created_by: req.user }, { Visibility: Visibility.Public }],
+          ...(type ? { examtype: type } : {}),
         },
         select: {
           id: true,
@@ -821,9 +1058,11 @@ export const getExams = async (req: any, res: any) => {
             },
           },
           category: true,
-          status: true,
+          Visibility: true,
           examtype: true,
           starttime: true,
+          creationstatus: true,
+
           date: true,
           duration: true,
           jointime: true,
@@ -833,17 +1072,28 @@ export const getExams = async (req: any, res: any) => {
             },
           },
         },
-        orderBy: {
-          date: "desc",
-        },
+
+        skip: (pageNumber - 1) * limit,
         take: limit,
+        orderBy: { date: order },
       });
-    }    
+
+      total = await prisma.exam.count({
+        where: {
+          OR: [{ created_by: req.user }, { Visibility: Visibility.Public }],
+          ...(type ? { examtype: type } : {}),
+        },
+      });
+    }
 
     res.json({
       success: true,
-      message: `${response.length < 1 ? " No Exams found" : `${response.length} All  Exams `} `,
-      data: response,
+      message: `${
+        response.length < 1
+          ? " No Exams found"
+          : `${response.length} All  Exams `
+      } `,
+      data: { exams: response, total: total, currentPage: pageNumber },
     });
   } catch (error) {
     console.log("Error in exam controller", error);
@@ -943,284 +1193,304 @@ export const examJoinRequestProcess = async (req: any, res: any) => {
         .json({ success: false, message: `Can not find any exam` });
     }
 
-    //check here i can able to attempt multiple times
-    // **********************************************************************************************************************4
-    if (exam.examtype !== "Mock") {
-      // mocke exam can be given multiple times
-
-      if (isUserGivenThisExam && isUserGivenThisExam.id) {
-        // console.log("isUserGivenThisExam", isUserGivenThisExam);
-        console.log("user already given this exam");
-        return res.status(400).json({
-          success: false,
-          message: `You have already taken this exam. Please join the next one.`,
-        });
-      }
-    }
-
-    // **********************************************************************************************************************
-
-    // transaction point 1) check user balance 2) deduct balance 3) add user to exam 4)send notification
-
     if (exam.creationstatus === "Done") {
-      // join time checking
+      //check here i can able to attempt multiple times
+      // **********************************************************************************************************************4
+      if (exam.examtype !== "Mock" && exam.examtype !== "PYQ") {
+        // mocke exam can be given multiple times
 
-      let examDate = dayjs.utc(exam.date).tz("Asia/Kolkata"); //.format("DD-MM-YYYY"); // Parse time correctly
-      let currentISTTime = dayjs.utc().tz("Asia/Kolkata");
-
-      let isSame = currentISTTime.isSame(examDate, "day"); //.format("DD-MM-YYYY")
-      let date = examDate.format("DD-MM-YYYY");
-
-      if (isSame) {
-        let startTime = dayjs.tz(
-          `${date} ${exam.starttime}`,
-          "DD-MM-YYYY hh:mm a",
-          "Asia/Kolkata"
-        );
-        let started = currentISTTime.isAfter(startTime);
-
-        if (started) {
-          let jointime = exam?.jointime as string;
-          if (jointime == "no limit") {
-            jointime = "00:15 m";
-          }
-          const minutesMatch = jointime.match(/(\d+):(\d+)/); // Matches "00:15"
-          let joinTimeLimit;
-          if (minutesMatch) {
-            const [_, hours, minutes] = minutesMatch.map(Number);
-            joinTimeLimit = startTime.add(hours, "hour").add(minutes, "minute");
-          } else {
-            console.error("Invalid jointime format:", jointime);
-          }
-
-          let isExamJoinTimeExecd = currentISTTime.isAfter(joinTimeLimit);
-
-          if (isExamJoinTimeExecd) {
-            return res
-              .status(400)
-              .json({ success: false, message: `Exam Joining Time is over` });
-          }
-        } else {
-          let remainingTime = Math.max(
-            startTime.diff(currentISTTime, "minutes"),
-            0
-          );
+        if (isUserGivenThisExam && isUserGivenThisExam.id) {
+          // console.log("isUserGivenThisExam", isUserGivenThisExam);
+          console.log("user already given this exam");
           return res.status(400).json({
             success: false,
-            message: `Exam not started yet , remining time is ${remainingTime} m`,
+            message: `You have already taken this exam. Please join the next one.`,
           });
         }
-      } else {
-        return res.status(400).json({
-          success: false,
-          message: `Exam Joining Time is over/not started`,
-        });
+
+        // join time checking
+        {
+          let examDate = dayjs.utc(exam.date).tz("Asia/Kolkata"); //.format("DD-MM-YYYY"); // Parse time correctly
+          let currentISTTime = dayjs.utc().tz("Asia/Kolkata");
+
+          let isSame = currentISTTime.isSame(examDate, "day"); //.format("DD-MM-YYYY")
+          let date = examDate.format("DD-MM-YYYY");
+
+          if (isSame) {
+            let startTime = dayjs.tz(
+              `${date} ${exam.starttime}`,
+              "DD-MM-YYYY hh:mm a",
+              "Asia/Kolkata"
+            );
+            let started = currentISTTime.isAfter(startTime);
+
+            if (started) {
+              let jointime = exam?.jointime as string;
+              if (jointime == "no limit") {
+                jointime = "00:15 m";
+              }
+              const minutesMatch = jointime.match(/(\d+):(\d+)/); // Matches "00:15"
+              let joinTimeLimit;
+              if (minutesMatch) {
+                const [_, hours, minutes] = minutesMatch.map(Number);
+                joinTimeLimit = startTime
+                  .add(hours, "hour")
+                  .add(minutes, "minute");
+              } else {
+                console.error("Invalid jointime format:", jointime);
+              }
+
+              let isExamJoinTimeExecd = currentISTTime.isAfter(joinTimeLimit);
+
+              if (isExamJoinTimeExecd) {
+                return res.status(400).json({
+                  success: false,
+                  message: `Exam Joining Time is over`,
+                });
+              }
+            } else {
+              let remainingTime = Math.max(
+                startTime.diff(currentISTTime, "minutes"),
+                0
+              );
+              return res.status(400).json({
+                success: false,
+                message: `Exam not started yet , remining time is ${remainingTime} m`,
+              });
+            }
+          } else {
+            return res.status(400).json({
+              success: false,
+              message: `Exam Joining Time is over/not started`,
+            });
+          }
+        }
       }
 
-      // transtion begine
-      // let transaction = await prisma.$transaction(async (tx: any) => {
-      //   // here get entry charge for exam , mock and contest subject
-      //   const allamount = await tx.entryChargeList.findFirst({
-      //     select: {
-      //       exam: true,
-      //       mock: true,
-      //       contest: true,
-      //       subject: true,
-      //       quiz: true,
-      //     },
-      //   });
+      // **********************************************************************************************************************
 
-      //   let charge = 0;
+      // transaction point 1) check user balance 2) deduct balance 3) add user to exam 4)send notification
+      let trx = await prisma.$transaction(async (tx: any) => {
+        let transaction = await TokenDeduction(
+          tx,
+          userid,
+          exam.examtype,
+          "service"
+        );
 
-      //   switch (exam.examtype) {
-      //     case "Exam":
-      //       charge = allamount?.exam ?? 2;
-      //       break;
-      //     case "Mock":
-      //       charge = allamount?.mock ?? 2;
-      //       break;
-      //     case "Contest":
-      //       charge = allamount?.contest ?? 2;
-      //       break;
-      //     case "Subject":
-      //       charge = allamount?.subject ?? 2;
-      //       break;
-      //     default:
-      //       charge = 2;
-      //   }
+        if (transaction) {
+          // exam set up begine
 
-      //   if (!charge && typeof charge != "number") {
-      //     throw new Error("invalid  balance");
-      //   }
+          // check exam is type of  mock  , if mock  then point exam question set to  mocke exam set
 
-      //   const userdata = await tx.user.findUnique({
-      //     where: { id: userid },
-      //     select: {
-      //       blance: {
-      //         select: {
-      //           amount: true,
-      //         },
-      //       },
-      //     },
-      //   });
+          let data: { questions: any } | null = { questions: {} };
 
-      //   if (!userdata?.blance) {
-      //     throw new Error("userdata not found");
-      //   }
-      //   // Step 2: Check if the balance is sufficient
-      //   if (userdata?.blance.amount < charge) {
-      //     throw new Error("Insufficient balance");
-      //   }
+          switch (exam.examtype) {
+            // case "Exam":
+            //   break;
+            case "PYQ":
+              {
+                // colect question from mock exam set
+                if (exam?.mockSetId == null) {
+                  throw new Error("PYQ exam does not have any mock set.");
+                }
+                let mock_questions_set_status =
+                  await tx.mock_questions_set.findFirst({
+                    where: {
+                      id: exam?.mockSetId,
+                    },
+                    select: {
+                      status: true,
+                    },
+                  });
 
-      //   let user_blance = await tx.blance.update({
-      //     where: {
-      //       userid: userid,
-      //     },
-      //     data: {
-      //       amount: {
-      //         decrement: charge,
-      //       },
-      //     },
-      //     select: {
-      //       amount: true,
-      //     },
-      //   });
+                if (mock_questions_set_status?.status === "Done") {
+                  data = await tx.mock_questions_set.findFirst({
+                    where: {
+                      id: exam?.mockSetId,
+                    },
+                    select: {
+                      questions: true,
+                    },
+                  });
 
-      //   if (user_blance) {
-      //     return true;
-      //   }
+                  //  update when change
 
-      //   return false;
-      // });
+                  // data = await tx.question_map.findMany({
+                  //   where:{
+                  //     examid:exam.id
+                  //   }
+                  // })
+                } else {
+                  throw new Error("PYQ exam set is not ready yet.");
+                }
+              }
+              break;
 
-      let transaction = await TokenDeduction(userid, exam.examtype, "service");
+            case "Mock":
+              {
+                // colect question from mock exam set
+                if (exam?.mockSetId == null) {
+                  throw new Error("Mock exam does not have any mock set.");
+                }
+                let mock_questions_set_status =
+                  await tx.mock_questions_set.findFirst({
+                    where: {
+                      id: exam?.mockSetId,
+                    },
+                    select: {
+                      status: true,
+                    },
+                  });
+                if (mock_questions_set_status?.status === "Done") {
+                  data = await tx.mock_questions_set.findFirst({
+                    where: {
+                      id: exam?.mockSetId,
+                    },
+                    select: {
+                      questions: true,
+                    },
+                  });
 
-      if (transaction) {
-        // exam set up begine
+                  // data = await tx.question_map.findMany({
+                  //   where:{
+                  //     examid:exam.id
+                  //   }
+                  // })
+                } else {
+                  throw new Error("Mock exam set is not ready yet.");
+                }
+              }
+              break;
 
-        // check exam is type of  mock  , if mock  then point exam question set to  mocke exam set
+            default:
+              // data = await tx.exam.findFirst({
+              //   where: { id: examid },
+              //   select: {
+              //     questions: true,
+              //   },
+              // });
 
-        let data: { questions: any } | null = { questions: {} };
-
-        switch (exam.examtype) {
-          // case "Exam":
-          //   break;
-          case "Mock":
-            // colect question from mock exam set
-            if (exam?.mockSetId == null) {
-              throw new Error("Mock exam does not have any mock set.");
-            }
-            let mock_questions_set_status =
-              await prisma.mock_questions_set.findFirst({
+              data = await tx.question_map.findMany({
                 where: {
-                  id: exam?.mockSetId,
-                },
-                select: {
-                  status: true,
+                  examid: exam.id,
                 },
               });
-            if (mock_questions_set_status?.status === "Done") {
-              data = await prisma.mock_questions_set.findFirst({
+
+              if (!data) {
+                throw new Error("Exam not found");
+              }
+          }
+
+          // this line same for every type of exam so i can use it in last after checking all condition
+          // data = await tx.question_map.findMany({
+          //   where:{
+          //     examid:exam.id
+          //   }
+          // })
+
+          if (data) {
+            em.addexam(examid, data, true); // it this function i can get and set into redis cache
+            console.log("date added into exam manager");
+            em.user.adduser(examid, req.user);
+            console.log("user added into exam manager");
+          }
+
+          // progress update
+          switch (exam.examtype) {
+            case "Exam":
+              {
+                await tx.progress.update({
+                  where: {
+                    userid: userid,
+                  },
+                  data: {
+                    attempted: {
+                      increment: 1,
+                    },
+                    attendedExam: {
+                      increment: 1,
+                    },
+                  },
+                });
+              }
+              break;
+            case "Mock":
+              {
+                await tx.progress.update({
+                  where: {
+                    userid: userid,
+                  },
+                  data: {
+                    attempted: {
+                      increment: 1,
+                    },
+                    attendedMock: {
+                      increment: 1,
+                    },
+                  },
+                });
+              }
+              break;
+            case "PYQ":
+              {
+                await tx.progress.update({
+                  where: {
+                    userid: userid,
+                  },
+                  data: {
+                    attempted: {
+                      increment: 1,
+                    },
+                    attendedPYQ: {
+                      increment: 1,
+                    },
+                  },
+                });
+              }
+              break;
+            case "Contest":
+              await tx.progress.update({
                 where: {
-                  id: exam?.mockSetId,
+                  userid: userid,
                 },
-                select: {
-                  questions: true,
+                data: {
+                  attempted: {
+                    increment: 1,
+                  },
+                  attendedContest: {
+                    increment: 1,
+                  },
                 },
               });
-            } else {
-              throw new Error("Mock exam set is not ready yet.");
-            }
+              break;
+            default:
+              console.log("undefind exam type ", exam.examtype);
+          }
 
-            break;
-          // case "Contest":
-          //   charge = allamount?.contest ?? 2;
-          //   break;
-          // case "Subject":
-          //   charge = allamount?.subject ?? 2;
-          //   break;
-          default:
-            data = await prisma.exam.findFirst({
-              where: { id: examid },
-              select: {
-                questions: true,
-              },
-            });
-
-            if (!data) {
-              throw new Error("Exam not found");
-            }
-        }
-
-        if (data) {
-          em.addexam(examid, data);
-          console.log("date added into exam manager");
-          em.user.adduser(examid, req.user);
-          console.log("user added into exam manager");
-        }
-
-        // progress update
-        switch (exam.examtype) {
-          // case "Exam":
-          //   break;
-          // case "Mock":
-          //   break;
-          // case "Subject":
-          //   charge = allamount?.subject ?? 2;
-          //   break;
-          case "Contest":
-            await prisma.progress.update({
-              where: {
-                userid: userid,
-              },
-              data: {
-                attempted: {
-                  increment: 1,
-                },
-                attendedContest: {
-                  increment: 1,
-                },
-              },
-            });
-            break;
-          default:
-            await prisma.progress.update({
-              where: {
-                userid: userid,
-              },
-              data: {
-                attempted: {
-                  increment: 1,
-                },
-                attendedExam: {
-                  increment: 1,
-                },
-              },
-            });
-        }
-
-        await prisma.exam.update({
-          where: {
-            id: exam.id,
-          },
-          data: {
-            ContestRegister: {
-              update: {
-                count: {
-                  increment: 1,
-                },
-                users: {
-                  push: userid,
+          await tx.exam.update({
+            where: {
+              id: exam.id,
+            },
+            data: {
+              ContestRegister: {
+                update: {
+                  count: {
+                    increment: 1,
+                  },
+                  users: {
+                    push: userid,
+                  },
                 },
               },
             },
-          },
-        });
-      } else {
-        return res
-          .status(400)
-          .json({ success: false, message: "Transactions Failed" });
-      }
+          });
+        } else {
+          return res
+            .status(400)
+            .json({ success: false, message: "Transactions Failed" });
+        }
+      });
 
       res.json({
         success: true,
@@ -1237,7 +1507,7 @@ export const examJoinRequestProcess = async (req: any, res: any) => {
 
     if (error instanceof Error)
       res.status(400).json({
-        success: true,
+        success: false,
         message: error.message,
       });
   }
@@ -1251,7 +1521,14 @@ export const joinedExamData = async (req: any, res: any) => {
     let part = req.query.part;
     let userid = req.user;
 
-    let question = await em.getquestion(type, examid, userid, part, number);
+    let question = await em.getquestion(
+      type,
+      examid,
+      userid,
+      part,
+      number,
+      true
+    );
 
     if (!question) {
       return res.status(400).json({
@@ -1292,7 +1569,8 @@ export const submitAnswerhandler = async (req: any, res: any) => {
       part,
       Ans,
       number,
-      ismultiple
+      ismultiple,
+      true
     );
     // call back to user
     if (status) {
@@ -1316,6 +1594,7 @@ export const submitAnswerhandler = async (req: any, res: any) => {
     console.log("Error in exam controller", error);
   }
 };
+
 export const finalsubmitExam = async (req: any, res: any) => {
   try {
     let examid = req.query.examid;

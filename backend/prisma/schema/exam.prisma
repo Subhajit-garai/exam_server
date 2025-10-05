@@ -1,0 +1,106 @@
+model TargetExam {
+  id                String              @id @default(cuid())
+  name              String              @unique // e.g., "GATE", "UPSC"
+  shortCode         String?             @unique // e.g., "GATE", "CAT", "UPSC"
+  description       String?
+  examType          ExamScope           @default(NATIONAL) // examType to ExamScope
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  isDeleted         Boolean             @default(false)
+  category          String              @default("not seted")
+  subcriptionOffers subcriptionOffers[]
+  Syllabus          Syllabus[]
+  subjects          ExamSubjectMap[]
+  examTopics        ExamTopicMap[]
+  examYears         ExamYear[]
+}
+
+model ExamYear {
+  id                    String     @id @default(cuid())
+  year                  Int // e.g., 2025
+  slug                  String     @unique // e.g., "gate-2025"
+  status                ExamStatus @default(DRAFT)
+  registrationOpenDate  DateTime?
+  registrationCloseDate DateTime?
+  examStartDate         DateTime?
+  examEndDate           DateTime?
+  resultDate            DateTime?
+  category              String? // e.g., "Engineering", "Management"
+  notes                 Json? // flexible field for extra info
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  isDeleted             Boolean    @default(false)
+  // relation
+  targetExamId          String
+  targetExam            TargetExam @relation(fields: [targetExamId], references: [id])
+}
+
+model Exam_pattern {
+  id              String        @id @unique @default(cuid())
+  title           String?       @unique
+  format          examformate   @default(Text) // it not needed 
+  examname        String
+  category        String
+  syllabus        syllabusType  @default(Syllabus)
+  topics          String[]
+  difficulty      diffcultlevel @default(Easy)
+  part            Boolean?
+  checkbox        Boolean?
+  part_Count      Int           @default(1)
+  total_questions Int[]
+  check           check?
+  marks_values    Int[]
+  neg_values      Int[]
+  is_multiple_ans Int[]         @default([0, 0]) // 0 mean false 1 mean it is multiple value ans
+  created_by      String
+  Exam            Exam[]
+  User            User          @relation(fields: [created_by], references: [id])
+}
+
+model Exam {
+  id               String          @id @unique @default(cuid())
+  display_id       String?         @unique @default(nanoid(6))
+  name             String?         @default("No name")
+  examname         String
+  category         String
+  // questions        Json?
+  examtype         ExamType        @default(Exam)
+  mockSetId        String? // if examtype is Mock then it get mockset questions 
+  created_at       DateTime?       @default(now())
+  created_by       String
+  exam_pattern_id  String
+  ansid            String          @unique
+  Visibility       Visibility      @default(Private)
+  creationstatus   CreationTypes   @default(Processing)
+  starttime        String?         @default("08:00 pm") //or no limit // -> it start time , at this time you can join the exam , and join process open starttime + jointime 
+  jointime         String?         @default("00:15 m") // Open HH:MM:SS
+  duration         String          @default("02:00 h") // HH:MM   it is time  user can give or mark ans  , ans accept onlt starttime+jointime+timelimit+ 00:10 min
+  date             DateTime        @default(now())
+  isMultipleAttemp Boolean         @default(true)
+  isLive           Boolean         @default(true)
+  stage            ExamStage       @default(Registration)
+  register_id      String          @default("")
+  ContestRegister  ContestRegister @relation(fields: [register_id], references: [id])
+  AnsSheet         AnsSheet        @relation(fields: [ansid], references: [id])
+  User             User            @relation(fields: [created_by], references: [id])
+  exam_pattern     Exam_pattern    @relation(fields: [exam_pattern_id], references: [id])
+  leaderboard      leaderboard[]
+  questionsMap     question_map[]  @relation("ExamRelation")
+
+  @@index([examtype])
+}
+
+enum ExamScope {
+  NATIONAL
+  STATE
+  COLLEGE
+  OTHER
+}
+
+enum ExamStatus {
+  DRAFT
+  UPCOMING
+  ONGOING
+  COMPLETED
+  ARCHIVED
+}

@@ -30,8 +30,7 @@ export class RedisProvider {
   }
 
   push(data: Task) {
-    if (!this.redisClient) console.log("not cunnected....");
-
+    if (!this.redisClient) console.log("not connected....");
     let taskdata: string;
     taskdata = JSON.stringify(data);
     return this.redisClient.lpush(this.queue, taskdata);

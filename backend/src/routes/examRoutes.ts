@@ -21,14 +21,20 @@ import {
   getExamAnsForAnalisys,
   getUserAnsSetOfAnExam,
   getExamsbyid,
-  CreateExam_type,
+  getSyllabusByid,
+  create_targeted_exam,
+  create_targeted_exam_year,
+  update_targeted_exam_year,
 } from "../controllers/exam.controller";
 import { isAdmin } from "../../lib/auth";
 
 export const examRouter = Router();
 
-examRouter.get("/syllabus", getSyllabus);
+examRouter.get("/syllabus", getSyllabus);   // breaked update !!!
+examRouter.get("/get/syllabus/id", getSyllabusByid);
 examRouter.get("/tokensystem", gettokenSystem);
+
+
 
 // user
 examRouter.get("/category", getCategory);
@@ -48,8 +54,14 @@ examRouter.get("/avalibleExamPattern", isAdmin, getAvalibleExamPattern); // for 
 examRouter.post("/createpattern", isAdmin, CreateNewExamPattern);
 examRouter.post("/createsyllabus", isAdmin, CreateSyllabus);
 examRouter.post("/create", isAdmin, CreateExam);
-examRouter.post("/createv2", isAdmin, CreateExam_type);   //----------------------> working
-// examRouter.post("/create/contest", isAdmin, CreateContest);
+examRouter.post("/create/target/exam", isAdmin, create_targeted_exam);
+examRouter.post("/create/target/examyear", isAdmin, create_targeted_exam_year);
+examRouter.put("/update/target/examyear/info", isAdmin,update_targeted_exam_year);
+
+
+
+// end admin
+
 
 // leader board of an exam
 examRouter.get("/usermetadataforanexam", getUserMetaDataforAnExam)

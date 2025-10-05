@@ -1,0 +1,79 @@
+
+model Questions {
+  id              String        @id @unique @default(cuid())
+  title           String
+  options         String[]
+  extra           Json? // { "code":{void main (0) {}}}
+  ans             String[]
+  formate         examformate   @default(Text)
+  category        String
+  sub_topic       String        @default("none")
+  history         String[]      @default([""])
+  topic           String
+  explanation     String?       @default("no explanation added")
+  links           String[]      @default([""])
+  is_multiple_ans Boolean       @default(false)
+  difficulty      diffcultlevel
+  created_by      String
+  created_at      DateTime      @default(now())
+  status          Status        @default(Processing)
+  weight          Int           @default(0)
+  User            User          @relation(fields: [created_by], references: [id])
+
+  @@index([topic])
+}
+
+model mock_questions_set {
+  id                         String              @id @unique @default(cuid())
+  name                       String              @unique
+  exam                       String
+  category                   String
+  description                String
+  // questions                  Json?
+  pattern                    String?             @default("no exam pattern seted")
+  question_difficulty_weight Json? // { "Easy": 0, "MEDIUM": 0, "HARD": 0 }
+  question_topic_count       Json? // { "OS": 0, "DBMS": 0, "C": 0 }
+  question_part_count        Json? // { "part1": 0, "part2": 0 }
+  total_questions            Int[]               @default([])
+  selected_questions_count   Int[]               @default([])
+  status                     CreationTypes       @default(Processing)
+  created_at                 DateTime            @default(now())
+  updated_at                 DateTime            @default(now()) @updatedAt
+  questionsMap               mock_question_map[] @relation("MockRelation")
+}
+
+model question_map {
+  id         String   @id @unique @default(cuid())
+  number     Int      @default(0)
+  questionid String
+  part       String   @default("part1")
+  options    String[] @default([])
+  ans        String[] @default([])
+  examid     String?
+  isSuffled  Boolean  @default(false)
+  exam       Exam?    @relation("ExamRelation", fields: [examid], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@unique([examid, questionid, part])
+  @@index([examid])
+}
+
+model mock_question_map {
+  id                String             @id @unique @default(cuid())
+  number            Int                @default(0)
+  questionid        String
+  part              String             @default("part1")
+  options           String[]           @default([])
+  ans               String[]           @default([])
+  mockid            String?
+  isSuffled         Boolean            @default(false)
+  mock_questions_set   mock_questions_set? @relation("MockRelation", fields: [mockid], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@unique([mockid, questionid, part])
+  @@index([mockid])
+}

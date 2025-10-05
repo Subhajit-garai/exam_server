@@ -12,7 +12,7 @@ export type webhook_entry_type = "endpoint" | "baseurl"
 export type  webhook_type ={
     baseurl: string,
     endpoint: {
-        receiveQuizData: string,
+        survertask: string,
         startQuiz: string,
     }
 }

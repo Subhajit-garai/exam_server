@@ -1,0 +1,810 @@
+generator client {
+  provider        = "prisma-client-js"
+  // output   = "./generated/client"
+  previewFeatures = ["typedsql"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// subject models
+
+model Subject {
+  id             String       @id @unique @default(cuid())
+  order          Int          @unique
+  name           String       @unique
+  shortName      String?      @unique
+  description    String?      @default("No description provided")
+  created_at     DateTime     @default(now())
+  updated_at     DateTime     @updatedAt
+  slug           String       @unique
+  iconUrl        String? // URL to an icon/image
+  color          String? // hex color or Tailwind class
+  isPublic       Boolean      @default(true)
+  category       String // e.g. "Computer Science"
+  level          String? // e.g. "Beginner", "Advanced"
+  difficulty     Int? // e.g. 1-5 scale
+  traget_exam_id String?      @unique
+  traget_exam    traget_exam? @relation(fields: [traget_exam_id], references: [id])
+
+  // Optional: If you want to link this subject to exams or other models
+  topics Topic[]
+}
+
+enum TopicStatus {
+  draft
+  published
+  archived
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  topicId   String
+  authorId  String
+  createdAt DateTime @default(now())
+  topic     Topic    @relation(fields: [topicId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model TopicNoteVersion {
+  id          String   @id @default(cuid())
+  topicId     String
+  content     String?
+  version     Int?
+  attachments String[] @default([])
+  createdAt   DateTime @default(now())
+  topic       Topic    @relation(fields: [topicId], references: [id])
+}
+
+model Topic {
+  id            String  @id @unique @default(cuid())
+  name          String  @unique
+  subjectId     String
+  isparentTopic Boolean @default(false) //  NEW: Flag to indicate if this is a parent topic
+  parentTopicId String? //  NEW: FK to parent topic (optional)
+  parentTopic   Topic?  @relation("SubTopics", fields: [parentTopicId], references: [id])
+  subtopics     Topic[] @relation("SubTopics")
+  shortName     String? @unique
+
+  order             Int                @default(100)
+  description       String?            @default("No description provided")
+  slug              String             @unique
+  iconUrl           String? // URL to an icon/image
+  color             String? // hex color or Tailwind class
+  tags              String[]           @default([]) // or make a separate Tag model for many-to-many
+  content           String             @default("no content added ")
+  like              Int                @default(0) // Number of likes
+  dislike           Int                @default(0) // Number of dislikes
+  readCount         Int                @default(0) // Number of times the topic has been read
+  comments          Int                @default(0) // Number of comments on the topic
+  isPublic          Boolean            @default(false)
+  estimatedReadTime Int? // in minutes
+  commentEnabled    Boolean            @default(true)
+  version           Int                @default(100)
+  verified          Boolean            @default(false)
+  attachments       String[]           @default([])
+  language          String? // e.g. "en", "hi", "bn"
+  status            TopicStatus        @default(draft)
+  subject           Subject            @relation(fields: [subjectId], references: [id])
+  Comment           Comment[]
+  TopicNoteVersion  TopicNoteVersion[]
+  publishedAt       DateTime? // When the topic was published
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  createdBy String?
+  updatedBy String?
+
+  relatedTopics   Topic[] @relation("RelatedTopics")
+  relatedByTopics Topic[] @relation("RelatedTopics")
+  User            User?   @relation(fields: [createdBy], references: [id])
+
+  @@unique([subjectId, order])
+  @@index([subjectId])
+}
+
+model User {
+  id                  String         @id @unique @default(cuid())
+  name                String
+  email               String         @unique
+  contactno           String?        @default("0000000000") // only india
+  password            String
+  telegramid          String?        @unique
+  verificationid      String?        @unique
+  progressid          String?        @unique
+  role                UserRole       @default(User)
+  join_at             DateTime       @default(now())
+  forgotpasswordToken String? // forget password
+  resetTokenExpires   DateTime       @default(now()) // forget password
+  accesstoken         String[]       @default([]) // only one device access token
+  Exam                Exam[]
+  Exam_pattern        Exam_pattern[]
+  Questions           Questions[]
+  telegram            telegram?      @relation(fields: [telegramid], references: [id])
+  verification        verification?  @relation(fields: [verificationid], references: [id])
+  blance              blance?
+  Order               Order[]
+  payment             payment[]
+  leaderboard         leaderboard[]
+  quiz                quiz[]
+  prime               prime?
+  Comment             Comment[]
+  Topic               Topic[]
+
+  @@index([role])
+}
+
+enum groupType {
+  group
+  private
+  channel
+  supergroup
+}
+
+model telegramGroupInfo {
+  id           String    @id @unique @default(cuid())
+  groupid      String    @unique
+  groupname    String
+  groupType    groupType @default(group)
+  grouplink    String?
+  isTopic      Boolean   @default(false)
+  isPremium    Boolean   @default(false)
+  // topics       Json? // { "quiz": 109392 , "discussion": 109392 }
+  adminIds     String[] // List of Telegram user IDs who can manage the bot in the group
+  isBanned     Boolean   @default(false) // If true, bot won't respond in this group
+  lastActiveAt DateTime? // When the bot last interacted in the group
+  messageCount Int       @default(0)
+  quizCount    Int       @default(0)
+  language     String    @default("en")
+  timezone     String? // e.g. "Asia/Kolkata"
+  features     Json? // Example: { "quiz": true, "dailyTips": false }
+
+  groupstatus        String?              @default("open")
+  created_at         DateTime             @default(now())
+  telegramGroupTopic telegramGroupTopic[]
+}
+
+model telegramGroupTopic {
+  id      String            @id @default(cuid())
+  group   telegramGroupInfo @relation(fields: [groupId], references: [id])
+  groupId String
+  name    String // e.g. "quiz"
+  topicId Int // Telegram's internal topic ID
+}
+
+model telegram_ban_user {
+  id               String     @id @unique @default(cuid())
+  bot_id           String
+  user_telegram_id String
+  ban_from_type    String
+  ban_from_id      String
+  status           ban_status @default(Ban)
+  at               DateTime   @default(now()) @updatedAt
+
+  @@unique([user_telegram_id, ban_from_id])
+}
+
+model botQuizConfig {
+  id               String   @id @unique @default(cuid())
+  chatId           String? // Telegram chat ID
+  quiztopic        String[]
+  rapidtopic       String[]
+  exam             String
+  nextQuestionTime Int      @default(40) // in seconds
+  quizOpenFor      Int      @default(60) // in seconds
+  question_count   String   @default("0")
+  created_by       String?
+  created_at       DateTime @default(now())
+}
+
+model botInfo {
+  id         String @id @unique @default(cuid())
+  botuser_id String @unique
+  token      String
+  webhook    Json?
+}
+
+enum ban_status {
+  Ban
+  UnBan
+  Block
+}
+
+enum UserRole {
+  Admin
+  User
+  Bot
+}
+
+model coupon {
+  id         String   @id @unique @default(cuid())
+  token      Int      @default(0) // if offer 
+  count      Int      @default(0)
+  cupon      String[] @default([])
+  accessby   String[] @default([])
+  created_by String?
+  created_at DateTime @default(now())
+}
+
+//  score model
+model timescale_score {
+  id                String   @default(cuid())
+  user_id           String
+  exam_id           String
+  score             Int
+  not_attempt       Int?     @default(0)
+  topic_wise_result Json?
+  result            Json?
+  time              DateTime @default(now()) @db.Timestamptz(6)
+
+  @@id([id, time])
+  @@unique([user_id, exam_id, time])
+  @@index([time(sort: Desc)])
+}
+
+model score {
+  id                String   @id @default(cuid())
+  user_id           String
+  exam_id           String
+  leaderboard_id    String   @default(cuid())
+  not_attempt       Int?     @default(0)
+  score             Int
+  total_questions   Int      @default(0)
+  topic_wise_result Json?
+  result            Json?
+  time              DateTime @default(now())
+
+  @@unique([user_id, exam_id, time])
+  @@index([exam_id])
+  @@index([user_id])
+  @@index([time(sort: Desc)])
+}
+
+model leaderboard {
+  id      String   @id @default(cuid())
+  user_id String?
+  exam_id String
+  rank    Int
+  score   Int
+  time    DateTime @default(now())
+  // user       User     @relation(fields: [user_id], references: [id])
+  exam    Exam     @relation(fields: [exam_id], references: [id])
+  User    User?    @relation(fields: [user_id], references: [id])
+
+  @@unique([user_id, exam_id, time]) // Ensures one rank per user per exam
+}
+
+model Issue {
+  id           String    @id @unique @default(cuid())
+  type         IssueType
+  sub_type     String?   @default("General")
+  note         String?
+  IssueDetails Json
+  status       Status    @default(Created)
+  upVote       Int       @default(0)
+  downVote     Int       @default(0)
+  priorityVote Int       @default(0)
+  created_at   DateTime  @default(now())
+  creator_role UserRole  @default(User)
+  created_by   String?
+}
+
+model events {
+  id          String    @id @unique @default(cuid())
+  type        eventType
+  description String
+  data        Json
+  conditions  Json
+  isActive    Boolean   @default(true)
+  created_by  UserRole  @default(Bot)
+  created_at  DateTime  @default(now())
+  runs        eventRuns @default(ONE) // ones / daily
+  run_at      String // Exact time to run (if applicable) // or Any for the current/any time
+
+  @@index([type]) // Index for faster filtering by event type
+  @@index([runs]) // Index for scheduling queries
+  @@index([run_at]) // Index for scheduling queries
+}
+
+model EntryChargeList {
+  id         String   @id @unique @default(cuid())
+  type       String   @default("not set")
+  Charge     Int      @default(0)
+  created_at DateTime @default(now())
+  created_by String?
+}
+
+model Tier {
+  id        String        @id @default(cuid())
+  name      primeStatus   @unique
+  benefits  TierBenefit[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  subcriptionOffers subcriptionOffers[]
+}
+
+model TierBenefit {
+  id        String   @id @default(cuid())
+  tierId    String
+  feature   ExamType // "Exam", "Mock"
+  access    Boolean // true then it is free access , false then it is paid access
+  limit     Int?
+  used      Int?
+  tier      Tier     @relation(fields: [tierId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tierId, feature]) // prevent duplicates
+}
+
+model subcriptionOffers {
+  id             String       @id @unique @default(cuid())
+  markedPrice    Int
+  discount       Int //  40 -> 40 % off /discount
+  type           purchaseType
+  title          String
+  price          Int
+  token          Int? // if offer
+  isExamBased    Boolean      @default(false)
+  traget_exam_id String?
+  tierId         String?
+  time           String? // if subcription
+  offerActive    String[]     @default([])
+  offerInActive  String[]     @default([])
+  btncolor       String       @default("")
+  created_by     String?
+  created_at     DateTime     @default(now())
+
+  traget_exam traget_exam? @relation(fields: [traget_exam_id], references: [id])
+  tier        Tier?        @relation(fields: [tierId], references: [id])
+}
+
+model traget_exam {
+  id        String   @id @unique @default(cuid())
+  name      String
+  year      Int
+  date      DateTime
+  category  String   @default("not updated ")
+  isOver    Boolean  @default(false)
+  isPublic  Boolean  @default(false)
+  isActive  Boolean  @default(false)
+  update_at DateTime @updatedAt
+
+  subcriptionOffers subcriptionOffers[]
+  Syllabus          Syllabus[]
+  Subject           Subject[]
+
+  @@unique([name, year])
+}
+
+model Syllabus {
+  id             String       @id @unique @default(cuid())
+  category       String
+  topics         String[]
+  created_at     DateTime     @default(now())
+  traget_exam_id String?      @unique
+  traget_exam    traget_exam? @relation(fields: [traget_exam_id], references: [id])
+}
+
+enum primeStatus {
+  None
+  Bronze
+  Silver
+  Gold
+}
+
+enum purchaseType {
+  subcription
+  token
+}
+
+model Order {
+  id          String       @id @default(cuid())
+  userId      String // Link to your user model
+  order_id    String       @unique // if it is payment then it store rezorpay_order_id
+  type        purchaseType @default(token)
+  amount      Int
+  token       Int?         @default(0)
+  subcription String?      @default("")
+  status      String       @default("pending") // Track order status
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
+}
+
+model payment {
+  id                  String   @id @unique @default(cuid())
+  razorpay_order_id   String   @unique
+  razorpay_payment_id String   @unique
+  razorpay_signature  String
+  amount              Int // Payment amount (in smallest currency unit, e.g., paise for INR)
+  currency            String   @default("INR") // Default currency is INR
+  status              String   @default("pending") // Payment status: pending, success, or failed
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  userId              String // Link to your user model
+  User                User     @relation(fields: [userId], references: [id])
+}
+
+model prime {
+  id          String      @id @unique @default(cuid())
+  status      primeStatus @default(None)
+  userid      String      @unique
+  expiryInday Int?        @default(0)
+  expiry      DateTime    @default(now())
+  User        User        @relation(fields: [userid], references: [id])
+  updatedAt   DateTime    @default(now()) @updatedAt
+}
+
+model verification {
+  id        String   @id @unique @default(cuid())
+  contactno Boolean  @default(false)
+  email     Boolean  @default(false)
+  telegram  Boolean  @default(false)
+  whatsapp  Boolean  @default(false)
+  User      User?
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model progress {
+  id              String   @id @default(cuid())
+  attempted       Int      @default(0) // Total attempted
+  attendedContest Int      @default(0) // Total contests attended
+  attendedQuiz    Int      @default(0) // Total quizzes attended
+  attendedExam    Int      @default(0) // Total exams attended
+  attendedMock    Int      @default(0) // Total exams attended
+  attendedPYQ     Int      @default(0) // Total exams attended
+  userid          String   @unique
+  rank            Int      @default(0) // Global rank
+  inTopten        Int      @default(0) // Top 10 status
+  accuracy        Int      @default(0)
+  topinexam       Int      @default(0)
+  topinContest    Int      @default(0)
+  openRegister    Int      @default(0)
+  lastExamid      String   @default("not seted")
+  lastDppid       String   @default("not seted")
+  lastMockid      String   @default("not seted")
+  lastContestid   String   @default("not seted")
+  lastQuizid      String   @default("not seted")
+  lastExamRank    Int      @default(0)
+  lastDppRank     Int      @default(0)
+  lastMockRank    Int      @default(0)
+  lastContestRank Int      @default(0)
+  lastQuizRank    Int      @default(0)
+  time            DateTime @default(now()) @db.Timestamptz(6)
+
+  // @@index([userid]) // Faster queries by user
+}
+
+model blance {
+  id          String   @id @unique @default(cuid())
+  userid      String   @unique
+  amount      Int      @default(0)
+  ticket      Int      @default(0)
+  last_update DateTime @updatedAt
+
+  User User @relation(fields: [userid], references: [id])
+}
+
+model telegram {
+  id          String   @id @unique @default(cuid())
+  userid      String?
+  telegramid  String?  @default("0000000000") // change it to teleid --> telegramid
+  last_update DateTime @updatedAt
+  User        User?
+}
+
+model Questions {
+  id              String        @id @unique @default(cuid())
+  title           String
+  options         String[]
+  extra           Json? // { "code":{void main (0) {}}}
+  ans             String[]
+  formate         examformate   @default(Text)
+  category        String
+  sub_topic       String        @default("none")
+  history         String[]      @default([""])
+  topic           String
+  explanation     String?       @default("no explanation added")
+  links           String[]      @default([""])
+  is_multiple_ans Boolean       @default(false)
+  difficulty      diffcultlevel
+  created_by      String
+  created_at      DateTime      @default(now())
+  status          Status        @default(Processing)
+  weight          Int           @default(0)
+  User            User          @relation(fields: [created_by], references: [id])
+
+  @@index([topic])
+}
+
+model Exam_pattern {
+  id              String        @id @unique @default(cuid())
+  title           String?       @unique
+  format          examformate   @default(Text) // it not needed 
+  examname        String
+  category        String
+  syllabus        syllabusType  @default(Syllabus)
+  topics          String[]
+  difficulty      diffcultlevel @default(Easy)
+  part            Boolean?
+  checkbox        Boolean?
+  part_Count      Int           @default(1)
+  total_questions Int[]
+  check           check?
+  marks_values    Int[]
+  neg_values      Int[]
+  is_multiple_ans Int[]         @default([0, 0]) // 0 mean false 1 mean it is multiple value ans
+  created_by      String
+  Exam            Exam[]
+  User            User          @relation(fields: [created_by], references: [id])
+}
+
+model mock_questions_set {
+  id                         String              @id @unique @default(cuid())
+  name                       String              @unique
+  exam                       String
+  category                   String
+  description                String
+  // questions                  Json?
+  pattern                    String?             @default("no exam pattern seted")
+  question_difficulty_weight Json? // { "Easy": 0, "MEDIUM": 0, "HARD": 0 }
+  question_topic_count       Json? // { "OS": 0, "DBMS": 0, "C": 0 }
+  question_part_count        Json? // { "part1": 0, "part2": 0 }
+  total_questions            Int[]               @default([])
+  selected_questions_count   Int[]               @default([])
+  status                     CreationTypes       @default(Processing)
+  created_at                 DateTime            @default(now())
+  updated_at                 DateTime            @default(now()) @updatedAt
+  questionsMap               mock_question_map[] @relation("MockRelation")
+}
+
+model question_map {
+  id         String   @id @unique @default(cuid())
+  number     Int      @default(0)
+  questionid String
+  part       String   @default("part1")
+  options    String[] @default([])
+  ans        String[] @default([])
+  examid     String?
+  isSuffled  Boolean  @default(false)
+  exam       Exam?    @relation("ExamRelation", fields: [examid], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@unique([examid, questionid, part])
+  @@index([examid])
+}
+
+model mock_question_map {
+  id                String             @id @unique @default(cuid())
+  number            Int                @default(0)
+  questionid        String
+  part              String             @default("part1")
+  options           String[]           @default([])
+  ans               String[]           @default([])
+  mockid            String?
+  isSuffled         Boolean            @default(false)
+  mock_questions_set   mock_questions_set? @relation("MockRelation", fields: [mockid], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@unique([mockid, questionid, part])
+  @@index([mockid])
+}
+
+model Exam {
+  id               String          @id @unique @default(cuid())
+  display_id       String?         @unique @default(nanoid(6))
+  name             String?         @default("No name")
+  examname         String
+  category         String
+  // questions        Json?
+  examtype         ExamType        @default(Exam)
+  mockSetId        String? // if examtype is Mock then it get mockset questions 
+  created_at       DateTime?       @default(now())
+  created_by       String
+  exam_pattern_id  String
+  ansid            String          @unique
+  status           ExamStatus      @default(Private)
+  creationstatus   CreationTypes   @default(Processing)
+  starttime        String?         @default("08:00 pm") //or no limit // -> it start time , at this time you can join the exam , and join process open starttime + jointime 
+  jointime         String?         @default("00:15 m") // Open HH:MM:SS
+  duration         String          @default("02:00 h") // HH:MM   it is time  user can give or mark ans  , ans accept onlt starttime+jointime+timelimit+ 00:10 min
+  date             DateTime        @default(now())
+  isMultipleAttemp Boolean         @default(true)
+  isLive           Boolean         @default(true)
+  stage            ExamStage       @default(Registration)
+  register_id      String          @default("")
+  ContestRegister  ContestRegister @relation(fields: [register_id], references: [id])
+  AnsSheet         AnsSheet        @relation(fields: [ansid], references: [id])
+  User             User            @relation(fields: [created_by], references: [id])
+  exam_pattern     Exam_pattern    @relation(fields: [exam_pattern_id], references: [id])
+  leaderboard      leaderboard[]
+  questionsMap     question_map[]  @relation("ExamRelation")
+
+  @@index([examtype])
+}
+
+model ContestRegister {
+  id     String   @id @unique @default(cuid())
+  examId String?  @default("new_value_not_seted")
+  count  Int      @default(0)
+  users  String[] @default([])
+  Exam   Exam[]
+}
+
+model AnsSheet {
+  id     String        @id @unique @default(cuid())
+  ans    Json?
+  examId String?
+  status CreationTypes @default(Processing)
+  Exam   Exam?
+  // quiz   quiz?
+}
+
+enum quiz_type {
+  telegram_quiz
+  quiz // web quiz
+}
+
+model quiz {
+  id                   String        @id @unique @default(cuid())
+  display_id           String?       @unique @default(nanoid(6))
+  quizRegister_id      String?       @default("Private quiz")
+  is_need_registration Boolean       @default(false)
+  name                 String?       @default("No name")
+  category             String
+  topics               String[]      @default([""]) // id 
+  created_at           DateTime?     @default(now())
+  created_by           String        @default("No name")
+  examtype             String        @default("quiz")
+  status               ExamStatus    @default(Private)
+  creationstatus       CreationTypes @default(Processing)
+  starttime            String?       @default("00:00 pm")
+  endtime              String        @default("00:00 h")
+  nextQuestionTime     Int           @default(40) // in seconds
+  quizOpenFor          Int           @default(60) // in seconds
+  question_count       String        @default("0")
+  quiz_type            quiz_type     @default(quiz)
+  chatId               String? // Telegram chat ID // it can be group or private
+  date         DateTime      @default(now())
+  stage        ExamStage     @default(Registration)
+  quizRegister quizRegister? @relation(fields: [quizRegister_id], references: [id])
+  User         User          @relation(fields: [created_by], references: [id])
+
+  quiz_question_map quiz_question_map[]
+}
+
+model quiz_question_map {
+  id         String   @id @unique @default(cuid())
+  number     Int      @default(0)
+  questionid String
+  options    String[] @default([])
+  ans        String[] @default([])
+  suffleKey  String?
+  isSuffled  Boolean  @default(false)
+  quizid     String?
+  quiz       quiz?    @relation(fields: [quizid], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@unique([quizid, questionid])
+  @@index([quizid])
+}
+
+model quizRegister {
+  id      String   @id @unique @default(cuid())
+  quiz_id String?  @unique @default("new_value_not_seted")
+  count   Int      @default(0)
+  users   String[] @default([])
+  quiz    quiz[]
+}
+
+enum ExamStage {
+  Registration
+  Started
+  Ended
+}
+
+model UserAns {
+  id     String @id @unique @default(cuid())
+  ans    Json
+  examId String
+  userId String
+}
+
+enum diffcultlevel {
+  Easy
+  Medium
+  Hard
+}
+
+enum check {
+  Normal
+  Hybrid
+}
+
+enum Status {
+  Created
+  Processing
+  Done
+  Duplicate
+  Suspended
+  Close
+}
+
+enum CreationTypes {
+  Updated
+  Created
+  Processing
+  Done
+  Suspended
+}
+
+enum ExamStatus {
+  Public
+  Private
+}
+
+enum syllabusType {
+  Generic
+  Syllabus
+}
+
+enum examformate {
+  Text
+  Image
+  Code
+}
+
+enum ExamType {
+  Exam // dynamic exam set 
+  Contest // compeations
+  Mock // for fixed question set like 2024 jeca set 
+  PYQ // 2024 jeca Exam 
+  Subject // for topic 30 question
+  Dpp
+  Quiz
+}
+
+model AppConfig {
+  id         String   @id @default(cuid())
+  feature    String   @unique
+  settings   Json
+  updated_at DateTime @updatedAt
+}
+
+enum eventType {
+  RUN_NEW_QUIZ
+  CREATE_QUIZ_CONTEST
+  SEND_MESSAGE
+  CREATE_DPP
+  CREATE_EXAM
+  CLEAR_BOT_CACHE
+}
+
+enum eventRuns {
+  ONE
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum IssueType {
+  QUESTION
+  UI
+  EXAM
+  PAYMENT
+  LOGIN
+  SIGNUP
+}

@@ -1,0 +1,14 @@
+model Issue {
+  id           String    @id @unique @default(cuid())
+  type         IssueType
+  sub_type     String?   @default("General")
+  note         String?
+  IssueDetails Json
+  status       Status    @default(Created)
+  upVote       Int       @default(0)
+  downVote     Int       @default(0)
+  priorityVote Int       @default(0)
+  created_at   DateTime  @default(now())
+  creator_role UserRole  @default(User)
+  created_by   String?
+}

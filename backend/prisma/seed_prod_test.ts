@@ -1,11 +1,17 @@
 import prisma from "../db/index";
-import { primeStatus } from "@prisma/client";
-import {
-  Createhash,
-  generateResetToken,
-  hashPasswordFn,
-  veryfyhashPasswordFn,
-} from "../lib/hash";
+import { primeStatus, UserRole } from "@prisma/client";
+import { hashPasswordFn } from "../lib/hash";
+import path, { join } from "path";
+
+import { addevent } from "./DB_setup/Tables/events";
+import { SubcriptionsAndOffer } from "./DB_setup/Tables/subcriptionAndOffer";
+import { telegramGroupInfo } from "./DB_setup/Tables/telegramGroupInfo";
+import { entryCharges } from "./DB_setup/Tables/entryCharges";
+import { tierBenifit } from "./DB_setup/Tables/tierBenifit";
+import { createDpppattern } from "./DB_setup/Tables/createDpppattern";
+import { sendBulkQuestionData } from "./DB_setup/Tables/questionsLoder";
+import { sendBulkMockAndPyqData } from "./DB_setup/Tables/MockAndPyqLoader";
+import { settings } from "./DB_setup/Tables/settings";
 
 async function main() {
   console.log("Seeding database...");
@@ -15,10 +21,10 @@ async function main() {
     data: {
       name: "subhajit garai",
       email: "subhajitgarai988@gmail.com",
-      role: "Admin",
+      role: UserRole.Admin,
       prime: {
         create: {
-          status: primeStatus.none,
+          status: primeStatus.None,
         },
       },
       telegram: {
@@ -40,25 +46,25 @@ async function main() {
       password: await hashPasswordFn("subhajit@2002"),
     },
   });
-
-  const bot = await prisma.user.create({
+  const razerpayDemoUser = await prisma.user.create({
     data: {
-      name: "bot1",
-      email: "bot1@exambuddys.in",
+      name: "Razerpay ",
+      email: process.env.RAZERPAY_TESTACCESS_USER_EMAIL!,
+      role: UserRole.Admin,
       prime: {
         create: {
-          status: primeStatus.none,
+          status: primeStatus.None,
         },
       },
       telegram: {
         create: {
-          telegramid: "1234782",
+          telegramid: "92837878822",
           last_update: new Date(),
         },
       },
       blance: {
         create: {
-          amount: 10,
+          amount: 1,
           ticket: 1,
           last_update: new Date(),
         },
@@ -66,180 +72,129 @@ async function main() {
       verification: {
         create: {},
       },
-      password: await hashPasswordFn("bot1@exambuddys.in"),
+      password: await hashPasswordFn("subhajit@2002"),
     },
   });
-  
 
-  const user2 = await prisma.user.create({
+  const bot = await prisma.user.create({
     data: {
-      name: "debasmita",
-      email: "debasmitac73@gmail.com",
-      // role: "User",
+      name: "bot1",
+      email: "bot1@exambuddys.in",
+      role: UserRole.Bot,
       prime: {
         create: {
-          status: primeStatus.none,
+          status: primeStatus.None,
         },
       },
       telegram: {
         create: {
-          telegramid: "123893784",
+          telegramid: "123456",
           last_update: new Date(),
         },
       },
       blance: {
         create: {
-          amount: 1000,
-          ticket: 100,
+          amount: 1,
+          ticket: 1,
           last_update: new Date(),
         },
       },
       verification: {
         create: {},
       },
-      password: await hashPasswordFn("tester@debasmitac73"),
+      password: await hashPasswordFn("bot1@exambuddys.in@subhajit@jeca"),
     },
   });
-  const user3 = await prisma.user.create({
+
+  await prisma.botInfo.create({
     data: {
-      name: " ani adhikary",
-      email: "ani.adhikary.official@gmail.com",
-      // role: "User",
+      botuser_id: bot.id,
+      token: "8177562050:AAENozTalo0wmtt13v4x-Mb_PnFNT7G_zvY", // test.bot
+      webhook: {
+        baseurl: "https://bot.exambuddys.in",
+        endpoint: { survertask: "/survertask" },
+      },
+    },
+  });
+
+  const bot2 = await prisma.user.create({
+    data: {
+      name: "bot1",
+      email: "bot2@exambuddys.in",
+      role: UserRole.Bot,
       prime: {
         create: {
-          status: primeStatus.none,
+          status: primeStatus.None,
         },
       },
       telegram: {
         create: {
-          telegramid: "12786782",
+          telegramid: "#8177562050",
           last_update: new Date(),
         },
       },
       blance: {
         create: {
-          amount: 1000,
-          ticket: 100,
+          amount: 1,
+          ticket: 1,
           last_update: new Date(),
         },
       },
       verification: {
         create: {},
       },
-      password: await hashPasswordFn("tester@adhikary"),
+
+      password: await hashPasswordFn("bot2@exambuddys.in@subhajit@jeca"),
     },
   });
-  const user4 = await prisma.user.create({
-    data: {
-      name: " debsankar dhara",
-      email: "20debsankardhara03@gmail.com",
-      // role: "User",
-      prime: {
-        create: {
-          status: primeStatus.none,
-        },
-      },
-      telegram: {
-        create: {
-          telegramid: "123354892",
-          last_update: new Date(),
-        },
-      },
-      blance: {
-        create: {
-          amount: 1000,
-          ticket: 100,
-          last_update: new Date(),
-        },
-      },
-      verification: {
-        create: {},
-      },
-      password: await hashPasswordFn("tester@debsankar"),
-    },
-  });
-  const user5 = await prisma.user.create({
-    data: {
-      name: "Biraj",
-      email: "bir112277@gmail.com",
-      // role: "User",
-      prime: {
-        create: {
-          status: primeStatus.none,
-        },
-      },
-      telegram: {
-        create: {
-          telegramid: "12335494188",
-          last_update: new Date(),
-        },
-      },
-      blance: {
-        create: {
-          amount: 1000,
-          ticket: 100,
-          last_update: new Date(),
-        },
-      },
-      verification: {
-        create: {},
-      },
-      password: await hashPasswordFn("tester@Biraj"),
-    },
-  });
+
+  // await prisma.botInfo.create({
+  //   data: {
+  //     botuser_id: bot2.id,
+  //     token: "7903411142:AAGEsSlYFD89wc1JOf8KppQqdb1slIicTMY", // testbotprime.bot
+  //     webhook: {
+  //       baseurl: "https://bot.exambuddys.in",
+  //       endpoint: {receiveQuizData:"/reciveQuizData"},
+  //     },
+  //   },
+  // });
 
   // progress
 
   await prisma.progress.create({
-    data:{
-      userid:user1.id
-    }
-  })
-  await prisma.progress.create({
-    data:{
-      userid:user2.id
-    }
-  })
-  await prisma.progress.create({
-    data:{
-      userid:user3.id
-    }
-  })
-  await prisma.progress.create({
-    data:{
-      userid:user4.id
-    }
-  })
-  await prisma.progress.create({
-    data:{
-      userid:user5.id
-    }
-  })
-  // Create Prime Memberships
-  await prisma.prime.createMany({
-    data: [
-      { userid: user1.id, status: "gold", expiry: new Date("2025-12-31") },
-    ],
-  });
-
-  // EntryChargeList
-  const EntryChargeList = await prisma.entryChargeList.create({
     data: {
-      exam: 3,
-      contest: 4,
-      quiz: 1,
-      created_by: user1.id,
+      userid: user1.id,
     },
   });
+
+  let target_exam = await prisma.targetExam.create({
+    data: {
+      name: "JECA",
+      shortCode: "JECA",
+    },
+  });
+
   // Syllabus
   const Syllabus = await prisma.syllabus.create({
     data: {
       category: "CS",
-      examname: "JECA",
-      topics: ["OS", "C","DBMS","NETWORK" ,"UNIX","COMPUTER","DSA"],
+      target_exam_id: target_exam.id,
+      topics: [
+        "OS",
+        "C",
+        "DBMS",
+        "NETWORK",
+        "UNIX",
+        "COMPUTER",
+        "DSA",
+        "SE",
+        "CPP",
+        "ML",
+      ],
     },
   });
-  // CreatePattern
+
+  // exampattern Pattern
 
   const exam_pattern = await prisma.exam_pattern.create({
     data: {
@@ -253,43 +208,23 @@ async function main() {
       part: true,
       checkbox: true,
       part_Count: 2,
-      total_questions: [80,20],
+      total_questions: [80, 20],
       check: "Hybrid",
-      marks_values: [1,2],
-      neg_values: [4,0],
+      marks_values: [1, 2],
+      neg_values: [4, 0],
+      is_multiple_ans: [0, 1],
       created_by: user1.id,
     },
   });
 
-  const payment_access = await prisma.appConfig.create({
-    data: {
-      feature:"token-purchases",
-      settings:{status:"close"}
-    }
-  });
-  const user_login_access = await prisma.appConfig.create({
-    data: {
-      feature:"user-login",
-      settings:{status:"open"}
-    }
-  });
-  const user_signup_access = await prisma.appConfig.create({
-    data: {
-      feature:"user-signup",
-      settings:{status:"close"}
-    }
-  });
-
-
-  let botQuizConfig = await prisma.botQuizConfig.create({
-    data:{
-      exam:"JECA",
-      quiztopic:["UNIX"],
-      question_count:"25",
-      rapidtopic:["UNIX" , "OS"]
-    }
-  })
-
+  //   await sendBulkQuestionData(
+  //     path.resolve("prisma", "DB_setup", "data", "question.json"),
+  //     user1.id
+  //   );
+  //   await sendBulkMockAndPyqData(
+  //     path.resolve("prisma", "DB_setup", "data", "mockAndqyq.json"),
+  //     user1.id
+  //   );
 
   console.log("Seeding completed.");
 }

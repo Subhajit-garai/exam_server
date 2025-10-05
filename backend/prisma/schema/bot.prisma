@@ -1,0 +1,19 @@
+model botQuizConfig {
+  id               String   @id @unique @default(cuid())
+  chatId           String? // Telegram chat ID
+  quiztopic        String[]
+  rapidtopic       String[]
+  exam             String
+  nextQuestionTime Int      @default(40) // in seconds
+  quizOpenFor      Int      @default(60) // in seconds
+  question_count   String   @default("0")
+  created_by       String?
+  created_at       DateTime @default(now())
+}
+
+model botInfo {
+  id         String @id @unique @default(cuid())
+  botuser_id String @unique
+  token      String
+  webhook    Json?
+}

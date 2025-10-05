@@ -4,11 +4,12 @@ import {
   diffcultlevel,
   eventRuns,
   eventType,
+  Visibility,
   ExamStatus,
   ExamType,
+  groupType,
   UserRole,
 } from "@prisma/client";
-
 
 // default event type
 
@@ -55,7 +56,7 @@ export type Create_Exam_data_type = {
   category: string;
   jointime?: string; //"00:15 m"
   duration?: string; //"00:15 m"
-  status?: ExamStatus;
+  Visibility?:Visibility
   exam_pattern: string;
   time_limit: string; // "t+2" // t t+1 t+2  --> 3 day exam create 12/2 -> 3 , 13/2 ->3 , 14/2 ->3
   difficulty: diffcultlevel;
@@ -69,7 +70,7 @@ export type Create_DPP_data_type = {
   category: string;
   jointime?: string; //"00:15 m"
   duration?: string; //"00:15 m"
-  status?: ExamStatus;
+  Visibility?:Visibility
   exam_pattern: string[];
   time_limit: string; // "t+2" // t t+1 t+2  --> 3 day exam create 12/2 -> 3 , 13/2 ->3 , 14/2 ->3
   difficulty: diffcultlevel;
@@ -105,8 +106,10 @@ export type Create_Dpp_type = {
 export type Create_Telegram_Quiz_data_type = {
   type: "quiz" | "rapidquiz";
   bot_user_id: string; // bot id
+  chat_type: groupType;
   bot_provided_user_id: number;
   bot_provided_chat_id: number;
+  thread_id?: number;
 };
 export type Create_Telegram_Quiz_type = {
   id?: string;
@@ -119,8 +122,20 @@ export type Create_Telegram_Quiz_type = {
   run_at: string; //02:00 pm  // Exact time to run (if applicable) if "any" means it ran any time
 };
 
+export type Clear_bot_cache_type = {
+  id?: string;
+  type: "CLEAR_BOT_CACHE";
+  description: string;
+  data: {};
+  conditions: default_conditions_type; // id none then none condition
+  created_by: UserRole;
+  runs: eventRuns;
+  run_at: string; //02:00 pm  // Exact time to run (if applicable) if "any" means it ran any time
+};
+
 export type events =
   | Message_Send_Type
   | Create_Exam_type
   | Create_Dpp_type
-  | Create_Telegram_Quiz_type;
+  | Create_Telegram_Quiz_type
+  | Clear_bot_cache_type;

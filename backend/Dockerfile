@@ -1,5 +1,6 @@
 # docker build command
-# docker build -t subhajitgarai04/backend:0.0.4 .
+# docker build -t subhajitgarai04/backend:0.0.5 .
+# docker build -t subhajitgarai04/backend .
 
 FROM node:22 AS builder
 
@@ -28,9 +29,7 @@ COPY  package*.json .
 COPY --from=builder /build/node_modules ./node_modules
 COPY --from=builder /build/dist ./dist
 COPY --from=builder /build/prisma ./prisma
-
-# # RUN npm ci --production
-# RUN npm ci 
+ 
 
 CMD ["node", "dist/src/surver.js"]
 

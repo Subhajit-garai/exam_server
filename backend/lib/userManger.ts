@@ -1,17 +1,7 @@
 
-// {
-//     user ==> [
-//         {
-//             id:1,
-//             name: 'John',
-
-//         }
-//     ]
-// }
 
 interface User {
   id: string;
-  // other properties
 }
 
 export class userManager {

@@ -64,6 +64,8 @@ export const getDiffFromTopRanker = async (req: any, res: any) => {
     console.log("Error in metrix --->", error);
   }
 };
+
+
 // tested
 export const WeekNessGraphOfAnExam = async (req: any, res: any) => {
   try {
@@ -127,7 +129,7 @@ export const getUserALLExamsRankData = async (req: any, res: any) => {
         user_id: userid,
       },
       orderBy: {
-        updated_at: "desc",
+        time: "desc",
       },
       select: {
         exam_id: true,
@@ -233,7 +235,6 @@ export const getperformance = async (req: any, res: any) => {
         userid: userid,
       },
     });
-
 
 
     res.json({ success: true, message: "message", data: data });

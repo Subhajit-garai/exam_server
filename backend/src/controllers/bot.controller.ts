@@ -1,29 +1,766 @@
 import { hashPasswordFn, veryfyhashPasswordFn } from "../../lib/hash";
 import prisma from "../../db";
-import { primeStatus, Prisma, UserRole } from "@prisma/client";
 import {
-  bot_creat_quiz_data_ZodSchema,
+  CreationTypes,
+  primeStatus,
+  Prisma,
+  UserRole,
+  ExamType,
+} from "@prisma/client";
+import {
+  banuser_notification_zod_type,
+  bot_create_quiz_data_ZodSchema,
   bot_singupZodSchema,
+  unbanuser_notification_zod_type,
   update_botwebhook_ZodSchema,
 } from "../zod/bot.zod";
 import { genToken, verifyToken } from "../../lib/token";
 import { QuizeSetupFunction } from "../../lib/helper/TelegramQuiz";
+import { debuglog } from "../../lib/helper/debugLog";
+import { asyncHandler } from "../../lib/helper/asyncHandler";
+import { exam_question_format_type } from "../../lib/types/questionTypes";
 
-export const test = async (req: any, res: any) => {
+export const test = asyncHandler(async (req: any, res: any) => {
+  res.json({ success: true, message: "message", data: "data" });
+});
+
+export const getQuestionViaIds = asyncHandler(async (req: any, res: any) => {
+  let ids = req.body;
+  let question_data = await prisma.questions.findMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+    select: {
+      id: true,
+      title: true,
+      topic: true,
+      difficulty: true,
+      sub_topic: true,
+      explanation: true,
+      is_multiple_ans: true,
+      status: true,
+    },
+  });
+  if (!question_data) throw new Error("questions ids inbalid ");
+
+  return res.json({
+    success: true,
+    message: "question info ",
+    data: question_data,
+  });
+});
+export const getMockSetExamPattern = asyncHandler(
+  async (req: any, res: any) => {
+    let title = req.query.title;
+    let exam_pattern_info = await prisma.exam_pattern.findFirst({
+      where: {
+        title: title,
+      },
+      select: {
+        topics: true,
+      },
+    });
+
+    if (!exam_pattern_info) throw new Error("exam pattern info not found ");
+    return res.json({
+      success: true,
+      message: "mock  set pattern info ",
+      data: exam_pattern_info,
+    });
+  }
+);
+
+export const setUserProgress = asyncHandler(async (req: any, res: any) => {
+  let { userid } = req.query;
+  let { lastExamid, examType } = req.body;
+  let responce;
+
+  switch (examType as ExamType) {
+    case "Exam":
+      {
+        responce = await prisma.progress.update({
+          where: {
+            userid: userid,
+          },
+          data: {
+            lastExamid: lastExamid,
+          },
+        });
+      }
+      break;
+    case "Quiz":
+      {
+        {
+          responce = await prisma.progress.update({
+            where: {
+              userid: userid,
+            },
+            data: {
+              lastQuizid: lastExamid,
+            },
+          });
+        }
+      }
+      break;
+    case "Dpp":
+      {
+        {
+          responce = await prisma.progress.update({
+            where: {
+              userid: userid,
+            },
+            data: {
+              lastDppid: lastExamid,
+            },
+          });
+        }
+      }
+      break;
+    case "Contest":
+      {
+        {
+          responce = await prisma.progress.update({
+            where: {
+              userid: userid,
+            },
+            data: {
+              lastContestid: lastExamid,
+            },
+          });
+        }
+      }
+      break;
+    case "Mock":
+      {
+        {
+          responce = await prisma.progress.update({
+            where: {
+              userid: userid,
+            },
+            data: {
+              lastMockid: lastExamid,
+            },
+          });
+        }
+      }
+      break;
+
+    default:
+      console.log("unknown test / service id ");
+      throw new Error("unknown test / service id ");
+  }
+
+  res.json({ success: true, message: " progress updated for ", data: userid });
+});
+
+export const setUserScore = asyncHandler(async (req: any, res: any) => {
+  let { examid, userid } = req.query;
+
+  let userScore = req.body;
+
+  let data = await prisma.score.findFirst({
+    where: {
+      exam_id: examid,
+      user_id: userid,
+    },
+  });
+
+  if (data) throw new Error("user score  present");
+
+  let score = await prisma.score.create({
+    data: {
+      ...userScore,
+    },
+  });
+
+  if (!score) throw new Error(" error while user score adding ");
+
+  return res.json({ success: true, message: "user score added ", data: score });
+});
+
+export const getUserScore = asyncHandler(async (req: any, res: any) => {
+  let { examid, userid } = req.query;
+  let data = await prisma.score.findFirst({
+    where: {
+      exam_id: examid,
+      user_id: userid,
+    },
+  });
+
+  if (!data)
+    return res.json({
+      success: true,
+      message: "user score not present ",
+      data: null,
+    });
+
+  return res.json({ success: true, message: "user score  ", data: data });
+});
+
+export const getMockAns = asyncHandler(async (req: any, res: any) => {
+  let mockid = req.params.mockid;
+
+  // {"id":"number","ans":["2"],"part":"part1","topic":"COMPUTER"}
+  type ansFormat = {
+    id: string; // number
+    ans: string[];
+    part: string;
+    topic: string;
+  };
+
+  let ANS: ansFormat[] = [];
+  let questions = await prisma.mock_question_map.findMany({
+    where: {
+      mockid: mockid,
+    },
+  });
+
+  if (!questions) throw new Error("Exam invalid or exam doesn't have any ans ");
+
+  let questionids = questions.map((item) => item.questionid);
+
+  let question_data = await prisma.questions.findMany({
+    where: {
+      id: {
+        in: questionids,
+      },
+    },
+    select: {
+      id: true,
+      topic: true,
+      ans: true,
+    },
+  });
+
+  debuglog(question_data);
+  if (!question_data) throw new Error("question info not found");
+  let question_data_map: Map<
+    string,
+    {
+      id: string;
+      ans: string[];
+      topic: string;
+    }
+  > = new Map();
+
+  question_data.map((data) => {
+    question_data_map.set(data.id, data);
+  });
+  questions.map((question) => {
+    let que = question_data_map.get(question.questionid);
+    if (!que) throw new Error("question info not match");
+    let tempAns: ansFormat = {
+      id: String(question.number),
+      topic: que?.topic,
+      part: question.part,
+      ans: que?.ans,
+    };
+    ANS.push(tempAns);
+  });
+  res.json({ success: true, message: "Ans proccessing complete ", data: ANS });
+});
+export const getExamAns = asyncHandler(async (req: any, res: any) => {
+  let examid = req.params.examid;
+
+  // {"id":"number","ans":["2"],"part":"part1","topic":"COMPUTER"}
+  type ansFormat = {
+    id: string; // number
+    ans: string[];
+    part: string;
+    topic: string;
+  };
+
+  let ANS: ansFormat[] = [];
+  let questions = await prisma.question_map.findMany({
+    where: {
+      examid: examid,
+    },
+  });
+
+  if (!questions) throw new Error("Exam invalid or exam doesn't have any ans ");
+
+  let questionids = questions.map((item) => item.questionid);
+
+  let question_data = await prisma.questions.findMany({
+    where: {
+      id: {
+        in: questionids,
+      },
+    },
+    select: {
+      id: true,
+      topic: true,
+      ans: true,
+    },
+  });
+
+  if (!question_data) throw new Error("question info not found");
+  let question_data_map: Map<
+    string,
+    {
+      id: string;
+      ans: string[];
+      topic: string;
+    }
+  > = new Map();
+
+  question_data.map((data) => {
+    question_data_map.set(data.id, data);
+  });
+  questions.map((question) => {
+    let que = question_data_map.get(question.questionid);
+    if (!que) throw new Error("question info not match");
+    let tempAns: ansFormat = {
+      id: String(question.number),
+      topic: que?.topic,
+      part: question.part,
+      ans: que?.ans,
+    };
+    ANS.push(tempAns);
+  });
+  res.json({ success: true, message: "Ans proccessing complete ", data: ANS });
+});
+
+export const SetUserans = asyncHandler(async (req: any, res: any) => {
+  let { userid, examid } = req.query;
+  let user_Ans = req.body;
+  let isAnsExist = await prisma.userAns.findFirst({
+    where: {
+      examId: examid,
+      userId: userid,
+    },
+  });
+  if (isAnsExist) {
+    console.log("ans already added for this user .. -> ", userid);
+
+    return res.json({
+      success: true,
+      message: "user ans already added into db",
+      data: null,
+    });
+  }
+  let responce = await prisma.userAns.create({
+    data: {
+      ans: user_Ans,
+      examId: examid,
+      userId: userid,
+    },
+  });
+  res.json({
+    success: true,
+    message: "user ans added into db",
+    data: responce,
+  });
+});
+export const getUserans = asyncHandler(async (req: any, res: any) => {
+  let { userid, examid } = req.params;
+
+  let userAns = await prisma.userAns.findFirst({
+    where: {
+      examId: examid,
+      userId: userid,
+    },
+  });
+
+  // if later we need to add multiple attemp then , change here
+
+  if (!userAns) {
+    throw new Error("user ans not exits");
+  }
+  res.json({ success: true, message: "message", data: userAns });
+});
+export const getExamPatternid = asyncHandler(async (req: any, res: any) => {
+  let examid = req.params.examid;
+  let data = await prisma.exam.findFirst({
+    where: {
+      id: examid,
+    },
+    select: {
+      exam_pattern_id: true,
+    },
+  });
+  if (!data) {
+    throw new Error("exam details not found !");
+  }
+  res.json({ success: true, message: "message", data: data.exam_pattern_id });
+});
+export const getExamPattern = asyncHandler(async (req: any, res: any) => {
+  let exampatternid = req.params.exampatternid;
+  
+  let exam_pattern = await prisma.exam_pattern.findFirst({
+    where: {
+      id: exampatternid
+    },
+  });
+
+  if (!exam_pattern) {
+    throw new Error("exam pattern  details not found !");
+  }
+  return res.json({ success: true, message: "message", data: exam_pattern });
+});
+
+
+export const getExamDetails = asyncHandler(async (req: any, res: any) => {
+  let examid = req.params.examid;
+  let data = await prisma.exam.findFirst({
+    where: {
+      id: examid,
+    },
+  });
+  if (!data) {
+    throw new Error("exam details not found !");
+  }
+  res.json({ success: true, message: "message", data: data });
+});
+export const getQuestionsIds = asyncHandler(async (req: any, res: any) => {
+  let topicNormalAnsQuestions =
+    await prisma.$queryRaw`SELECT topic, ARRAY_AGG(id) AS ids FROM "Questions"  WHERE is_multiple_ans = false AND status = 'Done' GROUP BY topic; `;
+  let topicMultiplaAnsQuestions =
+    await prisma.$queryRaw`SELECT topic, ARRAY_AGG(id) AS ids FROM "Questions"  WHERE is_multiple_ans = true AND status = 'Done' GROUP BY topic; `;
+
+  res.json({
+    success: true,
+    message: "message",
+    data: { topicNormalAnsQuestions, topicMultiplaAnsQuestions },
+  });
+});
+export const getQuestionsByids = asyncHandler(async (req: any, res: any) => {
+  
+  let ids = req.body;
+
+  let responce = await prisma.questions.findMany({
+    where: {
+      id: { in: ids },
+    },
+    select: {
+      ans: true,
+      id: true,
+      topic: true,
+      explanation: true,
+      title: true,
+      options: true,
+      extra: true,
+      formate: true,
+    },
+  });
+  if (!responce) throw new Error("question  not found for given ids ");
+
+  res.json({ success: true, message: "question info", data: responce });
+});
+export const getQuestions = asyncHandler(async (req: any, res: any) => {
+  let examid = req.body;
+  let exam_questions: exam_question_format_type[] = [];
+
+  let question_map_data = await prisma.question_map.findMany({
+    where: {
+      examid: examid,
+    },
+  });
+
+  let questionids: string[] = [];
+  question_map_data.map((question) => {
+    questionids.push(question.questionid);
+  });
+
+  if (!questionids)
+    throw new Error("given exam doesn't contain any questions ");
+
+  let responce = await prisma.questions.findMany({
+    where: {
+      id: { in: questionids },
+    },
+    select: {
+      ans: true,
+      id: true,
+      topic: true,
+      explanation: true,
+      title: true,
+      options: true,
+      extra: true,
+      formate: true,
+    },
+  });
+
+  if (!question_map_data)
+    throw new Error("question map is not found for given exam ");
+
+  res.json({ success: true, message: "question info", data: responce });
+});
+export const getExamQuestionAns = asyncHandler(async (req: any, res: any) => {
   try {
+    type ansSchema = {
+      ans: string[];
+      number: number;
+      topic: string;
+    };
+
+    let examid = req.query.examid;
+    let QuestionIds: string[] = [];
+    let QustionAnsFormat: ansSchema[] = [];
+    let question_map_data = await prisma.question_map.findMany({
+      where: {
+        examid: examid,
+      },
+    });
+
+    if (!question_map_data)
+      throw new Error("question map is not found for given exam ");
+
+    question_map_data.map((q) => {
+      QuestionIds.push(q.questionid);
+    });
+
+    res.json({ success: true, message: "message", data: "data" });
+  } catch (error) {
+    console.log("Error in metrix --->", error);
+  }
+});
+export const addQuestions = asyncHandler(async (req: any, res: any) => {
+  let examid = req.params.examid;
+  let questions = req.body;
+  let data = await prisma.question_map.createMany({
+    data: questions,
+    // skipDuplicates:true
+  });
+  return res.json({ success: true, message: "questionAdded" });
+});
+// old
+export const getexamAnsseet = asyncHandler(async (req: any, res: any) => {
+  let examid = req.params.examid;
+
+  let ansset = await prisma.ansSheet.findFirst({
+    where: {
+      examId: examid,
+    },
+    select: {
+      ans: true,
+    },
+  });
+
+  if (!ansset) {
+    throw new Error("Ans sheet is not present for give exam");
+  }
+  res.json({ success: true, message: "anssheet ", data: ansset.ans });
+});
+export const processNotification = async (req: any, res: any) => {
+  try {
+    let type = req.query.type;
+    let data = req.body;
+    switch (type) {
+      case "unbanuser":
+        {
+          try {
+            let processedData = unbanuser_notification_zod_type.safeParse(data);
+
+            if (!processedData.success) {
+              console.log("data error ---> ", processedData.error);
+
+              return res.status(400).json({
+                success: false,
+                message: "notification catch ,but data not recived ",
+              });
+            }
+
+            let { user_id, chat_id } = processedData.data;
+            let isExists = await prisma.telegram_ban_user.findUnique({
+              where: {
+                user_telegram_id_ban_from_id: {
+                  user_telegram_id: user_id,
+                  ban_from_id: chat_id,
+                },
+              },
+            });
+            if (isExists) {
+              let status = await prisma.telegram_ban_user.delete({
+                where: {
+                  user_telegram_id_ban_from_id: {
+                    user_telegram_id: user_id,
+                    ban_from_id: chat_id,
+                  },
+                },
+              });
+
+              if (!status) {
+                return res.status(400).json({
+                  success: false,
+                  message: "ban user record not found or already unbanned",
+                });
+              }
+            }
+
+            res.json({ success: true, message: "notification catch" });
+          } catch (error) {
+            console.log("Error in unbanuser notification process --->", error);
+            return res.status(500).json({
+              success: false,
+              message: "server error while processing unbanuser notification",
+            });
+          }
+        }
+        // process}
+
+        break;
+      case "banuser":
+        {
+          try {
+            let processedData = banuser_notification_zod_type.safeParse(data);
+            if (!processedData.success) {
+              return res.status(400).json({
+                success: false,
+                message: "notification catch ,but data not recived ",
+              });
+            }
+
+            let { user_id, chat_id, ban_from_type } = processedData.data;
+
+            let staus = await prisma.telegram_ban_user.create({
+              data: {
+                user_telegram_id: user_id,
+                bot_id: req.bot_user,
+                ban_from_id: chat_id,
+                ban_from_type: ban_from_type,
+                status: "Ban",
+              },
+            });
+
+            if (staus) {
+              return res.json({ success: true, message: "notification catch" });
+            } else {
+              return res.status(400).json({
+                success: false,
+                message: "notification catch ,but error while process",
+              });
+            }
+            // process
+          } catch (error) {
+            console.log("Error in banuser notification process --->", error);
+            return res.status(500).json({
+              success: false,
+              message: "server error while processing banuser notification",
+            });
+          }
+        }
+        break;
+
+      default:
+        console.log(
+          "unknown notification from bot ---> type is ->",
+          type,
+          " bot id is ---> ",
+          req.bot_user
+        );
+
+        break;
+    }
     res.json({ success: true, message: "message", data: "data" });
   } catch (error) {
     console.log("Error in metrix --->", error);
   }
 };
+export const sendAlluser = async (req: any, res: any) => {
+  try {
+    let users = await prisma.user.findMany({
+      select: {
+        telegram: {
+          select: { telegramid: true },
+        },
+        prime: {
+          select: {
+            status: true,
+          },
+        },
+      },
+    });
 
+    if (!users) {
+      return res.status(403).json({
+        success: false,
+        message: "user not found",
+      });
+    }
+    res.json({ success: true, message: "sending users", users: users });
+  } catch (error) {
+    console.log("Error in bot.controller sendAlluser  --->", error);
+    return res.status(400).json({
+      success: false,
+      message: "server error",
+    });
+  }
+};
+export const sendValidchatids = async (req: any, res: any) => {
+  try {
+    let groupDatas = await prisma.telegramGroupInfo.findMany({
+      select: {
+        groupid: true,
+        groupType: true,
+        isBanned: true,
+        isPremium: true,
+      },
+    });
+
+    let formatedValidChatIds: Object[] = [];
+
+    groupDatas.map((groupData) => {
+      if (!groupData.isBanned) {
+        let tempdata = {
+          id: groupData.groupid,
+          type: groupData.groupType,
+          isPremium: groupData.isPremium,
+        };
+
+        formatedValidChatIds.push(tempdata);
+      }
+    });
+    res.json({ success: true, message: "message", data: formatedValidChatIds });
+  } catch (error) {
+    console.log("Error in metrix --->", error);
+  }
+};
+export const sendGroupinfo = async (req: any, res: any) => {
+  try {
+    let group_telegramid = req.query.chatid;
+
+    let groupInfo = await prisma.telegramGroupInfo.findFirst({
+      where: {
+        groupid:
+          typeof group_telegramid !== "string"
+            ? String(group_telegramid)
+            : group_telegramid,
+      },
+    });
+    res.json({ success: true, message: "message", data: groupInfo });
+  } catch (error) {
+    console.log("Error in metrix --->", error);
+  }
+};
+export const isGroupJoinable = async (req: any, res: any) => {
+  try {
+    let group_telegramid = req.query.chatid;
+
+    let groupInfo = await prisma.telegramGroupInfo.findFirst({
+      where: {
+        groupid:
+          typeof group_telegramid !== "string"
+            ? String(group_telegramid)
+            : group_telegramid,
+      },
+    });
+
+    let isjoinable = groupInfo?.isBanned == false ? true : false;
+    res.json({ success: true, message: "message", data: isjoinable });
+  } catch (error) {
+    console.log("Error in bot.controller (in isgroupjoinable)  --->", error);
+  }
+};
 export const AllUserData = async (req: any, res: any) => {
   try {
     let role = req.query.role;
 
     let users = await prisma.user.findMany({
-      where:{
-        role: role ?? "User"
+      where: {
+        role: role ?? "User",
       },
       select: {
         telegram: {
@@ -47,13 +784,12 @@ export const AllUserData = async (req: any, res: any) => {
     }
     res.json({ success: true, message: "success ", data: users });
   } catch (error) {
-    console.log("Error in metrix --->", error);
+    console.log("Error in bot.controller (in allUserdata) --->", error);
   }
 };
-
 export const IsprimeUser = async (req: any, res: any) => {
   try {
-    let user_telegramid = req.query.telegramid;
+    let user_telegramid = req.query.userid;
     let user = await prisma.user.findFirst({
       where: {
         telegram: {
@@ -74,14 +810,13 @@ export const IsprimeUser = async (req: any, res: any) => {
         message: "user not found",
       });
     }
-    let isPrime = user.prime?.status == primeStatus.none ? false : true;
+    let isPrime = user.prime?.status == primeStatus.None ? false : true;
 
     res.json({ success: true, message: "is user prime ", data: isPrime });
   } catch (error) {
     console.log("Error in IsprimeUser --->", error);
   }
 };
-
 export const bot_login = async (req: any, res: any) => {
   try {
     const { email, password } = req.body;
@@ -106,11 +841,9 @@ export const bot_login = async (req: any, res: any) => {
     console.log("Error in bot login --->", error);
   }
 };
-
-export const getQuizData = async (req: any, res: any) => {
+export const sentQuizData = async (req: any, res: any) => {
   try {
-    let data = bot_creat_quiz_data_ZodSchema.safeParse(req.body);
-    
+    let data = bot_create_quiz_data_ZodSchema.safeParse(req.body);
 
     if (!data.success) {
       return res.status(403).json({ success: false, message: "invalid data" });
@@ -126,10 +859,9 @@ export const getQuizData = async (req: any, res: any) => {
       res.status(400).json({ success: false, message: "server error" });
     }
   } catch (error) {
-    console.log("error in getQuizData in bot controller",error);
+    console.log("error in getQuizData in bot controller", error);
   }
 };
-
 export const getQuizTopic = async (req: any, res: any) => {
   try {
     let quiztype = req.query.quiztype;
@@ -154,9 +886,7 @@ export const getQuizTopic = async (req: any, res: any) => {
     console.log(error);
   }
 };
-
 // admin
-
 export const updateBotWebhook = async (req: any, res: any) => {
   try {
     let data = update_botwebhook_ZodSchema.safeParse(req.body);
@@ -239,7 +969,6 @@ export const updateBotWebhook = async (req: any, res: any) => {
     });
   }
 };
-
 export const createNewBot = async (req: any, res: any) => {
   try {
     let data = bot_singupZodSchema.safeParse(req.body);
@@ -273,7 +1002,7 @@ export const createNewBot = async (req: any, res: any) => {
         role: UserRole.Bot,
         prime: {
           create: {
-            status: primeStatus.none,
+            status: primeStatus.None,
           },
         },
         telegram: {
@@ -325,7 +1054,6 @@ export const createNewBot = async (req: any, res: any) => {
     console.log("Error in bot creation --->", error);
   }
 };
-
 export const setQuizTopic = async (req: any, res: any) => {
   try {
     let data = req.body;
@@ -350,7 +1078,6 @@ export const setQuizTopic = async (req: any, res: any) => {
     console.log(error);
   }
 };
-
 export const addbotToken = async (req: any, res: any) => {
   try {
     let token = req.body.token;

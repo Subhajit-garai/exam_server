@@ -1,0 +1,180 @@
+generator client {
+  provider        = "prisma-client-js"
+  // output   = "./generated/client"
+  previewFeatures = ["typedsql"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// subject models
+
+
+enum TopicStatus {
+  draft
+  published
+  archived
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  topicId   String
+  authorId  String
+  createdAt DateTime @default(now())
+  topic     Topic    @relation(fields: [topicId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+
+
+enum UserRole {
+  Admin
+  User
+  Bot
+}
+
+
+model EntryChargeList {
+  id         String   @id @unique @default(cuid())
+  type       String   @default("not set")
+  Charge     Int      @default(0)
+  created_at DateTime @default(now())
+  created_by String?
+}
+
+model Syllabus {
+  id             String       @id @unique @default(cuid())
+  category       String
+  topics         String[]
+  created_at     DateTime     @default(now())
+  target_exam_id String?      @unique
+  target_exam    TargetExam? @relation(fields: [target_exam_id], references: [id])
+}
+
+enum primeStatus {
+  None
+  Bronze
+  Silver
+  Gold
+}
+
+
+
+
+
+model ContestRegister {
+  id     String   @id @unique @default(cuid())
+  examId String?  @default("new_value_not_seted")
+  count  Int      @default(0)
+  users  String[] @default([])
+  Exam   Exam[]
+}
+model AnsSheet {
+  id     String        @id @unique @default(cuid())
+  ans    Json?
+  examId String?
+  status CreationTypes @default(Processing)
+  Exam   Exam?
+  // quiz   quiz?
+}
+enum ExamStage {
+  Registration
+  Started
+  Ended
+}
+
+model UserAns {
+  id     String @id @unique @default(cuid())
+  ans    Json
+  examId String
+  userId String
+}
+
+enum diffcultlevel {
+  Easy
+  Medium
+  Hard
+}
+
+enum check {
+  Normal
+  Hybrid
+}
+
+enum Status {
+  Created
+  Processing
+  Done
+  Duplicate
+  Suspended
+  Close
+}
+
+enum CreationTypes {
+  Updated
+  Created
+  Processing
+  Done
+  Suspended
+}
+
+enum Visibility  {
+  Public
+  Private
+}
+
+enum syllabusType {
+  Generic
+  Syllabus
+}
+
+enum examformate {
+  Text
+  Image
+  Code
+}
+
+enum ExamType {
+  Exam // dynamic exam set 
+  Contest // compeations
+  Mock // for fixed question set like 2024 jeca set 
+  PYQ // 2024 jeca Exam 
+  Subject // for topic 30 question
+  Dpp
+  Quiz
+}
+
+model AppConfig {
+  id         String   @id @default(cuid())
+  feature    String   @unique
+  settings   Json
+  updated_at DateTime @updatedAt
+}
+
+enum eventType {
+  RUN_NEW_QUIZ
+  CREATE_QUIZ_CONTEST
+  SEND_MESSAGE
+  CREATE_DPP
+  CREATE_EXAM
+  CLEAR_BOT_CACHE
+}
+
+enum eventRuns {
+  ONE
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum IssueType {
+  QUESTION
+  UI
+  EXAM
+  PAYMENT
+  LOGIN
+  SIGNUP
+}

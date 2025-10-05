@@ -9,8 +9,8 @@ const em = examManager.getInstance();
 export const createDpp = async (event: events) => {
   // clear examManger cache
 
-  em.ClearCache_exmaManager();
-  console.log("examManager cache cleared");
+  // em.ClearCache_exmaManager();
+  // console.log("examManager cache cleared");
 
   if (event.type == eventType.CREATE_DPP) {
     let new_exam_names: string[][] = [];
@@ -179,14 +179,14 @@ export const createDpp = async (event: events) => {
           data: {
             name: new_exam_names[index][idx],
             examname: event.data?.examname,
-            status: event.data.status,
+            Visibility: event.data.Visibility,
             category: event.data.category,
             examtype: event.data.examtype,
             starttime: time ? time[idx] : "08:00 pm",
             jointime: jointime ? jointime : "00:15 m",
             duration: duration ? duration : "02:00 h",
             date: dates[index],
-            questions: {},
+            // questions: {},
             exam_pattern: {
               connect: { id: exam_pattern_id },
             },
@@ -206,15 +206,18 @@ export const createDpp = async (event: events) => {
 
         //   // send it into queue to process question
         let { id } = response;
+        
         let Notifystatus = await em.getredisclient().push({
           type: "CreateExam",
           examid: id,
           userid: user?.id as string,
+          examtype: response.examtype,
         });
       }
     }
   }
 };
+
 export const createExam = async (event: events) => {
   // clear examManger cache
 
@@ -376,14 +379,14 @@ export const createExam = async (event: events) => {
           data: {
             name: new_exam_names[index][idx],
             examname: event.data?.examname,
-            status: event.data.status,
+            Visibility: event.data.Visibility,
             category: event.data.category,
             examtype: event.data.examtype,
             starttime: time ? time[idx] : "08:00 pm",
             jointime: jointime ? jointime : "00:15 m",
             duration: duration ? duration : "02:00 h",
             date: dates[index],
-            questions: {},
+            // questions: {},
             exam_pattern: {
               connect: { id: event.data.exam_pattern },
             },
@@ -407,6 +410,7 @@ export const createExam = async (event: events) => {
           type: "CreateExam",
           examid: id,
           userid: user?.id as string,
+          examtype: response.examtype,
         });
       }
     }

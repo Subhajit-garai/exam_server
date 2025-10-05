@@ -1,9 +1,8 @@
-
 # github ci/cd pipeline for backend and QuestionSelectorworker
 
-on: 
+on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   check-changes:
@@ -14,86 +13,116 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: check for chenges in backend 
+
+      - name: check for chenges in backend
         id: backend-changed
         uses: dorny/paths-filter@v3
+        # with:
+        #   filters: 'backend/**'
         with:
-          filters: 'backend/**'
+          filters: |
+            backend:
+              - 'backend/**'
+
 
 
       - name: check for chenges in worker 
         id: worker-changed
         uses: dorny/paths-filter@v3
+        # with:
+        #   filters: 
+        #     worker: 'worker/*'
         with:
-          filters: 
-            worker: 'worker/*'
+          filters: |
+            worker:
+              - 'worker/**'
+
 
   backend:
     needs: check-changes
     runs-on: ubuntu-latest
-    if: needs.check-changes.outputs.backend_changed == 'true'
+    if: needs.check-changes.outputs.backend_changes == 'true'
     steps:
       - name: Set up Node.js
         uses: actions/setup-node@v4
       - name: creating Docker image
         run: |
           cd backend
-          docker build -t subhajitgarai04/backend .
+          docker build -t subhajitgarai04/backend:${{ github.sha }} -t subhajitgarai04/backend  .
+
+      - name: Save backend SHA to file
+        run: echo "${{ github.sha }}" > current_version_backend.txt
+
+      - name: Upload backend SHA artifact
+        uses: actions/upload-artifact@v4
+        with:
+            name: current-backend-sha
+            path: current_version_backend.txt
 
       - name: Push Docker image
         env:
-          DOCKER_USERNAME: ${{secret.DOCKER_USERNAME}}
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
           DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
         run: |
-          sudo docker login -u $DOCKER_USERNAME --password-stdin
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
           docker push subhajitgarai04/backend
+          docker push subhajitgarai04/backend:${{ github.sha }}
           docker logout
-      
+
       - name: ssh log in and  Deploy backend to aws
-        env: 
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install sshpass
-          sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST '
-          sudo docker pull subhajitgarai04/backend &&
-          cd /Exam &&
-          sudo docker compose up -d --no-deps --build backend && exit
-          '
-            
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          username: ${{ secrets.SSH_USERNAME }}
+          # SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+        script: |
+          sudo docker pull subhajitgarai04/backend 
+          cd /Exam 
+          sudo docker compose up -d --no-deps --build backend
+          
+
   worker:
     needs: check-changes
     runs-on: ubuntu-latest
-    if: needs.check-changes.outputs.worker_changed == 'true'
+    if: needs.check-changes.outputs.worker_changes == 'true'
     steps:
       - name: Set up Node.js
         uses: actions/setup-node@v4
       - name: creating Docker image
         run: |
           cd worker
-          docker build -t subhajitgarai04/exam_worker .
+          docker build -t subhajitgarai04/exam_worker:${{ github.sha }} -t subhajitgarai04/exam_worker  .
+
+      - name: Save worker SHA to file
+        run: echo "${{ github.sha }}" > current_version_worker.txt
+
+      - name: Upload worker SHA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-worker-sha
+          path: current_version_worker.txt
 
       - name: Push Docker image
         env:
-          DOCKER_USERNAME: ${{secret.DOCKER_USERNAME}}
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
           DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
         run: |
-          sudo docker login -u $DOCKER_USERNAME --password-stdin
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
           docker push subhajitgarai04/exam_worker
+          docker push subhajitgarai04/exam_worker:${{ github.sha }}
           docker logout
-      
+
       - name: ssh log in and  Deploy worker to aws
-        env: 
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install sshpass
-          sshpass -p $SSH_PASSWORD ssh $SSH_USERNAME@$SSH_HOST '
-          sudo docker pull subhajitgarai04/exam_worker &&
-          cd /Exam &&
-          sudo docker compose up -d --no-deps --build exam_worker && exit
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          username: ${{ secrets.SSH_USERNAME }}
+          # SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+
+        script: |
+          sudo docker pull subhajitgarai04/exam_worker
+          cd /Exam
+          sudo docker compose up -d --no-deps --build exam_worker
+          

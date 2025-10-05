@@ -1,28 +1,27 @@
 # docker build command
-# docker build -t subhajitgarai04/exam_worker:0.0.3 .
+# docker build -t subhajitgarai04/exam_worker:0.0.5 .
+# docker build -t subhajitgarai04/exam_worker .
 
 FROM node:22 AS builder
 
 WORKDIR /build
 
 COPY package*.json tsconfig.json  .
-RUN npm install 
+RUN npm ci
 COPY .  .
 
-RUN npx prisma generate
 RUN npm install typescript --save-dev
 
+RUN npx prisma generate
 
 RUN npm run build
 
 FROM  node:22
-
 ENV NODE_ENV production
 
 WORKDIR /app
 
 COPY  package*.json .
-# RUN npm install --production
 
 COPY --from=builder /build/node_modules ./node_modules
 COPY --from=builder /build/dist ./dist

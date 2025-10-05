@@ -1,5 +1,6 @@
-import { CreationTypes, PrismaClient } from "@prisma/client";
-import { Task } from "./types/types";
+import { exam_question_map_format, Task } from "./types/types";
+import axios from "axios";
+import { Network } from "../utils/network";
 export type SelectQuestionNumber_type = Record<string, number>;
 export type SelectQuestion_type = Record<string, string[]>;
 
@@ -16,23 +17,19 @@ export type QuestionsIDS_type = {
 export class ExamQuestionProcessor {
   Questions: QuestionsIDS_type;
   refreshtime: number;
-  prisma: any;
   count: number = 0;
   private static instance: ExamQuestionProcessor;
+  private Network: Network;
 
   private constructor(refreshtime: number) {
     this.Questions = {
       normal: [],
       multipleAns: [],
     };
-    // this.totalQusestions = 0;
-    // this.subject = [];
+    this.Network = Network.getInstance();
     this.refreshtime = refreshtime;
-    this.prisma = new PrismaClient();
-    // console.log("creating ....");
     this.updateQuestionIds();
     this.refreshQuestionsIdList();
-    // this.updateQuestionsIdList();
   }
 
   public static getInstance(refreshtime: number) {
@@ -42,11 +39,9 @@ export class ExamQuestionProcessor {
     return this.instance;
   }
 
-  // private updateQuestionsIdList() {
-  //   setInterval(async () => {
-  //     console.log(this.Questions.length);
-  //   }, this.refreshtime * 1000);
-  // }
+  public getNetworkInstance() {
+    return  this.Network
+  }
 
   private refreshQuestionsIdList() {
     setInterval(async () => {
@@ -57,13 +52,11 @@ export class ExamQuestionProcessor {
 
   private async updateQuestionIds() {
     try {
-      let topicNormalAnsQuestions = await this.prisma
-        .$queryRaw`SELECT topic, ARRAY_AGG(id) AS ids FROM "Questions"  WHERE is_multiple_ans = false AND status = 'Done' GROUP BY topic; `;
-      let topicMultiplaAnsQuestions = await this.prisma
-        .$queryRaw`SELECT topic, ARRAY_AGG(id) AS ids FROM "Questions"  WHERE is_multiple_ans = true AND status = 'Done' GROUP BY topic; `;
+      let responce = await this.Network.getQuestionsIds();
+      let { topicNormalAnsQuestions, topicMultiplaAnsQuestions } = responce;
 
-      let NormalAnsQuestions: QuestionsId[] = await topicNormalAnsQuestions;
-      let MultiplaAnsQuestions: QuestionsId[] = await topicMultiplaAnsQuestions;
+      let NormalAnsQuestions: QuestionsId[] = topicNormalAnsQuestions;
+      let MultiplaAnsQuestions: QuestionsId[] = topicMultiplaAnsQuestions;
 
       if (!NormalAnsQuestions) {
         NormalAnsQuestions = [];
@@ -75,9 +68,8 @@ export class ExamQuestionProcessor {
       this.Questions.multipleAns = MultiplaAnsQuestions;
       this.Questions.normal = NormalAnsQuestions;
 
-      console.log(" normal " ,  NormalAnsQuestions.length);
-      console.log(" multipleAns " , MultiplaAnsQuestions.length);
-      
+      console.log(" normal -->", NormalAnsQuestions.length);
+      console.log(" multipleAns -->", MultiplaAnsQuestions.length);
     } catch (error) {
       console.log("Error while Fatching Questions");
       console.log(error);
@@ -210,11 +202,13 @@ export class ExamQuestionProcessor {
 
       // console.log("questionset", questionset);
       // console.log("subject", subject);
+      // console.log("is_multiple_ans", is_multiple_ans);
 
       this.count = 0; //debug  how many loop it takes to get the result
       let selectedElements: SelectQuestion_type = {};
+      let selectedNormal: any[] = [];
 
-      await new Promise<void>((resolve,reject) => {
+      await new Promise<void>((resolve, reject) => {
         let count = 10;
         const interval = setInterval(() => {
           if (
@@ -233,7 +227,7 @@ export class ExamQuestionProcessor {
               ) {
                 clearInterval(interval); // Stop the interval when the condition is met
                 resolve();
-              }else{
+              } else {
                 reject(new Error("Questions not found in DB"));
               }
             }
@@ -246,19 +240,46 @@ export class ExamQuestionProcessor {
       if (is_multiple_ans) {
         let Questions = this.Questions.multipleAns; // multiple ans  questions
 
-        if (Object.keys(questionset).length <= Questions.length) {
-          Questions.forEach((topic) => {
-            Object.keys(questionset).map((selectedTopic) => {
-              if (topic.topic == selectedTopic) {
-                let shuffled = [...topic.ids].sort(() => Math.random() - 0.5); // Shuffle elements
-                shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
-                shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
-                selectedElements[topic.topic] = [
-                  ...shuffled.slice(0, questionset[topic.topic]),
-                ];
-              }
+        let singleAns_Questions = this.Questions.normal; // normal ans  questions for varience
+
+        if (Object.keys(questionset).length <= singleAns_Questions.length) {
+          if (
+            Object.keys(questionset).length <= Questions.length ||
+            Object.keys(questionset).length <= singleAns_Questions.length
+          ) {
+            Questions.forEach((topic) => {
+              singleAns_Questions.forEach((singleTopic) => {
+                if (topic.topic == singleTopic.topic) {
+                  Object.keys(questionset).map((selectedTopic) => {
+                    if (topic.topic == selectedTopic) {
+                      let normalShuffled = [...singleTopic.ids].sort(
+                        () => Math.random() - 0.5
+                      ); // Shuffle elements
+                      normalShuffled = [...normalShuffled].sort(
+                        () => Math.random() - 0.5
+                      ); // Shuffle elements
+                      normalShuffled = [...normalShuffled].sort(
+                        () => Math.random() - 0.5
+                      ); // Shuffle elements
+                      selectedNormal = [...normalShuffled.slice(0, 5)];
+
+                      let shuffled = [...topic.ids].sort(
+                        () => Math.random() - 0.5
+                      ); // Shuffle elements
+                      shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
+                      shuffled = [...shuffled, ...selectedNormal].sort(
+                        () => Math.random() - 0.5
+                      ); // merge ans shuffle normal and multiple
+
+                      selectedElements[topic.topic] = [
+                        ...shuffled.slice(0, questionset[topic.topic]),
+                      ];
+                    }
+                  });
+                }
+              });
             });
-          });
+          }
         } else {
           throw new Error(
             "Given some Subject isn't Supported  in multiple_ans question selection"
@@ -285,7 +306,6 @@ export class ExamQuestionProcessor {
           );
         }
       }
-
       return selectedElements;
     } catch (error) {
       console.log("Error in selecteQuestionsNumber fn", error);
@@ -293,165 +313,35 @@ export class ExamQuestionProcessor {
     }
   };
 
-  async getExamPatternId(examid: string) {
-    try {
-      let data = await this.prisma.exam.findFirst({
-        where: {
-          id: examid,
-        },
-        select: {
-          exam_pattern_id: true,
-        },
-      });
-      if (data) {
-        console.log("exampattern is ", data);
-        return data.exam_pattern_id;
-      } else {
-        // console.log("examid", examid);
-        // console.log("data", data);
-        // throw new Error("exampattern id not found");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  async getExamPattern(id: string) {
-    try {
-      let data = await this.prisma.exam_pattern.findFirst({
-        where: {
-          id: id,
-        },
-      });
-      if (data) {
-        return data;
-      } else {
-        throw new Error(" exampattern data not found");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  async AddQuestionsAndAnsIntoExam(id: string, questions: {}, ans: string[]) {
-    try {
-      const result = await this.prisma.$transaction(async (tx: any) => {
-        let data = await this.prisma.exam.update({
-          where: {
-            id: id,
-          },
-          data: {
-            questions: questions,
-            created_at: new Date(),
-            creationstatus: CreationTypes.Done,
-          },
-          select: {
-            ansid: true,
-          },
-        });
 
-        let ansID = data.ansid;
-        await tx.AnsSheet.update({
-          where: {
-            id: ansID,
-          },
-          data: {
-            ans: ans,
-            examId: id,
-          },
-        });
+  async AddQuestionsIntoExam(examid: string, questions: any) {
+    let formated_questions: exam_question_map_format[] = [];
+
+    Object.keys(questions).map((part) => {
+      questions[part].map((questionid: string, idx: number) => {
+        let temp: exam_question_map_format = {
+          number: idx + 1,
+          questionid: questionid,
+          part: part,
+          options: [],
+          ans: [],
+          examid: examid,
+          isSuffled: false,
+        };
+
+        formated_questions.push(temp);
       });
-      return 1;
-    } catch (error) {
-      console.log("---------->", error);
-    }
+    });
+
+    let res = await this.Network.AddQuestions(examid, formated_questions);
+
+    console.log("res -- > ", res);
+    
+
+    return  res ? res : false
   }
 
-  async getQuestions(ids: string[]) {
-    try {
-      let res = await this.prisma.questions.findMany({
-        where: {
-          id: { in: ids }, // Match all question IDs
-        },
-        select: {
-          ans: true, // Only retrieve the 'answers' field
-          id: true,
-          topic: true,
-          explanation: true,
-          title: true,
-          options: true,
-          extra: true,
-          formate:true,
-        },
-      });
 
-      return res;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  async getQuestionsAns(ids: string[]) {
-    try {
-      let res = await this.prisma.questions.findMany({
-        where: {
-          id: { in: ids }, // Match all question IDs
-        },
-        select: {
-          ans: true, // Only retrieve the 'answers' field
-          id: true,
-          topic: true,
-        },
-      });
 
-      return res;
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
-  async getExamsAnsSet(examid: string) {
-    // get exams ans set
-    try {
-      let ansset = await this.prisma.ansSheet.findFirst({
-        where: {
-          examId: examid,
-        },
-        select: {
-          ans: true,
-        },
-      });
-
-      return ansset.ans.flat();
-    } catch (error) {
-      console.log("error in examprocesser -> getExamsAnsSet ", error);
-    }
-  }
-
-  async setUseransTodb(formated_user_Ans: any, examid: string, userid: string) {
-    try {
-      let isAnsExist = await this.prisma.userAns.findFirst({
-        where: {
-          examId: examid,
-          userId: userid,
-        },
-      });
-
-      if (isAnsExist) {
-        console.log("ans already added for this user .. -> ", userid);
-        return true;
-      }
-      let res = await this.prisma.userAns.create({
-        data: {
-          ans: formated_user_Ans,
-          examId: examid,
-          userId: userid,
-        },
-      });
-
-      if (res) {
-        return res;
-      }
-      // console.log("ans added .....",res);
-    } catch (error) {
-      console.log("error in setUseransTodb", error);
-    }
-  }
 }

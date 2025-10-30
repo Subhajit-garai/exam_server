@@ -1,6 +1,6 @@
-import { ExamType, primeStatus } from "@prisma/client";
-import prisma from "../../db";
-import { debuglog } from "../../lib/helper/debugLog";
+import { ExamType, primeStatus } from  "@repo/packages/prisma"
+import prisma from  "@repo/db/index";
+import { debuglog } from "@repo/lib/helper/debugLog";
 
 type BenefitInput = {
   feature: ExamType;

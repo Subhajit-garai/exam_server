@@ -1,11 +1,8 @@
 import { Router } from "express";
 import {
   CreateNewExamPattern,
-  CreateSyllabus,
-  findexam,
   getAvalibleExam,
   getCategory,
-  getSyllabus,
   getAvalibleExamPattern,
   CreateExam,
   // CreateContest,
@@ -21,24 +18,21 @@ import {
   getExamAnsForAnalisys,
   getUserAnsSetOfAnExam,
   getExamsbyid,
-  getSyllabusByid,
   create_targeted_exam,
   create_targeted_exam_year,
   update_targeted_exam_year,
 } from "../controllers/exam.controller";
-import { isAdmin } from "../../lib/auth";
+import { isAdmin } from "@repo/lib/security/auth";
 
 export const examRouter = Router();
 
-examRouter.get("/syllabus", getSyllabus);   // breaked update !!!
-examRouter.get("/get/syllabus/id", getSyllabusByid);
 examRouter.get("/tokensystem", gettokenSystem);
 
 
 
+// examRouter.get("/findexam", findexam); // for -> tergeted exam
 // user
 examRouter.get("/category", getCategory);
-examRouter.get("/findexam", findexam); // for -> tergeted exam
 
 examRouter.get("/joinrequest", examJoinRequestProcess); // for -> all exam
 examRouter.get("/getExams", getExams); // for -> all exam
@@ -52,8 +46,9 @@ examRouter.get("/deletexams", isAdmin, deletexams); // for -> tergeted exam
 examRouter.get("/avalibleexam", isAdmin, getAvalibleExam); // for -> all exam
 examRouter.get("/avalibleExamPattern", isAdmin, getAvalibleExamPattern); // for -> tergeted exam
 examRouter.post("/createpattern", isAdmin, CreateNewExamPattern);
-examRouter.post("/createsyllabus", isAdmin, CreateSyllabus);
+
 examRouter.post("/create", isAdmin, CreateExam);
+
 examRouter.post("/create/target/exam", isAdmin, create_targeted_exam);
 examRouter.post("/create/target/examyear", isAdmin, create_targeted_exam_year);
 examRouter.put("/update/target/examyear/info", isAdmin,update_targeted_exam_year);

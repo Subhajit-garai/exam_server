@@ -1,6 +1,6 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from  "@repo/packages/prisma";;
 import { oldPrisma, newPrisma } from "../db/index";
-import { Questions_type } from "../../../lib/types";
+import { Questions_type } from "@repo/lib/types";
 
 export type exam_question_map_format = {
   number: number;

@@ -1,26 +1,36 @@
-
 model Questions {
-  id              String        @id @unique @default(cuid())
-  title           String
-  options         String[]
-  extra           Json? // { "code":{void main (0) {}}}
-  ans             String[]
-  formate         examformate   @default(Text)
-  category        String
-  sub_topic       String        @default("none")
-  history         String[]      @default([""])
-  topic           String
-  explanation     String?       @default("no explanation added")
-  links           String[]      @default([""])
-  is_multiple_ans Boolean       @default(false)
-  difficulty      diffcultlevel
-  created_by      String
-  created_at      DateTime      @default(now())
-  status          Status        @default(Processing)
-  weight          Int           @default(0)
-  User            User          @relation(fields: [created_by], references: [id])
+  id String @id @unique @default(cuid())
 
-  @@index([topic])
+  title   String
+  options String[]
+
+  extra Json? // { "code":{void main (0) {}}}
+
+  ans        String[]
+  topic_id   String   // create an record for unknown topic
+  subject_id String   // create an record for unknown subject
+
+  format          examformat    @default(Text)
+  category        String
+  difficulty      diffcultlevel
+  is_multiple_ans Boolean       @default(false)
+
+  history     String[] @default([""])
+  explanation String?  @default("no explanation added")
+  links       String[] @default([""])
+
+  status Status @default(Processing)
+  weight Int    @default(0)
+
+  created_by String
+  created_at DateTime @default(now())
+  User       User     @relation(fields: [created_by], references: [id])
+
+
+  Subject Subject @relation(fields: [subject_id], references: [id])
+  Topic   Topic   @relation(fields: [topic_id], references: [id])
+
+  @@index([topic_id])
 }
 
 model mock_questions_set {
@@ -61,15 +71,15 @@ model question_map {
 }
 
 model mock_question_map {
-  id                String             @id @unique @default(cuid())
-  number            Int                @default(0)
-  questionid        String
-  part              String             @default("part1")
-  options           String[]           @default([])
-  ans               String[]           @default([])
-  mockid            String?
-  isSuffled         Boolean            @default(false)
-  mock_questions_set   mock_questions_set? @relation("MockRelation", fields: [mockid], references: [id])
+  id                 String              @id @unique @default(cuid())
+  number             Int                 @default(0)
+  questionid         String
+  part               String              @default("part1")
+  options            String[]            @default([])
+  ans                String[]            @default([])
+  mockid             String?
+  isSuffled          Boolean             @default(false)
+  mock_questions_set mock_questions_set? @relation("MockRelation", fields: [mockid], references: [id])
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt

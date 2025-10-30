@@ -1,12 +1,12 @@
 import { error } from "console";
-import prisma from "../../db";
-import { asyncHandler } from "../../lib/helper/asyncHandler";
+import prisma from "@repo/db/index";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler";
 import {
   createSubject_schema,
   createTopic_schema,
   noteUpdate_schema,
 } from "../zod/note.zod";
-import { ZodDataSafeParse } from "../../lib/ZodTypeChecker";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker";
 
 export const test = async (req: any, res: any) => {
   try {
@@ -254,18 +254,9 @@ export const CreateSubject = asyncHandler(async (req: any, res: any) => {
     throw ZodDataSafeParse(processedData, true);
   }
 
-  let target_exam = await prisma.targetExam.findFirst({
-    where: {
-      name: processedData.data.exam.toUpperCase(),
-    },
-  });
-
-  if (!target_exam) throw new Error("target exam not present ! Error");
-
   let subject = await prisma.subject.create({
     data: {
       ...processedData.data,
-      target_exam_id: target_exam.id,
     },
   });
 
@@ -305,13 +296,13 @@ export const getAllVersionOfNote = async (req: any, res: any) => {
 
 export const getAllNoteTopic = async (req: any, res: any) => {
   try {
-    const { subject } = req.params;
+    const { slug } = req.params;
 
-    if (!subject) throw new Error("subject is missing");
+    if (!slug) throw new Error("subject is missing");
 
     let subjectdata = await prisma.subject.findFirst({
       where: {
-        slug: subject,
+        slug: slug,
       },
     });
 
@@ -319,8 +310,41 @@ export const getAllNoteTopic = async (req: any, res: any) => {
       where: {
         subjectId: subjectdata?.id,
       },
+      select: {
+        id: true,
+        order: true,
+        name: true,
+        shortName: true,
+        description: true,
+        created_at: true,
+        updated_at: true,
+        slug: true,
+        iconUrl: true,
+        color: true,
+        isPublic: true,
+        status: true,
+        subjectId: true,
+        isparentTopic: true,
+        parentTopicId: true,
+        tags: true,
+        // content:true,
+        like: true,
+        dislike: true,
+        readCount: true,
+        comments: true,
+        commentEnabled: true,
+        verified: true,
+        estimatedReadTime: true,
+        version: true,
+        attachments: true,
+        publishedAt: true,
+        language: true,
+        createdBy: true,
+        updatedBy: true,
+      },
     });
 
+    
     if (!topicdatas) {
       return res.status(400).json({
         success: false,

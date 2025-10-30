@@ -1,4 +1,4 @@
-import prisma from "../../db";
+import prisma from  "@repo/db/index";
 async function createTrigger() {
   await prisma.$executeRawUnsafe(
     `CREATE OR REPLACE FUNCTION notify_question_set_update() RETURNS trigger AS $$

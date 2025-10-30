@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAdmin } from "../../lib/auth";
+import { isAdmin } from "@repo/lib/security/auth";
 import { CloseIssue, createNewIssue, getAllIssue, getIssueByid, Isprocessed_issue, RemoveIssue, setDownVote, setPriorityVote, setupVote, update_issue, updateStatus ,GetquestionIssuecount} from "../controllers/issue.controller";
 export const IssueRouter = Router();
 

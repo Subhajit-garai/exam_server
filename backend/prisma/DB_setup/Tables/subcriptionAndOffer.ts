@@ -1,6 +1,6 @@
-import { purchaseType } from "@prisma/client";
-import { getDiscountPercent } from "../../../lib/helper/payment";
-import prisma from "../../../db/index";
+import { purchaseType } from  "@repo/packages/prisma"
+import { getDiscountPercent } from "@repo/lib/helper/payment";
+import prisma from  "@repo/db/index";
 
 
 

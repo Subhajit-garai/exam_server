@@ -1,7 +1,7 @@
 import { Response, Request } from "express";
-import prisma from "../../db";
-import { asyncHandler } from "../../lib/helper/asyncHandler";
-import { examManager } from "../../lib/examManager";
+import prisma from  "@repo/db/index";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler";
+import { examManager } from "@repo/lib/manager/examManager";
 import { create_quiz_data_ZodSchema, createQuizType } from "../zod/quiz.zod";
 
 const em = examManager.getInstance();

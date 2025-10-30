@@ -1,12 +1,12 @@
-import { hashPasswordFn, veryfyhashPasswordFn } from "../../lib/hash";
-import prisma from "../../db";
+import { hashPasswordFn, veryfyhashPasswordFn } from "@repo/lib/security/hash";
+import prisma from  "@repo/db/index";
 import {
   CreationTypes,
   primeStatus,
   Prisma,
   UserRole,
   ExamType,
-} from "@prisma/client";
+} from  "@repo/packages/prisma"
 import {
   banuser_notification_zod_type,
   bot_create_quiz_data_ZodSchema,
@@ -14,11 +14,11 @@ import {
   unbanuser_notification_zod_type,
   update_botwebhook_ZodSchema,
 } from "../zod/bot.zod";
-import { genToken, verifyToken } from "../../lib/token";
-import { QuizeSetupFunction } from "../../lib/helper/TelegramQuiz";
-import { debuglog } from "../../lib/helper/debugLog";
-import { asyncHandler } from "../../lib/helper/asyncHandler";
-import { exam_question_format_type } from "../../lib/types/questionTypes";
+import { genToken, verifyToken } from "@repo/lib/token";
+import { QuizeSetupFunction } from "@repo/lib/helper/TelegramQuiz";
+import { debuglog } from "@repo/lib/helper/debugLog";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler";
+import { exam_question_format_type } from "@repo/lib/types/questionTypes";
 
 export const test = asyncHandler(async (req: any, res: any) => {
   res.json({ success: true, message: "message", data: "data" });
@@ -35,9 +35,9 @@ export const getQuestionViaIds = asyncHandler(async (req: any, res: any) => {
     select: {
       id: true,
       title: true,
-      topic: true,
+      topic_id: true,
       difficulty: true,
-      sub_topic: true,
+      subject_id: true,
       explanation: true,
       is_multiple_ans: true,
       status: true,
@@ -202,12 +202,11 @@ export const getUserScore = asyncHandler(async (req: any, res: any) => {
 export const getMockAns = asyncHandler(async (req: any, res: any) => {
   let mockid = req.params.mockid;
 
-  // {"id":"number","ans":["2"],"part":"part1","topic":"COMPUTER"}
   type ansFormat = {
     id: string; // number
     ans: string[];
     part: string;
-    topic: string;
+    topic_id: string;
   };
 
   let ANS: ansFormat[] = [];
@@ -229,19 +228,18 @@ export const getMockAns = asyncHandler(async (req: any, res: any) => {
     },
     select: {
       id: true,
-      topic: true,
       ans: true,
+      topic_id:true,
     },
   });
 
-  debuglog(question_data);
   if (!question_data) throw new Error("question info not found");
   let question_data_map: Map<
     string,
     {
       id: string;
       ans: string[];
-      topic: string;
+      topic_id: string;
     }
   > = new Map();
 
@@ -253,7 +251,7 @@ export const getMockAns = asyncHandler(async (req: any, res: any) => {
     if (!que) throw new Error("question info not match");
     let tempAns: ansFormat = {
       id: String(question.number),
-      topic: que?.topic,
+      topic_id: que?.topic_id,
       part: question.part,
       ans: que?.ans,
     };
@@ -269,7 +267,7 @@ export const getExamAns = asyncHandler(async (req: any, res: any) => {
     id: string; // number
     ans: string[];
     part: string;
-    topic: string;
+    topic_id: string;
   };
 
   let ANS: ansFormat[] = [];
@@ -291,8 +289,8 @@ export const getExamAns = asyncHandler(async (req: any, res: any) => {
     },
     select: {
       id: true,
-      topic: true,
       ans: true,
+      topic_id:true,
     },
   });
 
@@ -302,7 +300,7 @@ export const getExamAns = asyncHandler(async (req: any, res: any) => {
     {
       id: string;
       ans: string[];
-      topic: string;
+      topic_id: string;
     }
   > = new Map();
 
@@ -312,9 +310,10 @@ export const getExamAns = asyncHandler(async (req: any, res: any) => {
   questions.map((question) => {
     let que = question_data_map.get(question.questionid);
     if (!que) throw new Error("question info not match");
+
     let tempAns: ansFormat = {
       id: String(question.number),
-      topic: que?.topic,
+      topic_id: que?.topic_id,
       part: question.part,
       ans: que?.ans,
     };
@@ -437,12 +436,11 @@ export const getQuestionsByids = asyncHandler(async (req: any, res: any) => {
     select: {
       ans: true,
       id: true,
-      topic: true,
       explanation: true,
       title: true,
       options: true,
       extra: true,
-      formate: true,
+      format: true,
     },
   });
   if (!responce) throw new Error("question  not found for given ids ");
@@ -474,12 +472,11 @@ export const getQuestions = asyncHandler(async (req: any, res: any) => {
     select: {
       ans: true,
       id: true,
-      topic: true,
       explanation: true,
       title: true,
       options: true,
       extra: true,
-      formate: true,
+      format: true,
     },
   });
 
@@ -520,6 +517,7 @@ export const getExamQuestionAns = asyncHandler(async (req: any, res: any) => {
 export const addQuestions = asyncHandler(async (req: any, res: any) => {
   let examid = req.params.examid;
   let questions = req.body;
+  
   let data = await prisma.question_map.createMany({
     data: questions,
     // skipDuplicates:true
@@ -862,21 +860,26 @@ export const sentQuizData = async (req: any, res: any) => {
     console.log("error in getQuizData in bot controller", error);
   }
 };
+
+
 export const getQuizTopic = async (req: any, res: any) => {
   try {
-    let quiztype = req.query.quiztype;
-    let response = await prisma.botQuizConfig.findFirst({});
+    let userid = req.query.user;
+    // let response = await prisma.botQuizConfig.findFirst({
+    //   where: {
+    //     User:
+    //   }
+    // });
     let data: {} | null = null;
-    if (quiztype == "quiz") {
-      data = {
-        data: response?.quiztopic || null,
-      };
-    } else {
-      data = {
-        data: response?.rapidtopic || null,
-        question_count: response?.question_count || null,
-      };
-    }
+
+    // let topics = await prisma.bo
+
+    
+    //   data = {
+    //     data: response?.rapidtopic || null,
+    //     question_count: response?.question_count || null,
+    //   };
+    
     return res.json({
       success: true,
       message: " topic sended successfully",
@@ -886,7 +889,10 @@ export const getQuizTopic = async (req: any, res: any) => {
     console.log(error);
   }
 };
+
+
 // admin
+
 export const updateBotWebhook = async (req: any, res: any) => {
   try {
     let data = update_botwebhook_ZodSchema.safeParse(req.body);
@@ -1057,22 +1063,22 @@ export const createNewBot = async (req: any, res: any) => {
 export const setQuizTopic = async (req: any, res: any) => {
   try {
     let data = req.body;
-    let response = await prisma.botQuizConfig.create({
-      data: {
-        quiztopic: data.quiztopic,
-        rapidtopic: data.rapidtopic,
-        exam: data.exam,
-        question_count: data.question_count,
-      },
-    });
+    // let response = await prisma.botQuizConfig.create({
+    //   data: {
+    //     quiztopic: data.quiztopic,
+    //     rapidtopic: data.rapidtopic,
+    //     exam: data.exam,
+    //     question_count: data.question_count,
+    //   },
+    // });
 
-    if (!response) {
-      return res.json({
-        success: false,
-        message: " topic not set!, error occure",
-        data: response,
-      });
-    }
+    // if (!response) {
+    //   return res.json({
+    //     success: false,
+    //     message: " topic not set!, error occure",
+    //     data: response,
+    //   });
+    // }
     return res.json({ success: true, message: " topic set successfully" });
   } catch (error) {
     console.log(error);

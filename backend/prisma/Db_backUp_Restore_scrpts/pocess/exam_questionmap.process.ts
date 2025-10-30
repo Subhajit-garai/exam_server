@@ -1,6 +1,6 @@
 import { oldPrisma, newPrisma } from "../db/index";
 
-import { Prisma } from "@prisma/client";
+import { Prisma } from  "@repo/packages/prisma";;
 
 let totalcount = 1;
 export async function exam_questionmap(chunkSize = 100) {
@@ -73,7 +73,7 @@ export async function exam_questionmap(chunkSize = 100) {
         return console.log("question not found");
       }
 
-      AllQuestionData.map(async (question, idx) => {
+      AllQuestionData.map(async (question:any, idx:number) => {
         // console.log({
         //   examid: exam.type !== "Mock" ? exam.testid : null,
         //   mockid: exam.type === "Mock" ? exam.testid : null,

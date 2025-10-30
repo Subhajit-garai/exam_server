@@ -1,14 +1,39 @@
 model botQuizConfig {
-  id               String   @id @unique @default(cuid())
-  chatId           String? // Telegram chat ID
-  quiztopic        String[]
-  rapidtopic       String[]
+  id String @id @unique @default(cuid())
+
+  chatId   String? // Telegram chat ID / whats app location ID
+  platform botPlatform @default(NONE) // e.g., "Telegram", "WhatsApp"
+
+  quiz_topic_id    String
   exam             String
-  nextQuestionTime Int      @default(40) // in seconds
-  quizOpenFor      Int      @default(60) // in seconds
-  question_count   String   @default("0")
-  created_by       String?
-  created_at       DateTime @default(now())
+  nextQuestionTime Int     @default(40) // in seconds
+  quizOpenFor      Int     @default(60) // in seconds
+  variableDelay    Boolean @default(false)
+  suffleQuestions  Boolean @default(true)
+
+  question_count Int @default(0)
+
+  created_by String
+  created_at DateTime @default(now())
+
+  User         User         @relation(fields: [created_by], references: [id])
+  botQuizTopic botQuizTopic @relation(fields: [quiz_topic_id], references: [id])
+}
+
+
+
+
+model botQuizTopic {
+  id         String   @id @unique @default(cuid())
+  subject_id String
+  topic_id   String
+  created_by String
+  created_at DateTime @default(now())
+
+  User          User            @relation(fields: [created_by], references: [id])
+  subject       Subject         @relation(fields: [subject_id], references: [id])
+  topic         Topic           @relation(fields: [topic_id], references: [id])
+  botQuizConfig botQuizConfig[]
 }
 
 model botInfo {
@@ -16,4 +41,11 @@ model botInfo {
   botuser_id String @unique
   token      String
   webhook    Json?
+}
+
+enum botPlatform {
+  NONE
+  WEB
+  TELEGRAM
+  WHATSAPP
 }

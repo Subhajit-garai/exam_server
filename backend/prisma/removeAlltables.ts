@@ -1,5 +1,5 @@
-import { remove_all_tables } from "@prisma/client/sql"
-import prisma from "../db"
+import { remove_all_tables } from "@repo/packages/prisma/sql";
+import prisma from "@repo/db/index"
 
 
 

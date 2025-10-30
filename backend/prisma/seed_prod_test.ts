@@ -1,6 +1,6 @@
-import prisma from "../db/index";
-import { primeStatus, UserRole } from "@prisma/client";
-import { hashPasswordFn } from "../lib/hash";
+import prisma from "@repo/db/index";
+import { primeStatus, UserRole } from "@repo/packages/prisma";;
+import { hashPasswordFn } from "@repo/lib/security/hash";
 import path, { join } from "path";
 
 import { addevent } from "./DB_setup/Tables/events";
@@ -175,24 +175,7 @@ async function main() {
   });
 
   // Syllabus
-  const Syllabus = await prisma.syllabus.create({
-    data: {
-      category: "CS",
-      target_exam_id: target_exam.id,
-      topics: [
-        "OS",
-        "C",
-        "DBMS",
-        "NETWORK",
-        "UNIX",
-        "COMPUTER",
-        "DSA",
-        "SE",
-        "CPP",
-        "ML",
-      ],
-    },
-  });
+  
 
   // exampattern Pattern
 
@@ -203,7 +186,7 @@ async function main() {
       examname: "JECA",
       category: "CS",
       syllabus: "Syllabus",
-      topics: Syllabus.topics,
+      // topics: Syllabus.topics,
       difficulty: "Easy",
       part: true,
       checkbox: true,

@@ -26,18 +26,22 @@ botRouter.get("/auth", botauthenticate, (req, res) => {
 });
 
 
-// exam
+
+
+// user
 botRouter.post("/user/progress/set", botauthenticate, setUserProgress);
 botRouter.post("/user/score/set", botauthenticate, setUserScore);
 botRouter.get("/user/score/get", botauthenticate, getUserScore);
 botRouter.post("/user/ans/set", botauthenticate, SetUserans);
 botRouter.get("/user/ans/get", botauthenticate, getUserans);
 
+// exam
 botRouter.get("/exam/patternid/get/:examid", botauthenticate, getExamPatternid);
 botRouter.get("/exampattern/get/:exampatternid", botauthenticate, getExamPattern);
 botRouter.get("/exam/details/get/:examid", botauthenticate, getExamDetails);
 botRouter.get("/mock/exampattern/details/get", botauthenticate, getMockSetExamPattern);
 
+//questions
 botRouter.get("/questions/info/get", botauthenticate, getQuestionViaIds);
 botRouter.get("/questions/ans/get/:examid", botauthenticate, getExamAns);
 botRouter.get("/questions/ids", botauthenticate, getQuestionsIds);
@@ -47,15 +51,21 @@ botRouter.post("/questions/add/:examid", botauthenticate, addQuestions);
 botRouter.get("/ansseet/get/:examid", botauthenticate, getexamAnsseet); // --- >  removed 
 
 
+//quiz
 botRouter.get("/getquiztopic", botauthenticate, getQuizTopic);
 botRouter.post("/getquestionsset", botauthenticate,sentQuizData);  //  auto / daily quiz set
+
 botRouter.get("/isprimeuser", botauthenticate,IsprimeUser)
 botRouter.get("/allusers", botauthenticate,sendAlluser) // -- > can be remove 
+
+// telegram group
 botRouter.get("/groupinfo", botauthenticate,sendGroupinfo)
 botRouter.get("/validchatids", botauthenticate,sendValidchatids)
 botRouter.get("/isgroupjoinable", botauthenticate,isGroupJoinable)
+
 botRouter.get("/getusersdata", botauthenticate,AllUserData)
-botRouter.post("/login", bot_login);
 
 botRouter.post("/notification", botauthenticate,processNotification)
+
+botRouter.post("/login", bot_login);
 

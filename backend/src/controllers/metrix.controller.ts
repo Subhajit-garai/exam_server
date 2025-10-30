@@ -1,4 +1,4 @@
-import prisma from "../../db";
+import prisma from  "@repo/db/index";
 import { timeinpute } from "../zod/metrix.zod";
 import dayjs from "dayjs";
 
@@ -15,7 +15,7 @@ import {
   getweeklyscore,
   top_4_user_from_exam_leaderboard,
   top_10_user_from_exam_leaderboard,
-} from "@prisma/client/sql";
+} from "@repo/packages/prisma/sql";
 
 export const test = async (req: any, res: any) => {
   try {

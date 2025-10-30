@@ -29,6 +29,7 @@ COPY  package*.json .
 COPY --from=builder /build/node_modules ./node_modules
 COPY --from=builder /build/dist ./dist
 COPY --from=builder /build/prisma ./prisma
+# COPY --from=builder /build/packages ./packages //  here solve  the issue of prisma generarte client 
  
 
 CMD ["node", "dist/src/surver.js"]

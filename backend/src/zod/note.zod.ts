@@ -6,12 +6,11 @@ export const createSubject_schema = z.object({
   description: z.string().min(1, { message: "description cannot be empty" }),
   slug: z.string().min(1, { message: "slug cannot be empty" }),
   category: z.string().min(1, { message: "category cannot be empty" }),
-  exam: z.string().min(1, { message: "exam cannot be empty" }),
   order: z.number(),
 
   iconUrl: z.string().optional(),
   color: z.string().optional(),
-  isPublic: z.boolean().optional(),
+  isPublic: z.boolean().default(false),
   level: z.string().optional(),
   difficulty: z.number().optional(),
 });

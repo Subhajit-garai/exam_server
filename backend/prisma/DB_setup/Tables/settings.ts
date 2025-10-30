@@ -1,4 +1,4 @@
-import prisma from "../../../db/index";
+import prisma from  "@repo/db/index";
 
 
 export const settings = async() =>{
@@ -34,3 +34,6 @@ export const settings = async() =>{
   });
 
 }
+
+
+settings()

@@ -7,7 +7,7 @@ import {
   GetQuestionExplanation,
   updateQuestion,
 } from "../controllers/question.controller";
-import { isAdmin } from "../../lib/auth";
+import { isAdmin } from "@repo/lib/security/auth";
 import {
   Create_Mock_question_set,
   get_all_mock_question_set,

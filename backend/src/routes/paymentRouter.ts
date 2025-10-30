@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { checkout, checkoutSubcription,getSubcriptionAndOffer } from "../controllers/payment.controller";
-import { IsPurchasesOpen } from "../../lib/Security";
+import { IsPurchasesOpen } from "@repo/lib/security/Security";
 
 export const paymentRouter = Router();
 

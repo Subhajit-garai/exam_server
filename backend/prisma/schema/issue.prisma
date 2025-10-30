@@ -12,3 +12,14 @@ model Issue {
   creator_role UserRole  @default(User)
   created_by   String?
 }
+
+
+
+enum IssueType {
+  QUESTION
+  UI
+  EXAM
+  PAYMENT
+  LOGIN
+  SIGNUP
+}

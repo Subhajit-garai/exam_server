@@ -1,12 +1,11 @@
-import { diffcultlevel, Prisma } from "@prisma/client";
-import prisma from "../../db/index";
+import { diffcultlevel, Prisma } from  "@repo/packages/prisma";
+import prisma from "@repo/db/index";
 import {
   QuestionFilterDataFetchZodSchema,
   questionInputZodSchema,
   questionUpdateZodSchema,
 } from "../zod/question.zod";
-import { asyncHandler } from "../../lib/helper/asyncHandler";
-
+import { asyncHandler } from "@repo/lib/helper/asyncHandler";
 
 export const updateQuestion = async (req: any, res: any) => {
   try {
@@ -140,16 +139,6 @@ export const createQuestion = async (req: any, res: any) => {
     }
     let data = questionInputZodSchema.safeParse(req.body);
 
-    // console.log("-----------> question <----------");
-    // console.log("req.body", req.body);
-    // console.log("req.body extra", typeof(req.body.extra));
-
-    // console.log("-----------> question <----------");
-    // console.log("-----------> Error <----------");
-    // console.log("data.error", data.error);
-
-    // console.log("-----------> Error <----------");
-
     if (!data.success) {
       return res.status(401).json({
         success: false,
@@ -160,22 +149,18 @@ export const createQuestion = async (req: any, res: any) => {
       Title,
       options,
       ans,
-      formate,
+      format,
       category,
-      topic,
+      topic_id,
       difficulty,
       isMultiple,
       Explanation,
       extra,
-      sub_topic,
+      subject_id,
       status,
       history,
       links,
     } = data.data;
-
-    // let Ans = Array.isArray(ans)
-    //   ? [...ans.filter((a: string) => a.replace("option", ""))]
-    //   : [ans.replace("option", "")];
 
     let question = await prisma.questions.create({
       data: {
@@ -183,13 +168,14 @@ export const createQuestion = async (req: any, res: any) => {
         options: options,
         extra: extra,
         ans: ans,
-        formate: formate,
+        format: format,
         category: category,
-        sub_topic: sub_topic, // change to sub_topic
+
+        topic_id: topic_id, // change to sub_topic
+        subject_id: subject_id,
         ...(status ? { status: status } : { status: "Processing" }),
         ...(history ? { history: history } : { history: [""] }),
         ...(links ? { links: links } : { links: [""] }),
-        topic: topic,
         explanation: Explanation,
         is_multiple_ans: isMultiple,
         difficulty: difficulty as diffcultlevel,

@@ -1,6 +1,7 @@
 import express from "express";
+
 import cookieParser from "cookie-parser";
-import { userauthenticate } from "../lib/auth.js";
+import { userauthenticate } from "@repo/lib/security/auth";
 // import { handleWebSocketConnection } from "../lib/WebSocket.js";
 import cors from "cors";
 import WebSocket, { WebSocketServer } from "ws";
@@ -9,7 +10,7 @@ import http from "http";
 import { userRouter } from "./routes/userRouter.js";
 import Razorpay from "razorpay";
 
-import "../lib/cronJobs/index";
+import "@repo/lib/cronJobs/index";
 
 // routers 
 import { adminRouter } from "./routes/adminRouter.js";
@@ -25,6 +26,7 @@ import { questionRouter } from "./routes/questionsRoutes.js";
 import { CommonuserRoutes } from "./routes/CommonuserRoutes.js";
 import { noteRouter } from "./routes/noteRoute.js";
 import { errorHandler } from "./middleware/globalErrorHandler.js";
+import { syllabusRouter } from "./routes/syllabusRouter.js";
 
 
 export const razerpayinstance = new Razorpay({
@@ -94,6 +96,7 @@ app.use("/api/v1/bot", botRouter);
 app.use(userauthenticate);
 app.use("/api/v1/payment", paymentRouter);
 app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/syllabus", syllabusRouter);
 app.use("/api/v1/issue", IssueRouter);
 app.use("/api/v1/event", eventRouter);
 app.use("/api/v1/user", userRouter);

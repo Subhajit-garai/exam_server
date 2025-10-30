@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from  "@repo/packages/prisma";;
 import { oldPrisma, newPrisma } from "../db/index";
 
 export async function restoreEvents(chunkSize = 100) {

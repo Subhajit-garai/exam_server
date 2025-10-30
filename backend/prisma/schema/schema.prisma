@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  // output   = "./generated/client"
+  output   = "../../dist/packages/prisma"
   previewFeatures = ["typedsql"]
 }
 
@@ -33,6 +33,7 @@ model Comment {
 enum UserRole {
   Admin
   User
+  Tutor // have more privilage than normal user but less than Admin
   Bot
 }
 
@@ -45,14 +46,7 @@ model EntryChargeList {
   created_by String?
 }
 
-model Syllabus {
-  id             String       @id @unique @default(cuid())
-  category       String
-  topics         String[]
-  created_at     DateTime     @default(now())
-  target_exam_id String?      @unique
-  target_exam    TargetExam? @relation(fields: [target_exam_id], references: [id])
-}
+
 
 enum primeStatus {
   None
@@ -131,21 +125,13 @@ enum syllabusType {
   Syllabus
 }
 
-enum examformate {
+enum examformat {
   Text
   Image
   Code
 }
 
-enum ExamType {
-  Exam // dynamic exam set 
-  Contest // compeations
-  Mock // for fixed question set like 2024 jeca set 
-  PYQ // 2024 jeca Exam 
-  Subject // for topic 30 question
-  Dpp
-  Quiz
-}
+
 
 model AppConfig {
   id         String   @id @default(cuid())
@@ -154,27 +140,6 @@ model AppConfig {
   updated_at DateTime @updatedAt
 }
 
-enum eventType {
-  RUN_NEW_QUIZ
-  CREATE_QUIZ_CONTEST
-  SEND_MESSAGE
-  CREATE_DPP
-  CREATE_EXAM
-  CLEAR_BOT_CACHE
-}
 
-enum eventRuns {
-  ONE
-  DAILY
-  WEEKLY
-  MONTHLY
-}
 
-enum IssueType {
-  QUESTION
-  UI
-  EXAM
-  PAYMENT
-  LOGIN
-  SIGNUP
-}
+

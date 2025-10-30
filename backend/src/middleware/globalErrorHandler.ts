@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from  "@repo/packages/prisma"
 import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 
 export class CustomError extends Error {

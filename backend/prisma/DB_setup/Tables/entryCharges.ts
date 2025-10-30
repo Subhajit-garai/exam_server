@@ -1,5 +1,5 @@
-import { ExamType } from "@prisma/client";
-import prisma from "../../../db/index";
+import { ExamType } from  "@repo/packages/prisma";
+import prisma from  "@repo/db/index";
 
 
 export const entryCharges = async (userid:string) => {

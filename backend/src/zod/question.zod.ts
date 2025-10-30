@@ -1,4 +1,4 @@
-import { diffcultlevel, examformate, Status } from "@prisma/client";
+import { diffcultlevel, examformat, Status } from  "@repo/packages/prisma"
 import z, { date, nullable } from "zod";
 
 export const questionInputZodSchema = z.object({
@@ -9,15 +9,15 @@ export const questionInputZodSchema = z.object({
   ans: z.array(z.string()),
   isMultiple: z.boolean().default(false),
   category: z.string(),
-  topic: z.string(),
-  sub_topic: z.string().default("not specified"),
+  topic_id: z.string(),
+  subject_id: z.string(),
   history: z.array(z.string()).optional().default([""]), // new
   links: z
     .string()
     .transform((val) => val.split(",").map((s) => s.trim()))
     .optional(),
   difficulty: z.nativeEnum(diffcultlevel),
-  formate: z.nativeEnum(examformate),
+  format: z.nativeEnum(examformat),
   status: z.nativeEnum(Status),
   extra: z
     .object({
@@ -41,7 +41,7 @@ export const questionUpdateZodSchema = z.object({
     .nullable()
     .optional(),
   ans: z.array(z.string()),
-  formate: z.nativeEnum(examformate),
+  formate: z.nativeEnum(examformat),
   category: z.string(),
   sub_topic: z.string(),
   history: z.array(z.string()),
@@ -65,7 +65,7 @@ export const QuestionFilterDataFetchZodSchema = z.object({
   history: z.string().optional(),
   topic: z.string().optional(),
   difficulty: z.nativeEnum(diffcultlevel).optional(),
-  formate: z.nativeEnum(examformate).optional(),
+  formate: z.nativeEnum(examformat).optional(),
   status: z.nativeEnum(Status).optional(),
   ismultipleans: z
     .string()

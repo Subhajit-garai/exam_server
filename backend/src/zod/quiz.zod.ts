@@ -1,4 +1,4 @@
-import { CreationTypes, ExamStage, ExamStatus, quiz_type } from "@prisma/client";
+import { CreationTypes, ExamStage, ExamStatus, quiz_type } from  "@repo/packages/prisma"
 import z, { date } from "zod";
 
 
@@ -14,7 +14,7 @@ export const create_quiz_data_ZodSchema = z.object({
   endtime: z.string().optional(),
   nextQuestionTime: z.number().optional(),
   quizOpenFor: z.number().optional(),
-  question_count: z.string().optional(),
+  question_count: z.number().optional(),
   quiz_type: z.nativeEnum(quiz_type),
   chatId: z.string().optional(),
   stage: z.nativeEnum(ExamStage),

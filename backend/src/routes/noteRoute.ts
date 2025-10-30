@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { CreateSubject, CreateTopic, dislike,getTopic, getAllNoteSubject, getAllNoteTopic, getAllVersionOfNote, getNote, like, UpdateContentOfTopic, DeleteSubject } from "../controllers/note.controller";
-import { isAdmin } from "../../lib/auth";
+import { isAdmin } from "@repo/lib/security/auth";
 
 export const noteRouter = Router()
 
@@ -8,7 +8,7 @@ export const noteRouter = Router()
 noteRouter.get("/getnote/:subject/:topic",getNote)
 noteRouter.get("/gettopic",getTopic)
 noteRouter.get("/allsubject" ,getAllNoteSubject)
-noteRouter.get("/alltopic/:subject" ,getAllNoteTopic)
+noteRouter.get("/alltopic/:slug" ,getAllNoteTopic)
 noteRouter.get("/admin/getversionlist/:subject/:topic",getAllVersionOfNote)
 
 noteRouter.post("/like",like)

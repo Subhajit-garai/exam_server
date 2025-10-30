@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { userSignin, userSignup,userForgotpasswordTokenGen,userForgotpasswordTokenVerify, useremailValidationTokengen, useremailValidationTokenVerify } from "../controllers/user.controller";
-import { otpLimiter, passwordResetLimiter, signinLimiter } from "../../lib/ratelimiter";
-import { IsrazerpayTestAccessOpen, IsUserLoginOpen, IsUserSignUpOpen } from "../../lib/Security";
+import { otpLimiter, passwordResetLimiter, signinLimiter } from "@repo/lib/security/ratelimiter";
+import { IsrazerpayTestAccessOpen, IsUserLoginOpen, IsUserSignUpOpen } from "@repo/lib/security/Security";
 
 export const CommonuserRoutes = Router();
 

@@ -1,7 +1,8 @@
-import prisma from "../../db";
+import prisma from  "@repo/db/index";
 import zod from "zod";
 import { IssueInpute_zod_type } from "../zod/issue.zod";
-import { Status } from "@prisma/client";
+// import { Status } from  "@repo/packages/prisma"
+import { Status } from  "@repo/packages/prisma";
 
 export const test = async (req: any, res: any) => {
   try {

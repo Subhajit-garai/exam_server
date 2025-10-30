@@ -1,7 +1,7 @@
-import prisma from "../../db/index";
-import { asyncHandler } from "../../lib/helper/asyncHandler";
-import { debuglog } from "../../lib/helper/debugLog";
-import { ZodDataSafeParse } from "../../lib/ZodTypeChecker";
+import prisma from "@repo/db/index";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler";
+import { debuglog } from "@repo/lib/helper/debugLog";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker";
 import {
   mockQuestionAddZodSchema,
   mockQuestionSetZodSchema,

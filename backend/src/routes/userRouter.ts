@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { auth, Logout , userPurchases, usertelegramidValidationTokengen, usertetegramidValidationTokenVerify } from "../controllers/user.controller";
-import { otpLimiter } from "../../lib/ratelimiter";
-import { IsUserLoginOpen } from "../../lib/Security";
+import { otpLimiter } from "@repo/lib/security/ratelimiter";
+import { IsUserLoginOpen } from "@repo/lib/security/Security";
 
 export const userRouter = Router();
 

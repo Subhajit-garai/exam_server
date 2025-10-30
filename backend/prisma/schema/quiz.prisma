@@ -10,17 +10,23 @@ model quiz {
   is_need_registration Boolean       @default(false)
   name                 String?       @default("No name")
   category             String
+
   topics               String[]      @default([""]) // id 
+  subjects             String[]      @default([""]) // id
+
   created_at           DateTime?     @default(now())
   created_by           String        @default("No name")
-  examtype             String        @default("quiz")
+
   Visibility           Visibility    @default(Private)
   creationstatus       CreationTypes @default(Processing)
+
   starttime            String?       @default("00:00 pm")
   endtime              String        @default("00:00 h")
+
   nextQuestionTime     Int           @default(40) // in seconds
   quizOpenFor          Int           @default(60) // in seconds
-  question_count       String        @default("0")
+  question_count       Int        @default(0)
+
   quiz_type            quiz_type     @default(quiz)
   chatId               String? // Telegram chat ID // it can be group or private
   date         DateTime      @default(now())

@@ -20,12 +20,6 @@ model subcriptionOffers {
   tier        Tier?       @relation(fields: [tierId], references: [id])
 }
 
-model coupon {
-  id         String   @id @unique @default(cuid())
-  token      Int      @default(0) // if offer 
-  count      Int      @default(0)
-  cupon      String[] @default([])
-  accessby   String[] @default([])
-  created_by String?
-  created_at DateTime @default(now())
-}
+
+
+

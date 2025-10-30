@@ -1,34 +1,39 @@
 model User {
-  id                  String         @id @unique @default(cuid())
+  id                  String   @id @unique @default(cuid())
   name                String
-  email               String         @unique
-  contactno           String?        @default("0000000000") // only india
+  email               String   @unique
+  contactno           String?  @default("0000000000") // only india
   password            String
-  telegramid          String?        @unique
-  verificationid      String?        @unique
-  progressid          String?        @unique
-  role                UserRole       @default(User)
-  join_at             DateTime       @default(now())
+  telegramid          String?  @unique
+  verificationid      String?  @unique
+  progressid          String?  @unique
+  role                UserRole @default(User)
+  join_at             DateTime @default(now())
   forgotpasswordToken String? // forget password
-  resetTokenExpires   DateTime       @default(now()) // forget password
-  accesstoken         String[]       @default([]) // only one device access token
-  Exam                Exam[]
-  Exam_pattern        Exam_pattern[]
-  Questions           Questions[]
-  telegram            telegram?      @relation(fields: [telegramid], references: [id])
-  verification        verification?  @relation(fields: [verificationid], references: [id])
-  blance              blance?
-  Order               Order[]
-  payment             payment[]
-  leaderboard         leaderboard[]
-  quiz                quiz[]
-  prime               prime?
-  Comment             Comment[]
-  Topic               Topic[]
+  resetTokenExpires   DateTime @default(now()) // forget password
+  accesstoken         String[] @default([]) // only one device access token
+
+  Exam         Exam[]
+  Exam_pattern Exam_pattern[]
+  Questions    Questions[]
+  telegram     telegram?      @relation(fields: [telegramid], references: [id])
+  verification verification?  @relation(fields: [verificationid], references: [id])
+  blance       blance?
+  Order        Order[]
+  payment      payment[]
+  leaderboard  leaderboard[]
+  quiz         quiz[]
+  prime        prime?
+  Comment      Comment[]
+  Topic        Topic[]
+
+  botQuizTopic  botQuizTopic[]
+  botQuizConfig botQuizConfig[]
+  CouponUsages  CouponUsage[] // Relation: which users used it
+  Coupon        Coupon[]
 
   @@index([role])
 }
-
 
 model prime {
   id          String      @id @unique @default(cuid())

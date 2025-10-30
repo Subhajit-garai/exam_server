@@ -14,3 +14,20 @@ model events {
   @@index([runs]) // Index for scheduling queries
   @@index([run_at]) // Index for scheduling queries
 }
+
+
+enum eventType {
+  RUN_NEW_QUIZ
+  CREATE_QUIZ_CONTEST
+  SEND_MESSAGE
+  CREATE_DPP
+  CREATE_EXAM
+  CLEAR_BOT_CACHE
+}
+
+enum eventRuns {
+  ONE
+  DAILY
+  WEEKLY
+  MONTHLY
+}

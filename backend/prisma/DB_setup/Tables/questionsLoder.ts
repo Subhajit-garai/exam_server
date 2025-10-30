@@ -1,4 +1,4 @@
-import prisma from "../../../db/index";
+import prisma from  "@repo/db/index";
 import fs, { readFileSync } from "fs";
 
 

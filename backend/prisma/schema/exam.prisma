@@ -1,47 +1,50 @@
 model TargetExam {
-  id                String              @id @default(cuid())
-  name              String              @unique // e.g., "GATE", "UPSC"
-  shortCode         String?             @unique // e.g., "GATE", "CAT", "UPSC"
-  description       String?
-  examType          ExamScope           @default(NATIONAL) // examType to ExamScope
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  isDeleted         Boolean             @default(false)
-  category          String              @default("not seted")
+  id          String    @id @default(cuid())
+  name        String    @unique // e.g., "GATE", "UPSC"
+  shortCode   String?   @unique // e.g., "GATE", "CAT", "UPSC"
+  description String?
+  examScope    ExamScope @default(NATIONAL) // examType to ExamScope
+
+  isPublic Boolean @default(false)
+  category  String  @default("not seted")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   subcriptionOffers subcriptionOffers[]
-  Syllabus          Syllabus[]
-  subjects          ExamSubjectMap[]
-  examTopics        ExamTopicMap[]
   examYears         ExamYear[]
 }
 
 model ExamYear {
-  id                    String     @id @default(cuid())
+  id String @id @default(cuid())
+
+  targetExamId String
+
   year                  Int // e.g., 2025
   slug                  String     @unique // e.g., "gate-2025"
-  status                ExamStatus @default(DRAFT)
+  status                ExamStatus @default(SCHEDULED)
+  isPublic              Boolean    @default(false)
   registrationOpenDate  DateTime?
   registrationCloseDate DateTime?
-  examStartDate         DateTime?
-  examEndDate           DateTime?
+  examDate         DateTime?
   resultDate            DateTime?
-  category              String? // e.g., "Engineering", "Management"
+  // category              String? // e.g., "Engineering", "Management"
   notes                 Json? // flexible field for extra info
   createdAt             DateTime   @default(now())
   updatedAt             DateTime   @updatedAt
   isDeleted             Boolean    @default(false)
   // relation
-  targetExamId          String
   targetExam            TargetExam @relation(fields: [targetExamId], references: [id])
+  Syllabus              Syllabus[]
 }
 
 model Exam_pattern {
   id              String        @id @unique @default(cuid())
   title           String?       @unique
-  format          examformate   @default(Text) // it not needed 
+  format          examformat    @default(Text) // it not needed 
   examname        String
   category        String
-  syllabus        syllabusType  @default(Syllabus)
+  syllabus        syllabusType  @default(Syllabus) // Syllabus mean it follow syllabus base question paper
   topics          String[]
   difficulty      diffcultlevel @default(Easy)
   part            Boolean?
@@ -58,36 +61,48 @@ model Exam_pattern {
 }
 
 model Exam {
-  id               String          @id @unique @default(cuid())
-  display_id       String?         @unique @default(nanoid(6))
-  name             String?         @default("No name")
-  examname         String
-  category         String
-  // questions        Json?
-  examtype         ExamType        @default(Exam)
-  mockSetId        String? // if examtype is Mock then it get mockset questions 
-  created_at       DateTime?       @default(now())
-  created_by       String
+  id         String  @id @unique @default(cuid())
+  display_id String? @unique @default(nanoid(6))
+
+  name     String? @default("No name")
+  examname String
+
+  category    String
+  examtype    ExamType    @default(Exam)
+  access_type access_type @default(Paid)
+  mockSetId   String? // if examtype is Mock then it get mockset questions 
+
   exam_pattern_id  String
-  ansid            String          @unique
-  Visibility       Visibility      @default(Private)
-  creationstatus   CreationTypes   @default(Processing)
-  starttime        String?         @default("08:00 pm") //or no limit // -> it start time , at this time you can join the exam , and join process open starttime + jointime 
-  jointime         String?         @default("00:15 m") // Open HH:MM:SS
-  duration         String          @default("02:00 h") // HH:MM   it is time  user can give or mark ans  , ans accept onlt starttime+jointime+timelimit+ 00:10 min
-  date             DateTime        @default(now())
-  isMultipleAttemp Boolean         @default(true)
-  isLive           Boolean         @default(true)
-  stage            ExamStage       @default(Registration)
-  register_id      String          @default("")
-  ContestRegister  ContestRegister @relation(fields: [register_id], references: [id])
-  AnsSheet         AnsSheet        @relation(fields: [ansid], references: [id])
-  User             User            @relation(fields: [created_by], references: [id])
-  exam_pattern     Exam_pattern    @relation(fields: [exam_pattern_id], references: [id])
-  leaderboard      leaderboard[]
-  questionsMap     question_map[]  @relation("ExamRelation")
+  ansid            String        @unique // not needed
+  isMultipleAttemp Boolean       @default(true)
+  isLive           Boolean       @default(true)
+  Visibility       Visibility    @default(Private)
+  creationstatus   CreationTypes @default(Processing)
+
+  starttime String?  @default("08:00 pm") //or no limit // -> it start time , at this time you can join the exam , and join process open starttime + jointime 
+  jointime  String?  @default("00:15 m") // Open HH:MM:SS
+  duration  String   @default("02:00 h") // HH:MM   it is time  user can give or mark ans  , ans accept onlt starttime+jointime+timelimit+ 00:10 min
+  date      DateTime @default(now())
+
+  stage       ExamStage @default(Registration)
+  register_id String    @default("")
+
+  created_at DateTime? @default(now())
+  created_by String
+
+  ContestRegister ContestRegister @relation(fields: [register_id], references: [id])
+  AnsSheet        AnsSheet        @relation(fields: [ansid], references: [id]) // not needed
+  User            User            @relation(fields: [created_by], references: [id])
+  exam_pattern    Exam_pattern    @relation(fields: [exam_pattern_id], references: [id])
+  leaderboard     leaderboard[]
+  questionsMap    question_map[]  @relation("ExamRelation")
 
   @@index([examtype])
+}
+
+enum access_type {
+  Free
+  Paid
 }
 
 enum ExamScope {
@@ -97,10 +112,24 @@ enum ExamScope {
   OTHER
 }
 
+
 enum ExamStatus {
-  DRAFT
-  UPCOMING
+  REGISTRATION_OPEN
+  REGISTRATION_CLOSED
+  SCHEDULED
   ONGOING
   COMPLETED
+  EVALUATION_IN_PROGRESS
+  RESULT_PUBLISHED
   ARCHIVED
+}
+
+enum ExamType {
+  Exam // dynamic exam set 
+  Contest // compeations
+  Mock // for fixed question set like 2024 jeca set 
+  PYQ // 2024 jeca Exam 
+  Subject // for topic 30 question
+  Dpp
+  Quiz
 }

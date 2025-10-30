@@ -1,5 +1,5 @@
 import { Router } from "express";
-import prisma from "../../db";
+import prisma from  "@repo/db/index";
 import { backupQuestion } from "../controllers/question.controller";
 
 export const DataManageRouter = Router();

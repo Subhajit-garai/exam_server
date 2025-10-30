@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from  "@repo/packages/prisma";;
 import { oldPrisma, newPrisma } from "../db/index";
 
 export async function restoreMock_questions_set(chunkSize = 100) {

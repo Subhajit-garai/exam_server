@@ -1,4 +1,4 @@
-import { IssueType } from "@prisma/client"
+import { IssueType } from  "@repo/packages/prisma";
 import z from "zod"
 
 export const IssueInpute_zod_type = z.object({

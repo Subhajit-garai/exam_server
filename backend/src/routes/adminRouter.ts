@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAdmin } from "../../lib/auth";
+import { isAdmin } from "@repo/lib/security/auth";
 import { addbotToken, createNewBot, setQuizTopic, updateBotWebhook } from "../controllers/bot.controller";
 import { updateAppConfig ,SendAppConfig } from "../controllers/settings.controller";
 
@@ -15,3 +15,4 @@ adminRouter.post("/setToken",isAdmin, addbotToken)
 adminRouter.post("/bot/create",isAdmin, createNewBot)
 adminRouter.put("/bot/botWebhook",isAdmin, updateBotWebhook)
 // adminRouter.post("/event",isAdmin, addbotToken)
+

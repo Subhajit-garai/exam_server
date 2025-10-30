@@ -1,5 +1,5 @@
-import { eventRuns, eventType, ExamStatus, UserRole, Visibility } from "@prisma/client";
-import prisma from "../../../db/index";
+import { eventRuns, eventType, ExamStatus, UserRole, Visibility } from  "@repo/packages/prisma"
+import prisma from  "@repo/db/index";
 
 
 

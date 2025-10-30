@@ -1,26 +1,32 @@
-import { ExamStatus, ExamType, syllabusType, Visibility } from "@prisma/client";
-import prisma from "../../db";
+import {
+  ExamStatus,
+  ExamType,
+  syllabusType,
+  Visibility,
+} from "@repo/packages/prisma";
+import prisma from "@repo/db/index";
 import {
   ExamCreateInputeSchema,
   ExampatternInputZodSchema,
-  SyllabusInputZodSchema,
 } from "../zod/user.zod";
-import { examManager } from "../../lib/examManager";
-import { ExamMetaData } from "../../lib/types";
+import { examManager } from "@repo/lib/manager/examManager";
+import { ExamMetaData } from "@repo/lib/types";
 import { SubmitedQuestionAnsZodSchema } from "../zod/question.zod";
 
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { getServiceCharge, TokenDeduction } from "../../lib/helper/payment";
-import { asyncHandler } from "../../lib/helper/asyncHandler";
+import { getServiceCharge, TokenDeduction } from "@repo/lib/helper/payment";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler";
 import {
   create_targated_exam_year_zodSchemea,
   create_targated_exam_zodSchemea,
   updare_targated_exam_year_zodSchemea,
 } from "../zod/exam.zod";
-import { ZodDataSafeParse } from "../../lib/ZodTypeChecker";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker";
+import { debuglog } from "util";
+import { ConvertInSlug } from "@/lib/slug";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -35,6 +41,34 @@ export const test = asyncHandler(async (req: any, res: any) => {
     data: "data",
   });
 });
+
+// export const findexam = async (req: any, res: any) => {
+//   try {
+//     let category = req.query.category.toUpperCase();
+
+//     let response = await prisma.targetExam.findMany({
+//       where: {
+//         category: category,
+//       },
+//     });
+
+//     if (!(response.length > 0)) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: `Can not find any Category` });
+//     }
+
+//     let AvalibleExam = response.flat().map(item=> item.name)
+
+//     res.json({
+//       success: true,
+//       message: ` alalible Exam  names`,
+//       for: AvalibleExam,
+//     });
+//   } catch (error) {
+//     console.log("Error in exam controller", error);
+//   }
+// };
 
 // in dev
 export const deletexams = async (req: any, res: any) => {
@@ -122,11 +156,9 @@ export const create_targeted_exam = asyncHandler(async (req: any, res: any) => {
   if (!processedata.success) {
     throw ZodDataSafeParse(processedata, true);
   }
-  let {examScope , ...rest} = processedata.data;
   let target_exam = await prisma.targetExam.create({
     data: {
-      ...rest,
-      examType: examScope
+      ...processedata.data,
     },
   });
 
@@ -139,13 +171,28 @@ export const create_targeted_exam = asyncHandler(async (req: any, res: any) => {
 export const create_targeted_exam_year = asyncHandler(
   async (req: any, res: any) => {
     let processedata = create_targated_exam_year_zodSchemea.safeParse(req.body);
+
     if (!processedata.success) {
       throw ZodDataSafeParse(processedata, true);
     }
 
+    let target_exam_data = await prisma.targetExam.findFirst({
+      where: {
+        id: processedata.data.targetExamId,
+      },
+    });
+
+    if (!target_exam_data) throw new Error("select valid exam name ");
+
+    processedata.data.slug = ConvertInSlug(
+      `${target_exam_data.shortCode} ${processedata.data.year}`
+    );
+
     let target_exam_year = await prisma.examYear.create({
       data: {
         ...processedata.data,
+        slug: processedata.data.slug,
+        year: parseInt(processedata.data.year),
       },
     });
 
@@ -281,11 +328,10 @@ export const ExamAnsGenerator = async (examid: string) => {
         title: true,
         options: true,
         ans: true,
-        topic: true,
         difficulty: true,
         is_multiple_ans: true,
-        // explanation: true,
-        // links: true,
+        subject_id: true,
+        topic_id: true,
       },
     });
 
@@ -424,115 +470,6 @@ export const gettokenSystem = async (req: any, res: any) => {
     });
   }
 };
-export const CreateSyllabus = async (req: any, res: any) => {
-  try {
-    let data = SyllabusInputZodSchema.safeParse(req.body);
-
-    if (!data.success) {
-      return res.status(401).json({
-        success: false,
-        message: "given credential/input   invalid ",
-      });
-    }
-
-    let { category, examname, topics } = data.data;
-    examname = examname.toUpperCase();
-    let response = await prisma.syllabus.create({
-      data: {
-        category,
-        topics,
-      },
-    });
-
-    if (!response) {
-      return res.status(400).json({
-        success: false,
-        message: `Syllabus for ${examname} not created ,`,
-      });
-    }
-
-    let syllabus = response.topics;
-
-    res.json({
-      success: true,
-      message: `Syllabus for ${examname} are/is : ${syllabus}  seted `,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: `Syllabus not created , Exam Name Already exist ,`,
-    });
-  }
-};
-
-export const getSyllabusByid = async (req: any, res: any) => {
-  try {
-    let syllabusid = req.query.syllabusid;
-
-    let response = await prisma.syllabus.findFirst({
-      where: {
-        id: syllabusid,
-      },
-    });
-
-    if (!response) {
-      return res
-        .status(400)
-        .json({ success: false, message: `Syllabus  not exist` });
-    }
-
-    let syllabus = response?.topics;
-
-    res.json({
-      success: true,
-      message: `Syllabus data`,
-      syllabus: syllabus,
-    });
-  } catch (error) {
-    console.log("Error in getsyllabus", error);
-  }
-};
-export const getSyllabus = async (req: any, res: any) => {
-  try {
-    let exam = req.query.syllabus;
-
-    let target_exam = await prisma.targetExam.findFirst({
-      where: {
-        name: exam.toUpperCase(),
-      },
-    });
-
-    if (!target_exam) throw new Error("target exam not present ! Error");
-
-    let response = await prisma.subject.findMany({
-      where: {
-        target_exam_id: target_exam.id,
-      },
-      select: {
-        shortName: true,
-      },
-    });
-
-    if (!response) {
-      return res
-        .status(400)
-        .json({ success: false, message: `Syllabus for ${exam} not exist` });
-    }
-
-
-    console.log(response);
-    
-    let syllabus = response?.flat();
-
-    res.json({
-      success: true,
-      message: `Syllabus for ${exam}`,
-      syllabus: syllabus,
-    });
-  } catch (error) {
-    console.log("Error in getsyllabus", error);
-  }
-};
 
 export const CreateNewExamPattern = async (req: any, res: any) => {
   try {
@@ -571,22 +508,25 @@ export const CreateNewExamPattern = async (req: any, res: any) => {
         },
       });
 
-      // let response2 = await prisma.subject.findMany({
-      //   where: {
-      //     traget_exam_id: target_exam?.id,
-      //   },
-      //   select: {
-      //     shortName: true,
-      //   },
-      // });
-
-      let response = await prisma.syllabus.findFirst({
+      let syllabus = await prisma.syllabus.findFirst({
         where: {
-          target_exam_id: target_exam?.id,
+          exam_year_id: target_exam?.id, // syllabus are attach with target exam year
         },
       });
 
-      topics = response?.topics;
+      if (!syllabus) throw Error("syllabus not found ");
+
+      let subject_data = await prisma.subjectSyllabusMap.findMany({
+        where: {
+          syllabusId: syllabus.id,
+        },
+      });
+
+      if (!subject_data) throw Error("subject_data not found ");
+
+      let subject_id_arr = subject_data.map((sub) => sub.id);
+
+      topics = subject_id_arr; // here i pass subject map  id , and later i get topic by an api request
     } else {
       if ((topics?.length as number) < 1) {
         return res.status(400).json({
@@ -628,11 +568,6 @@ export const CreateNewExamPattern = async (req: any, res: any) => {
 export const CreateExam = async (req: any, res: any) => {
   try {
     let data = ExamCreateInputeSchema.safeParse(req.body);
-
-
-    console.log("req.body -->", req.body);
-    console.log("error -->", data.error);
-    
 
     let user = req.user;
 
@@ -822,57 +757,30 @@ export const CreateExam = async (req: any, res: any) => {
   }
 };
 
+// checked 2.0
 export const getCategory = async (req: any, res: any) => {
   try {
-    let response = await prisma.syllabus.findMany({});
+    let response = await prisma.targetExam.findMany({
+      distinct: ["category"],
+      select: {
+        category: true,
+      },
+    });
 
     if (!response) {
       return res
         .status(400)
         .json({ success: false, message: `Can not find any Category` });
     }
-    let Category = [];
-    Category = response.map((c: any) => {
-      return c.category;
-    });
+    let Category = response.flat().map((item) => item.category);
+
     res.json({
       success: true,
-      message: ` alalible Categorys `,
-      Category: Category,
+      message: ` available Categorys `,
+      data: Category,
     });
   } catch (error) {
     console.log(error);
-  }
-};
-
-export const findexam = async (req: any, res: any) => {
-  try {
-    let category = req.query.category.toUpperCase();
-
-    let response = await prisma.syllabus.findMany({
-      where: {
-        category: category,
-      },
-    });
-
-    if (!(response.length > 0)) {
-      return res
-        .status(400)
-        .json({ success: false, message: `Can not find any Category` });
-    }
-
-    let AvalibleExam = []; // // for --> AvalibleExam
-    AvalibleExam = response.map((c: any) => {
-      return c.examname;
-    });
-
-    res.json({
-      success: true,
-      message: ` alalible Exam  names`,
-      for: AvalibleExam,
-    });
-  } catch (error) {
-    console.log("Error in exam controller", error);
   }
 };
 
@@ -885,6 +793,7 @@ export const getAvalibleExam = asyncHandler(async (req: any, res: any) => {
     },
     select: {
       name: true,
+      shortCode: true,
       id: true,
     },
   });
@@ -893,16 +802,12 @@ export const getAvalibleExam = asyncHandler(async (req: any, res: any) => {
     throw new Error("Can not find any exam");
   }
 
-  let AvalibleExam = new Set(); // // for --> AvalibleExam
-
-  response.map((c: any) => {
-    AvalibleExam.add(c.name);
-  });
+  let AvalibleExam = response.flat(); // for --> AvalibleExam
 
   return res.json({
     success: true,
     message: ` avalible Exam  names`,
-    data: { names: [...AvalibleExam] },
+    data: AvalibleExam,
   });
 });
 
@@ -1125,7 +1030,7 @@ export const getAvalibleExamPattern = async (req: any, res: any) => {
     res.json({
       success: true,
       message: `alalible Exam patterns`,
-      patterns: response,
+      data: response,
     });
   } catch (error) {
     console.log("Error in exam controller", error);
@@ -1595,34 +1500,27 @@ export const submitAnswerhandler = async (req: any, res: any) => {
   }
 };
 
-export const finalsubmitExam = async (req: any, res: any) => {
-  try {
-    let examid = req.query.examid;
-    // let number = req.query.number;
-    // let part = req.query.part;
-    // let ans = req.query.ans;
-    let userid = req.user;
+export const finalsubmitExam = asyncHandler(async (req: any, res: any) => {
+  let examid = req.query.examid;
+  let userid = req.user;
 
-    let status = await em.submitExam(examid, userid);
-    // call back to user
-    if (status) {
-      console.log("status", status);
-      console.log("Exam Submited  ....");
-    }
-
-    if (!status) {
-      return res.status(400).json({
-        success: false,
-        message: `response not found`,
-      });
-    }
-
-    res.json({
-      success: true,
-      message: `Exam Submited Successfully ...`,
-      data: "collected",
-    });
-  } catch (error) {
-    console.log("Error in exam controller", error);
+  let status = await em.submitExam(examid, userid);
+  // call back to user
+  if (status) {
+    console.log("status", status);
+    console.log("Exam Submited  ....");
   }
-};
+
+  if (!status) {
+    return res.status(400).json({
+      success: false,
+      message: `response not found`,
+    });
+  }
+
+  return res.json({
+    success: true,
+    message: `Exam Submited Successfully ...`,
+    data: "collected",
+  });
+});

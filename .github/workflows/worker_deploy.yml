@@ -9,7 +9,7 @@ on:
       - "worker/**"
 
 env:
-  WORKER_IMAGE: subhajitgarai04/testcicd-worker
+  WORKER_IMAGE: ${{ secrets.WORKER_IMAGE }}
 
 jobs:
   build-worker:

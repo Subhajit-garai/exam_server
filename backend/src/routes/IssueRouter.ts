@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { isAdmin } from "../../lib/auth";
-import { CloseIssue, createNewIssue, getAllIssue, getIssueByid, Isprocessed_issue, RemoveIssue, setDownVote, setPriorityVote, setupVote, update_issue, updateStatus } from "../controllers/issue.controller";
+import { isAdmin } from "@repo/lib/security/auth";
+import { CloseIssue, createNewIssue, getAllIssue, getIssueByid, Isprocessed_issue, RemoveIssue, setDownVote, setPriorityVote, setupVote, update_issue, updateStatus ,GetquestionIssuecount} from "../controllers/issue.controller";
 export const IssueRouter = Router();
 
 
@@ -28,6 +28,7 @@ IssueRouter.get("/getbyid", getIssueByid)
 IssueRouter.post("/create", createNewIssue)
 IssueRouter.put("/update", update_issue)
 IssueRouter.get("/isprocessed", Isprocessed_issue)
+IssueRouter.get("/getquestionIssuecount", GetquestionIssuecount)
 
 // user
 IssueRouter.post("/priorityVote", setPriorityVote)

@@ -1,6 +1,6 @@
 // import dayjs from "dayjs";
-// import { examManager } from "../../lib/examManager";
-// import prisma from "../../db";
+// import { examManager } from "@repo/lib/examManager";
+// import prisma from  "@repo/db/index";
 // import { SubmitedQuestionAnsZodSchema } from "../zod/question.zod";
 
 // const em = examManager.getInstance();

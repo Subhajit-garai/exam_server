@@ -1,6 +1,6 @@
-import { hashPasswordFn, veryfyhashPasswordFn } from "../../lib/hash";
-import prisma from "../../db/index";
-import { verifyToken } from "../../lib/token";
+import { hashPasswordFn, veryfyhashPasswordFn } from "@repo/lib/security/hash";
+import prisma from "@repo/db/index";
+import { verifyToken } from "@repo/lib/token";
 
 const verifyBotToken = async (bot_userid: string, token: string) => {
   let hashtoken = await prisma.botInfo.findFirst({
@@ -21,13 +21,16 @@ const verifyBotToken = async (bot_userid: string, token: string) => {
 };
 
 export const botauthenticate = async (req: any, res: any, next: () => any) => {
+  
   let token = req.headers.authorization;
-  // bot user jwt &&  bot token  
+
+  
   if (!token) {
     return res
       .status(401)
-      .json({ success: false, message: "Authentication required" });
+      .json({ success: false, message: " Authentication required ---> " });
   }
+
   try {
     let bot = verifyToken(token); // jwt 
     req.bot_user = bot;

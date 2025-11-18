@@ -1,12 +1,12 @@
-import { genToken, setCookie } from "../../lib/token";
-import { primeStatus } from "@prisma/client";
-import prisma from "../../db";
+import { genToken, setCookie } from "@repo/lib/token";
+import { primeStatus } from  "@repo/prisma/client"
+import prisma from  "@repo/db/index";
 import {
   Createhash,
   generateResetToken,
   hashPasswordFn,
   veryfyhashPasswordFn,
-} from "../../lib/hash";
+} from "@repo/lib/security/hash";
 import {
   forgotpasswordVerifyZodSchema,
   forgotpasswordZodSchema,
@@ -16,9 +16,9 @@ import {
   usertelegramidValidationZodSchema,
   validateTokenZodSchema,
 } from "../zod/user.zod";
-import Mailer from "../../lib/messageService/nodemail";
+import Mailer from "@repo/lib/messageService/nodemail";
 import dayjs from "dayjs";
-import { sendMessage_HtmlParse } from "../../lib/messageService/telgramMessenger";
+import { sendMessage_HtmlParse } from "@repo/lib/messageService/telgramMessenger";
 
 export const userPurchases = async (req: any, res: any) => {
   try {
@@ -165,7 +165,7 @@ export const userSignup = async (req: any, res: any) => {
         email,
         prime: {
           create: {
-            status: primeStatus.none,
+            status: primeStatus.None,
           },
         },
         telegram: {
@@ -312,7 +312,7 @@ export const useremailValidationTokenVerify = async (req: any, res: any) => {
     }
 
     let transtion = await prisma.$transaction(async (tx: any) => {
-      let { token } = data.data;
+      let { token, email } = data.data;
       let token_hash = Createhash(token);
 
       let User: any;
@@ -324,35 +324,38 @@ export const useremailValidationTokenVerify = async (req: any, res: any) => {
           },
         });
       } else {
-        console.log("email", data.data.email);
+        // console.log("email", email);
+        // console.log("token_hash", token_hash);
 
         User = await tx.user.findUnique({
           where: {
-            email: data.data.email,
+            email: email,
             forgotpasswordToken: token_hash,
           },
         });
+
+        // console.log("User", User);
 
         req.user = User.id;
       }
 
       if (User) {
+        //  console.log("1 ------------> done");
+
         if (User?.resetTokenExpires < new Date()) {
           return res.status(404).json({
             success: false,
-            message: "user not exist , plz signup now ",
+            message: "user not exist token expired , generate new one",
           });
         }
-      }
+      } else {
+        //  console.log("2 ------------> done");
 
-      // await tx.user.update({
-      //   where: {
-      //     id: req.user,
-      //   },
-      //   data: {
-      //     forgotpasswordToken: "-1",
-      //   },
-      // });
+        return res.status(404).json({
+          success: false,
+          message: "user not exist , plz signup now ",
+        });
+      }
 
       await tx.verification.update({
         where: {
@@ -716,7 +719,8 @@ export const userSignin = async (req: any, res: any) => {
 
     // send token
     // if email token is veryfy then send token
-    // setCookie(res, User.id);
+    setCookie(res, User.id); // remove this 
+
 
     res.status(200).json({
       success: true,

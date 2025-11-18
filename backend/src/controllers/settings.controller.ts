@@ -1,4 +1,4 @@
-import prisma from "../../db";
+import prisma from  "@repo/db/index";
 import { bot_singupZodSchema } from "../zod/bot.zod";
 import { appConfigSetting_zodSchema } from "../zod/settings.zod";
 

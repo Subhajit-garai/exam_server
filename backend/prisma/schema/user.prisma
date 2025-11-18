@@ -1,0 +1,139 @@
+model User {
+  id                  String   @id @unique @default(cuid())
+  name                String
+  email               String   @unique
+  contactno           String?  @default("0000000000") // only india
+  password            String
+  telegramid          String?  @unique
+  verificationid      String?  @unique
+  progressid          String?  @unique
+  role                UserRole @default(User)
+  join_at             DateTime @default(now())
+  forgotpasswordToken String? // forget password
+  resetTokenExpires   DateTime @default(now()) // forget password
+  accesstoken         String[] @default([]) // only one device access token
+
+  isOnline Boolean  @default(false)
+  lastSeen DateTime @default(now())
+
+  Exam         Exam[]
+  Exam_pattern Exam_pattern[]
+  Questions    Questions[]
+  telegram     telegram?      @relation(fields: [telegramid], references: [id])
+  verification verification?  @relation(fields: [verificationid], references: [id])
+  blance       blance?
+  Order        Order[]
+  payment      payment[]
+  leaderboard  leaderboard[]
+  quiz         quiz[]
+  prime        prime?
+  Comment      Comment[]
+  Topic        Topic[]
+
+  botQuizConfig botQuizConfig[]
+  CouponUsages  CouponUsage[] // Relation: which users used it
+  Coupon        Coupon[]
+
+  @@index([role])
+}
+
+model prime {
+  id          String      @id @unique @default(cuid())
+  status      primeStatus @default(None)
+  userid      String      @unique
+  expiryInday Int?        @default(0)
+  expiry      DateTime    @default(now())
+  User        User        @relation(fields: [userid], references: [id])
+  updatedAt   DateTime    @default(now()) @updatedAt
+}
+
+model verification {
+  id        String   @id @unique @default(cuid())
+  contactno Boolean  @default(false)
+  email     Boolean  @default(false)
+  telegram  Boolean  @default(false)
+  whatsapp  Boolean  @default(false)
+  User      User?
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model progress {
+  id              String   @id @default(cuid())
+  attempted       Int      @default(0) // Total attempted
+  attendedContest Int      @default(0) // Total contests attended
+  attendedQuiz    Int      @default(0) // Total quizzes attended
+  attendedExam    Int      @default(0) // Total exams attended
+  attendedMock    Int      @default(0) // Total exams attended
+  attendedPYQ     Int      @default(0) // Total exams attended
+  userid          String   @unique
+  rank            Int      @default(0) // Global rank
+  inTopten        Int      @default(0) // Top 10 status
+  accuracy        Int      @default(0)
+  topinexam       Int      @default(0)
+  topinContest    Int      @default(0)
+  openRegister    Int      @default(0)
+  lastExamid      String   @default("not seted")
+  lastDppid       String   @default("not seted")
+  lastMockid      String   @default("not seted")
+  lastContestid   String   @default("not seted")
+  lastQuizid      String   @default("not seted")
+  lastExamRank    Int      @default(0)
+  lastDppRank     Int      @default(0)
+  lastMockRank    Int      @default(0)
+  lastContestRank Int      @default(0)
+  lastQuizRank    Int      @default(0)
+  time            DateTime @default(now()) @db.Timestamptz(6)
+
+  // @@index([userid]) // Faster queries by user
+}
+
+model blance {
+  id          String   @id @unique @default(cuid())
+  userid      String   @unique
+  amount      Int      @default(0)
+  ticket      Int      @default(0)
+  last_update DateTime @updatedAt
+
+  User User @relation(fields: [userid], references: [id])
+}
+
+model UserAns {
+  id             String    @id @unique @default(cuid())
+  number         Int       @default(0) // 0- >  not updated 
+  part           String    @default("part1")
+  examId         String
+  userId         String
+  questionId     String    @default("not set")
+  shuffleMap     Int[]
+  selectedOption String[]
+  isCorrect      Boolean? // it  may  later    , if user not ansed then  it null
+  Question       Questions @relation(fields: [questionId], references: [id])
+
+  @@unique([examId, userId, questionId])
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  link      String? // optional URL
+  type      String // e.g., "exam", "system", "payment"
+  createdAt DateTime  @default(now())
+  seen      Boolean   @default(false)
+  seenAt    DateTime?
+}
+
+enum primeStatus {
+  None
+  Bronze
+  Silver
+  Gold
+}
+
+enum UserRole {
+  Admin
+  User
+  Tutor // have more privilage than normal user but less than Admin
+  Bot
+}

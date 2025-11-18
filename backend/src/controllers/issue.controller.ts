@@ -1,7 +1,8 @@
-import prisma from "../../db";
+import prisma from  "@repo/db/index";
 import zod from "zod";
 import { IssueInpute_zod_type } from "../zod/issue.zod";
-import { Status } from "@prisma/client";
+// import { Status } from  "@repo/prisma/client"
+import { Status } from  "@repo/prisma/client";
 
 export const test = async (req: any, res: any) => {
   try {
@@ -11,7 +12,7 @@ export const test = async (req: any, res: any) => {
   }
 };
 
-export const RemoveIssue = async (req: any, res: any) => {
+export const GetquestionIssuecount = async (req: any, res: any) => {
   try {
     let data = zod.string().safeParse(req.query.id);
     if (!data.success) {
@@ -22,11 +23,55 @@ export const RemoveIssue = async (req: any, res: any) => {
     }
     let id = data.data;
 
+    let responce = await prisma.issue.count({
+      where: {
+        IssueDetails: {
+          equals: {
+            id: id, // id should be a number or string based on your JSON
+          },
+        },
+      },
+    });
+
+    if (!responce) {
+      return res.status(404).json({
+        success: false,
+        message: "error in GetquestionIssuecount  ",
+      });
+    }
+
+    res.json({ success: true, message: " total questionIssuecount", data: responce });
+  } catch (error) {
+    console.log("Error in GetquestionIssuecount in issue --->", error);
+  }
+};
+export const RemoveIssue = async (req: any, res: any) => {
+  try {
+    
+    let data = zod.string().safeParse(req.query.id);
+    if (!data.success) {
+      return res.status(404).json({
+        success: false,
+        message: "invalid inputes, event not created  ",
+      });
+    }
+    let id = data.data;
+
+    let isIssuePresent = await prisma.issue.findFirst({
+      where:{
+        id:id
+      }
+    })
+
+    if(!isIssuePresent) return new Error ("This issue does not exist.")
+    
+      
+
     let responce = await prisma.issue.delete({
       where: {
         id: id,
       },
-    });
+    });    
     if (!responce) {
       return res.status(404).json({
         success: false,
@@ -34,19 +79,15 @@ export const RemoveIssue = async (req: any, res: any) => {
       });
     }
 
-    res.json({ success: true, message: "message", data: responce });
+    res.json({ success: true, message: "issue deleted", data: responce });
 
   } catch (error) {
     console.log("Error in RemoveIssue in issue --->", error);
   }
 };
 
-
 export const updateStatus = async (req: any, res: any) => {
   try {
-
-    console.log("req.body" , req.body);
-    
     let data = zod
       .object({
         id: zod.string(),
@@ -54,14 +95,13 @@ export const updateStatus = async (req: any, res: any) => {
       })
       .safeParse(req.body);
 
-
     if (!data.success) {
       return res.status(404).json({
         success: false,
         message: "invalid inputes, event not created  ",
       });
     }
-    let { id , status } = data.data;
+    let { id, status } = data.data;
 
     let responce = await prisma.issue.update({
       where: {
@@ -295,9 +335,6 @@ export const update_issue = async (req: any, res: any) => {
 
 export const createNewIssue = async (req: any, res: any) => {
   try {
-
-    console.log("data" , req.body);
-    
     let data = IssueInpute_zod_type.safeParse(req.body);
 
     if (!data.success) {
@@ -307,15 +344,13 @@ export const createNewIssue = async (req: any, res: any) => {
       });
     }
 
-    let { type, note, IssueDetails } = data.data;
-
-    console.log("role" , req.userRole);
-    
+    let { type, note, IssueDetails, sub_type } = data.data;
 
     let responce = await prisma.issue.create({
       data: {
         type,
         note,
+        sub_type,
         IssueDetails,
         created_by: req.user,
         creator_role: req.userRole,

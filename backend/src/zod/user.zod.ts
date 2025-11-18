@@ -1,4 +1,4 @@
-import { ExamType } from "@prisma/client";
+import { ExamType, Visibility } from  "@repo/prisma/client"
 import z, { date } from "zod";
 
 export const singupZodSchema = z.object({
@@ -35,15 +35,12 @@ export const forgotpasswordVerifyZodSchema = z.object({
 });
 
 
-export const SyllabusInputZodSchema = z.object({
-  examname: z.string(),
-  category: z.string(),
-  topics: z.array(z.string()),
-});
 export const ExampatternInputZodSchema = z.object({
   title: z.string(),
   format: z.enum(["Text", "Image"]),
   examname: z.string(),
+  examyear: z.string(),
+  syllabus: z.string().optional(),
   category: z.string(),
   topics: z.array(z.string()).optional(),
   difficulty: z.enum(["Easy", "Medium", "Hard"]),
@@ -56,29 +53,29 @@ export const ExampatternInputZodSchema = z.object({
   neg_values: z.array(z.number()),
 });
 
+// export const ExamCreateInputeSchema = z.object({
+//   name: z.string(),
+//   examname: z.string(),
+//   category: z.string(),
+//   exam_pattern_id: z.string(),
+//   status: z.enum(["Private", "Public"]),
+//   starttime:z.string(),
+//   jointime:z.string().optional(),
+//   duration: z.string().optional(),
+//   date: z.string(),
+  
+// });
 export const ExamCreateInputeSchema = z.object({
   name: z.string(),
   examname: z.string(),
   category: z.string(),
   exam_pattern_id: z.string(),
-  status: z.enum(["Private", "Public"]),
+  Visibility: z.nativeEnum(Visibility),
   starttime:z.string(),
   jointime:z.string().optional(),
   duration: z.string().optional(),
   date: z.string(),
-  
-});
-export const ExamCreateInputeSchema_tyoe_2 = z.object({
-  name: z.string(),
-  examname: z.string(),
-  category: z.string(),
-  exam_pattern_id: z.string(),
-  status: z.enum(["Private", "Public"]),
-  starttime:z.string(),
-  jointime:z.string().optional(),
-  duration: z.string().optional(),
-  date: z.string(),
-  mock_questions_set_id: z.string(), // new
+  mock_questions_set_id: z.string().optional(), // new
   examtype: z.nativeEnum(ExamType) // new
   
 });

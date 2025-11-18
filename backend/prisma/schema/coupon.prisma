@@ -1,0 +1,32 @@
+// in dev
+
+model Coupon {
+    id             String    @id @default(cuid())
+    code           String    @unique // e.g. "WELCOME50" or "PRIME2025"
+    description    String? // Optional text describing the coupon
+    discountType   String // "PERCENTAGE" | "FIXED"
+    discountValue  Float // e.g. 10 (for 10%) or 100 (for ₹100 off)
+    maxUses        Int? // Max number of total uses allowed
+    usedCount      Int       @default(0) // How many times it’s already used
+    perUserLimit   Int? // How many times a single user can use it
+    minOrderAmount Float? // Minimum amount required to apply the coupon
+    expiresAt      DateTime? // Expiration date (optional)
+    isActive       Boolean   @default(true) // If false, coupon can’t be used
+    createdBy      String? // Admin/user who created it
+    createdAt      DateTime  @default(now())
+
+    createdUser  User?         @relation(fields: [createdBy], references: [id])
+    CouponUsages CouponUsage[] // Relation: which users used it
+}
+
+model CouponUsage {
+    id       String   @id @default(cuid())
+    userId   String
+    couponId String
+    usedAt   DateTime @default(now())
+
+    user   User   @relation(fields: [userId], references: [id])
+    coupon Coupon @relation(fields: [couponId], references: [id])
+
+    @@unique([userId, couponId]) // prevents multiple uses by same user
+}

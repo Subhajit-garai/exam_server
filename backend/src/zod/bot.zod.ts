@@ -1,3 +1,4 @@
+import { botPlatform, telegramgroupType } from "@repo/prisma/client";
 import z, { date } from "zod";
 
 export const bot_singupZodSchema = z.object({
@@ -13,13 +14,25 @@ export const bot_singinZodSchema = z.object({
 });
 export const update_botwebhook_ZodSchema = z.object({
   bot_userid: z.string(),
-  type: z.enum(["endpoint","baseurl"]),
+  type: z.enum(["endpoint", "baseurl"]),
   name: z.string().optional(),
   newvalue: z.string(),
 });
 
-export const bot_creat_quiz_data_ZodSchema = z.object({
-  type: z.enum(["quiz","rapidquiz"]),
-  bot_provided_user_id :z.number(),
-  bot_provided_chat_id :z.number()
+export const bot_create_quiz_data_ZodSchema = z.object({
+  type: z.enum(["quiz", "rapidquiz"]),
+  chat_type:z.nativeEnum(telegramgroupType),
+  platform:z.nativeEnum(botPlatform).default("NONE"),
+  bot_provided_user_id: z.number(),
+  bot_provided_chat_id: z.number(),
+});
+
+export const unbanuser_notification_zod_type = z.object({
+  user_id: z.string(),
+  chat_id: z.string(),
+});
+export const banuser_notification_zod_type = z.object({
+  user_id: z.string(),
+  chat_id: z.string(),
+  ban_from_type: z.string(),
 });

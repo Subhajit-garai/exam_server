@@ -1,4 +1,4 @@
-import prisma from "../../db";
+import prisma from  "@repo/db/index";
 import { eventSchema } from "../zod/event.zod";
 
 export const test = async (req: any, res: any) => {

@@ -1,0 +1,33 @@
+model events {
+  id          String    @id @unique @default(cuid())
+  type        eventType
+  description String
+  data        Json
+  conditions  Json
+  isActive    Boolean   @default(true)
+  created_by  UserRole  @default(Bot)
+  created_at  DateTime  @default(now())
+  runs        eventRuns @default(ONE) // ones / daily
+  run_at      String // Exact time to run (if applicable) // or Any for the current/any time
+
+  @@index([type]) // Index for faster filtering by event type
+  @@index([runs]) // Index for scheduling queries
+  @@index([run_at]) // Index for scheduling queries
+}
+
+
+enum eventType {
+  RUN_NEW_QUIZ
+  CREATE_QUIZ_CONTEST
+  SEND_MESSAGE
+  CREATE_DPP
+  CREATE_EXAM
+  CLEAR_BOT_CACHE
+}
+
+enum eventRuns {
+  ONE
+  DAILY
+  WEEKLY
+  MONTHLY
+}

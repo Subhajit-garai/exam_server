@@ -1,0 +1,43 @@
+model Syllabus {
+    id                 String               @id @unique @default(cuid())
+    created_at         DateTime             @default(now())
+    type               SyllabusType         @default(EXAM)
+    exam_year_id       String?
+    title              String      @unique
+    description        String? // optional: short details
+    exam_year          ExamYear?            @relation(fields: [exam_year_id], references: [id])
+    SubjectSyllabusMap SubjectSyllabusMap[]
+}
+
+// quiz syllabus or topics
+
+model SubjectSyllabusMap {
+    id         String   @id @unique @default(cuid())
+    syllabusId String
+    subject_id String
+    weightage  Float?   @default(0)
+    created_at DateTime @default(now())
+    subject          Subject            @relation(fields: [subject_id], references: [id])
+    Syllabus         Syllabus           @relation(fields: [syllabusId], references: [id])
+    TopicsSubjectMap TopicsSubjectMap[]
+
+    @@unique([syllabusId, subject_id])
+}
+
+model TopicsSubjectMap {
+    id                 String             @id @unique @default(cuid())
+    subject_map_id     String
+    topic_id           String
+    weightage          Float?             @default(0)
+    created_at         DateTime           @default(now())
+    SubjectSyllabusMap SubjectSyllabusMap @relation(fields: [subject_map_id], references: [id])
+    Topic              Topic              @relation(fields: [topic_id], references: [id])
+
+    @@unique([subject_map_id, topic_id])
+}
+
+enum SyllabusType {
+    EXAM
+    QUIZ
+    TEST
+}

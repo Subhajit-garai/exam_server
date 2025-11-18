@@ -1,59 +1,11 @@
-import { diffcultlevel } from "@prisma/client";
-import prisma from "../../db/index";
+import { diffcultlevel, Prisma } from  "@repo/prisma/client";
+import prisma from "@repo/db/index";
 import {
-  mockQuestionSetZodSchema,
+  QuestionFilterDataFetchZodSchema,
   questionInputZodSchema,
-  QuestionProssingDataFetchZodSchema,
   questionUpdateZodSchema,
 } from "../zod/question.zod";
-
-export const test = async (req: any, res: any) => {
-  try {
-    res.json({ success: true, message: "message", data: "data" });
-  } catch (error) {
-    console.log("Error in metrix --->", error);
-  }
-};
-export const Create_Mock_question_set = async (req: any, res: any) => {
-  try {
-    let data = mockQuestionSetZodSchema.safeParse(req.body);
-    if (!data.success) {
-      console.log("data.error", data.error);
-
-      return res.status(401).json({
-        success: false,
-        message: "inpute format/value invalid ",
-      });
-    }
-
-
-
-
-    console.log("req.body", req.body);
-    console.log("data", data.data);
-
-    let responce  =  await prisma.mock_questions_set.create({
-      data:{
-        name: data.data.name,
-        exam: data.data.exam,
-        category: data.data.category,
-        description: data.data.description,
-        pattern: data.data.pattern,
-        
-      }
-    })
-
-    if (!responce) {
-      return res.status(400).json({
-        message: " mock set not created ",
-      });
-    }
-
-    res.json({ success: true, message: "message", data: responce });
-  } catch (error) {
-    console.log("Error in metrix --->", error);
-  }
-};
+import { asyncHandler } from "@repo/lib/helper/asyncHandler";
 
 export const updateQuestion = async (req: any, res: any) => {
   try {
@@ -93,15 +45,16 @@ export const updateQuestion = async (req: any, res: any) => {
     //   explanation,
     // } = data.data;
 
-    console.log("date", Date.now().toString());
-
     let question = await prisma.questions.update({
       where: {
-        id: req.params.id,
+        id: data.data.id,
       },
       data: {
         ...data.data,
-        ...(data.data.extra ? { extra: data.data.extra } : {}),
+        ...(data.data.extra ? { extra: data.data.extra } : undefined),
+        ...(data.data.extra === null
+          ? { extra: Prisma.JsonNull }
+          : { extra: data.data.extra }),
       },
     });
 
@@ -121,37 +74,6 @@ export const updateQuestion = async (req: any, res: any) => {
       error: error,
       message: "surver error",
     });
-  }
-};
-
-export const QuestionProssingDataFetch = async (req: any, res: any) => {
-  try {
-    let body = QuestionProssingDataFetchZodSchema.safeParse(req.body);
-
-    if (!body.success) {
-      return res.status(401).json({
-        success: false,
-        message: "user credential format invalid ",
-      });
-    }
-    let { category, topic, difficulty, formate, status, id } = body.data;
-
-    let data = await prisma.questions.findMany({
-      where: {
-        ...(id != "none" && { id: id }),
-        ...(formate && { formate: formate }),
-        ...(category && { category: category.toUpperCase() }),
-        ...(topic && { topic: topic.toUpperCase() }),
-        ...(difficulty && { difficulty: difficulty }),
-        ...(status && { status: status }),
-      },
-      take: 1,
-    });
-    if (data) {
-      res.json({ success: true, message: "message", data: data });
-    }
-  } catch (error) {
-    console.log("Error in metrix --->", error);
   }
 };
 
@@ -216,6 +138,7 @@ export const createQuestion = async (req: any, res: any) => {
       throw new Error("User not found");
     }
     let data = questionInputZodSchema.safeParse(req.body);
+
     if (!data.success) {
       return res.status(401).json({
         success: false,
@@ -226,26 +149,39 @@ export const createQuestion = async (req: any, res: any) => {
       Title,
       options,
       ans,
-      formate,
+      format,
       category,
-      topic,
+      topic_id,
       difficulty,
+      isMultiple,
       Explanation,
+      extra,
+      subject_id,
+      status,
+      history,
+      links,
     } = data.data;
-
-    // let Ans = Array.isArray(ans)
-    //   ? [...ans.filter((a: string) => a.replace("option", ""))]
-    //   : [ans.replace("option", "")];
 
     let question = await prisma.questions.create({
       data: {
         title: Title,
-        explanation: Explanation,
         options: options,
+        extra: extra,
         ans: ans,
-        formate: formate,
+        format: format,
         category: category,
-        topic: topic,
+
+        // temp data
+        old_sub_topic:"",
+        old_topic:"",
+
+        topic_id: topic_id, // change to sub_topic
+        subject_id: subject_id,
+        ...(status ? { status: status } : { status: "Processing" }),
+        ...(history ? { history: history } : { history: [""] }),
+        ...(links ? { links: links } : { links: [""] }),
+        explanation: Explanation,
+        is_multiple_ans: isMultiple,
         difficulty: difficulty as diffcultlevel,
         created_by: user.id,
       },
@@ -253,18 +189,20 @@ export const createQuestion = async (req: any, res: any) => {
 
     if (!question) {
       return res.status(400).json({
+        success: false,
         message: "Question not created ",
       });
     }
 
     res.status(200).json({
+      success: true,
       message: "Question creation successfull",
     });
   } catch (error) {
     console.log("error : ", error);
 
     res.status(500).json({
-      error: error,
+      success: false,
       message: "surver error",
     });
   }
@@ -325,25 +263,78 @@ export const getQuestionalldatabyID = async (req: any, res: any) => {
     });
   }
 };
+
 export const getAllQuestions = async (req: any, res: any) => {
   try {
-    let query = req.query;
-    
-    const pageNumber = parseInt(query.page) || 1;
-    const questionsPerPage = 12;
+    let body = QuestionFilterDataFetchZodSchema.safeParse(req.query);
+    if (!body.success) {
+      return res.status(401).json({
+        success: false,
+        message: "user credential format invalid ",
+      });
+    }
+    let {
+      category,
+      topic,
+      difficulty,
+      formate,
+      status,
+      id,
+      title,
+      page,
+      ismultipleans,
+      links,
+      history,
+    } = body.data;
 
-    let responce = await prisma.questions.findMany({
-      where: {
-        ...(query.category && { category: query.category.toUpperCase() }),
-        ...(query.topic && { topic: query.topic.toUpperCase() }),
-        ...(query.difficulty && { difficulty: query.difficulty }),
-        ...(query.formate && { formate: query.formate }),
-        ...(query.status && { status: query.status }),
-      },
-      skip: (pageNumber - 1) * questionsPerPage,
-      take: questionsPerPage,
-      orderBy: { id: "asc" },
-    });
+    const pageNumber = page ? parseInt(page) : 1;
+    const questionsPerPage = 16;
+    let responce;
+
+    let filtertitle: any;
+    if (title?.trim()) {
+      filtertitle = {
+        contains: title.trim(),
+        mode: "insensitive", // Case-insensitive search
+      };
+    }
+    let Formatedfilter: any = id
+      ? { id: id }
+      : {
+          ...(category && { category: category.toUpperCase() }),
+          ...(topic && { topic: topic.toUpperCase() }),
+          ...(difficulty && { difficulty: difficulty }),
+          ...(formate && { formate: formate }),
+          ...(status && { status: status }),
+          ...(filtertitle && { title: filtertitle }),
+          ...(ismultipleans && { is_multiple_ans: ismultipleans }),
+          ...(links && {
+            links: {
+              has: links,
+            },
+          }), // array
+          ...(history && {
+            history: {
+              has: history,
+            },
+          }), // array
+        };
+
+    if (id) {
+      responce = await prisma.questions.findMany({
+        where: Formatedfilter,
+        // skip: (pageNumber - 1) * questionsPerPage,
+        // take: questionsPerPage,
+        // orderBy: { id: "asc" },
+      });
+    } else {
+      responce = await prisma.questions.findMany({
+        where: Formatedfilter,
+        skip: (pageNumber - 1) * questionsPerPage,
+        take: questionsPerPage,
+        orderBy: { id: "asc" },
+      });
+    }
 
     if (!responce) {
       return res.status(400).json({
@@ -352,21 +343,36 @@ export const getAllQuestions = async (req: any, res: any) => {
     }
 
     const total = await prisma.questions.count({
-      where: {
-        ...(query.category && { category: query.category.toUpperCase() }),
-        ...(query.topic && { topic: query.topic.toUpperCase() }),
-        ...(query.difficulty && { difficulty: query.difficulty }),
-        ...(query.formate && { formate: query.formate }),
-        ...(query.status && { status: query.status }),
-      },
+      where: Formatedfilter,
     });
 
     res.status(200).json({
       success: true,
-      data: {questions: responce, total: total ,currentPage:pageNumber},
+      data: { questions: responce, total: total, currentPage: pageNumber },
     });
   } catch (error) {
+    console.log("error -> ", error);
+
     res.status(500).json({
+      message: "surver error",
+    });
+  }
+};
+
+export const backupQuestion = async (req: any, res: any) => {
+  try {
+    let responce = await prisma.questions.findMany({});
+    const total = await prisma.questions.count({});
+
+    res.status(200).json({
+      success: true,
+      data: { questions: responce, total: total },
+    });
+  } catch (error) {
+    console.log("error in backupQuestion ", error);
+
+    res.status(500).json({
+      success: false,
       message: "surver error",
     });
   }

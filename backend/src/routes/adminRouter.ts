@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { isAdmin } from "../../lib/auth";
-import { addbotToken, createNewBot, setQuizTopic, updateBotWebhook } from "../controllers/bot.controller";
+import { isAdmin } from "@repo/lib/security/auth";
 import { updateAppConfig ,SendAppConfig } from "../controllers/settings.controller";
+import { addbotToken, createNewBot, setQuizTopic, updateBotWebhook } from "@/controllers/bot/bot.admin.controller";
 
 
 export const adminRouter = Router();
@@ -15,3 +15,4 @@ adminRouter.post("/setToken",isAdmin, addbotToken)
 adminRouter.post("/bot/create",isAdmin, createNewBot)
 adminRouter.put("/bot/botWebhook",isAdmin, updateBotWebhook)
 // adminRouter.post("/event",isAdmin, addbotToken)
+

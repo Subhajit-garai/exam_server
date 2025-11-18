@@ -1,0 +1,61 @@
+enum quiz_type {
+  telegram_quiz
+  quiz // web quiz
+}
+
+model quiz {
+  id                   String        @id @unique @default(cuid())
+  display_id           String?       @unique @default(nanoid(6))
+  quizRegister_id      String?       @default("Private quiz")
+  is_need_registration Boolean       @default(false)
+  name                 String?       @default("No name")
+  category             String
+
+  topics               String[]      @default([""]) // id 
+  subjects             String[]      @default([""]) // id
+
+  created_at           DateTime?     @default(now())
+  created_by           String        @default("No name")
+
+  Visibility           Visibility    @default(Private)
+  creationstatus       CreationTypes @default(Processing)
+
+  starttime            String?       @default("00:00 pm")
+  endtime              String        @default("00:00 h")
+
+  nextQuestionTime     Int           @default(40) // in seconds
+  quizOpenFor          Int           @default(60) // in seconds
+  question_count       Int        @default(0)
+
+  quiz_type            quiz_type     @default(quiz)
+  chatId               String? // Telegram chat ID // it can be group or private
+  date         DateTime      @default(now())
+  stage        ExamStage     @default(Registration)
+  quizRegister quizRegister? @relation(fields: [quizRegister_id], references: [id])
+  User         User          @relation(fields: [created_by], references: [id])
+
+  quiz_question_map quiz_question_map[]
+}
+
+model quiz_question_map {
+  id         String   @id @unique @default(cuid())
+  number     Int      @default(0)
+  questionid String
+  quizid     String?
+  quiz       quiz?    @relation(fields: [quizid], references: [id])
+  question       Questions?    @relation(fields: [questionid], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@unique([quizid, questionid])
+  @@index([quizid])
+}
+
+model quizRegister {
+  id      String   @id @unique @default(cuid())
+  quiz_id String?  @unique @default("new_value_not_seted")
+  count   Int      @default(0)
+  users   String[] @default([])
+  quiz    quiz[]
+}

@@ -1,0 +1,55 @@
+model Questions {
+  id String @id @unique @default(cuid())
+
+  title   String
+  options String[]
+
+  old_topic     String
+  old_sub_topic String
+
+  extra Json? // { "code":{void main (0) {}}}
+
+  ans        String[]
+  topic_id   String // create an record for unknown topic
+  subject_id String // create an record for unknown subject
+
+  format          examformat    @default(Text)
+  category        String
+  difficulty      diffcultlevel
+  is_multiple_ans Boolean       @default(false)
+
+  history     String[] @default([""])
+  explanation String?  @default("no explanation added")
+  links       String[] @default([""])
+
+  status Status @default(Processing)
+  weight Int    @default(0)
+
+  created_by String
+  created_at DateTime @default(now())
+  User       User     @relation(fields: [created_by], references: [id])
+
+  Subject           Subject             @relation(fields: [subject_id], references: [id])
+  Topic             Topic               @relation(fields: [topic_id], references: [id])
+  quiz_question_map quiz_question_map[]
+  question_map      question_map[]
+  userAns           UserAns[]
+
+  @@index([topic_id])
+  @@index([subject_id])
+}
+
+model question_map {
+  id         String     @id @unique @default(cuid())
+  number     Int        @default(0)
+  questionid String
+  part       String     @default("part1")
+  examid     String?
+  created_at DateTime   @default(now())
+  updated_at DateTime   @default(now()) @updatedAt
+  exam       Exam?      @relation("ExamRelation", fields: [examid], references: [id])
+  question   Questions? @relation(fields: [questionid], references: [id])
+
+  @@unique([examid, questionid, part])
+  @@index([examid])
+}

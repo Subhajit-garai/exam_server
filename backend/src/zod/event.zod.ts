@@ -1,7 +1,7 @@
 
 
 
-import { diffcultlevel, eventRuns, ExamStatus, ExamType, UserRole } from "@prisma/client";
+import { diffcultlevel, eventRuns, ExamStatus, ExamType, UserRole } from  "@repo/prisma/client"
 import { z } from "zod";
 
 const sendMessageEventSchema = z.object({

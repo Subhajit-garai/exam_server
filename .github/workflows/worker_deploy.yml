@@ -10,6 +10,7 @@ on:
 
 env:
   WORKER_IMAGE: ${{ secrets.WORKER_IMAGE }}
+  DOCKER_NETWORK: ${{ secrets.DOCKER_NETWORK }}
 
 jobs:
   build-worker:

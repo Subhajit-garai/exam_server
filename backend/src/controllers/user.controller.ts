@@ -719,7 +719,7 @@ export const userSignin = async (req: any, res: any) => {
 
     // send token
     // if email token is veryfy then send token
-    setCookie(res, User.id); // remove this 
+    // setCookie(res, User.id); // remove this 
 
 
     res.status(200).json({
@@ -729,7 +729,6 @@ export const userSignin = async (req: any, res: any) => {
     });
   } catch (error) {
     console.log("Error in user sign in", error);
-
     res.status(401).json({
       success: false,
       message: "token not send , plz try again  ",
@@ -737,12 +736,3 @@ export const userSignin = async (req: any, res: any) => {
   }
 };
 
-// export const getUserprogress = (req: any, res: any) => {
-//   try {
-//     // let progress = await prisma.progress.f
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
-
-// prossing

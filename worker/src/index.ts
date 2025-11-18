@@ -43,11 +43,10 @@ let PROCESS_Ans: Task = {
 const main = async () => {
   try {
     let redisClient = RedisProvider.getInstance();
-    await redisClient.push(CREATE_SCORE);
+    // await redisClient.push(CREATE_SCORE);
 
     while (true) {
       let data = await redisClient.pop();
-      // console.log("task   ----->", data);
       if (!data) {
         console.warn("⚠️ No task found, waiting...");
         await new Promise((r) => setTimeout(r, 1000));
@@ -70,10 +69,10 @@ const run = async () => {
   await main();
 };
 
-// process.on("SIGINT", async () => {
-//   console.log("🧹 Shutting down worker...");
-//   await RedisProvider.getInstance().disconnect();
-//   process.exit(0);
-// });
+process.on("SIGINT", async () => {
+  console.log("🧹 Shutting down worker...");
+  await RedisProvider.getInstance().disconnect();
+  process.exit(0);
+});
 
 run();

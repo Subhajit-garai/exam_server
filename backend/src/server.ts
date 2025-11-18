@@ -3,7 +3,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { userauthenticate } from "@repo/lib/security/auth";
 import cors from "cors";
-import WebSocket, { WebSocketServer } from "ws";
+// import WebSocket, { WebSocketServer } from "ws";
 import http from "http";
 import { userRouter } from "./routes/userRouter.js";
 import Razorpay from "razorpay";
@@ -32,7 +32,7 @@ export const razerpayinstance = new Razorpay({
 
 export const app = express();
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+// const wss = new WebSocketServer({ server });
 
 interface AuthenticatedWebSocket extends WebSocket {
   user?: any; // Extend WebSocket to include 'user'

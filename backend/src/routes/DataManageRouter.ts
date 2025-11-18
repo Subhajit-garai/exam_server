@@ -1,5 +1,5 @@
 import { Router } from "express";
-import prisma from  "@repo/db/index";
+import prisma from "@repo/db/index";
 import { backupQuestion } from "../controllers/question.controller";
 
 export const DataManageRouter = Router();
@@ -9,7 +9,7 @@ export const Updater_authenticate = async (
   res: any,
   next: () => any
 ) => {
- let token = req.cookies.token;  
+  let token = req.cookies.token;
   // bot user jwt &&  bot token
   if (!token) {
     return res
@@ -41,8 +41,15 @@ async function backupMockAndPyq(req: any, res: any) {
       },
     });
 
-    let mock_question_set = await prisma.mock_questions_set.findMany({})
-
+    let mock_question_set = await prisma.question_map.findMany({
+      where: {
+        exam: {
+          examtype: {
+            in: ["Mock", "PYQ"],
+          },
+        },
+      },
+    });
 
     if (!result && !mock_question_set) {
       return res.status(500).json({
@@ -54,7 +61,7 @@ async function backupMockAndPyq(req: any, res: any) {
     res.status(200).json({
       success: true,
       message: "back up mock , pyq  and mock_question_sets",
-      data:{test:result , mock_set: mock_question_set}
+      data: { test: result, mock_set: mock_question_set },
     });
   } catch (error) {
     console.log(error);

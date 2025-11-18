@@ -1,4 +1,4 @@
-import { ExamType, purchaseType } from  "@repo/packages/prisma"
+import { ExamType, purchaseType } from  "@repo/prisma/client"
 import prisma from  "@repo/db/index";
 
 // price is merketpricce
@@ -97,7 +97,7 @@ export const TokenDeduction = async (
   let run = async (tx: any) => {
     let charge: number | null = 0;
 
-    console.log("type is ", type, "data is -->", data);
+    // console.log("type is ", type, "data is -->", data);
 
     switch (type) {
       case "subscription":
@@ -155,7 +155,7 @@ export const TokenDeduction = async (
 
     // deduction process
 
-    console.log("charge -- >", charge);
+    // console.log("charge -- >", charge);
 
     if (!charge && typeof charge != "number") {
       throw new Error("invalid  balance");

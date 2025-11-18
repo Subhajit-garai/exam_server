@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsc -b && node dist/index.js",
+    "dev": "tsc -b && tsc-alias && node dist/index.js",
     "build": "tsc --build",
     "gen": "npx prisma generate "
   },
@@ -19,6 +19,7 @@
     "ioredis": "^5.5.0",
     "lodash": "^4.17.21",
     "redis": "^4.7.0",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.9.2",
     "ws": "^8.18.1"
   },

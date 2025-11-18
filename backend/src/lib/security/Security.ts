@@ -1,4 +1,4 @@
-import { eventRuns, eventType, UserRole } from  "@repo/packages/prisma"
+import { eventRuns, eventType, UserRole } from  "@repo/prisma/client"
 import prisma from  "@repo/db/index";
 
 import { z } from "zod";

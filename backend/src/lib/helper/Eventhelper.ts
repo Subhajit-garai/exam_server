@@ -1,6 +1,6 @@
 // import { CronJob as cron } from "cron";
 // import os from "os";
-// import { eventType } from  "@repo/packages/prisma"
+// import { eventType } from  "@repo/prisma/client"
 
 // import prisma from  "@repo/db/index";
 // import { events } from "../types/EventTypes";

@@ -8,16 +8,7 @@ import {
   updateQuestion,
 } from "../controllers/question.controller";
 import { isAdmin } from "@repo/lib/security/auth";
-import {
-  Create_Mock_question_set,
-  get_all_mock_question_set,
-  getSyllabusByMockQuestionSetid,
-  get_mock_question_set_by_id,
-  AddQuestionIntoMockQuestionSet,
-  RemoveQuestionFromMockQuestionSet,
-  getAvalibleMockSets,
-  get_mock_set_questions,
-} from "../controllers/mock.controller";
+
 
 export const questionRouter = Router();
 
@@ -44,23 +35,23 @@ questionRouter.put("/admin/update", isAdmin, updateQuestion);
 
 // mock set
 
-questionRouter.post("/admin/mockset/create", isAdmin, Create_Mock_question_set);
-questionRouter.get("/admin/mockset/getall", isAdmin, get_all_mock_question_set);
-questionRouter.get("/admin/mockset/get", isAdmin, get_mock_question_set_by_id);
-questionRouter.get("/admin/mockset/get/questions", isAdmin, get_mock_set_questions);
-questionRouter.get(
-  "/admin/mockset/topics",
-  isAdmin,
-  getSyllabusByMockQuestionSetid
-);
-questionRouter.get(
-  "/admin/mockset/question/add",
-  isAdmin,
-  AddQuestionIntoMockQuestionSet
-);
-questionRouter.get(
-  "/admin/mockset/question/remove",
-  isAdmin,
-  RemoveQuestionFromMockQuestionSet
-);
-questionRouter.get("/admin/mockset/getids", isAdmin, getAvalibleMockSets);
+// questionRouter.post("/admin/mockset/create", isAdmin, Create_Mock_question_set);
+// questionRouter.get("/admin/mockset/getall", isAdmin, get_all_mock_question_set);
+// questionRouter.get("/admin/mockset/get", isAdmin, get_mock_question_set_by_id);
+// questionRouter.get("/admin/mockset/get/questions", isAdmin, get_mock_set_questions);
+// questionRouter.get(
+//   "/admin/mockset/topics",
+//   isAdmin,
+//   getSyllabusByMockQuestionSetid
+// );
+// questionRouter.get(
+//   "/admin/mockset/question/add",
+//   isAdmin,
+//   AddQuestionIntoMockQuestionSet
+// );
+// questionRouter.get(
+//   "/admin/mockset/question/remove",
+//   isAdmin,
+//   RemoveQuestionFromMockQuestionSet
+// );
+// questionRouter.get("/admin/mockset/getids", isAdmin, getAvalibleMockSets);

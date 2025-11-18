@@ -1,4 +1,4 @@
-import { eventType } from  "@repo/packages/prisma"
+import { eventType } from  "@repo/prisma/client"
 import { QuizeSetupFunction } from "../helper/TelegramQuiz";
 import { events } from "../types/EventTypes";
 

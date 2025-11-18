@@ -1,8 +1,12 @@
 import { asyncHandler } from "@/lib/helper/asyncHandler";
 import prisma from "@/db";
 import {
-  AddSubjectInputZodSchema,
-  AddTopicInputZodSchema,
+  AddSubjectInputZodSchemaById,
+  AddSubjectInputZodSchemaByName,
+  AddSubjectInputZodSchemaByShortName,
+  AddTopicInputZodSchemaById,
+  AddTopicInputZodSchemaByName,
+  AddTopicInputZodSchemaByShortName,
   SyllabusInputZodSchema,
 } from "@/zod/syllabus.zod";
 import { ZodDataSafeParse } from "@/lib/ZodTypeChecker";
@@ -22,74 +26,95 @@ type formatedSyllabus_type = {
 
 export const text = asyncHandler(async (req: any, res: any) => {});
 
-export const CreateSyllabus = async (req: any, res: any) => {
-  try {
-    let data = SyllabusInputZodSchema.safeParse(req.body);
+export const CreateSyllabus = asyncHandler(async (req: any, res: any) => {
+  let data = SyllabusInputZodSchema.safeParse(req.body);
 
-    if (!data.success) {
-      return res.status(401).json({
-        success: false,
-        message: "given credential/input   invalid ",
-      });
-    }
-
-    // syllabus architecture change need update
-
-    let response = await prisma.syllabus.create({
-      data: {
-        ...data.data,
-      },
+  if (!data.success) {
+    return res.status(401).json({
+      success: false,
+      message: "given credential/input   invalid ",
     });
+  }
 
-    if (!response) {
-      return res.status(400).json({
-        success: false,
-        message: `Syllabus  not created ,`,
-      });
-    }
+  let response;
 
-    // let syllabus = response.topics;
+  if (!data.data.exam_year_id)
+    throw Error("exam_year_id not found  , it is required");
 
-    res.json({
-      success: true,
-      message: `Syllabus created  `,
-    });
-  } catch (error) {
+  response = await prisma.syllabus.create({
+    data: {
+      ...data.data,
+    },
+  });
+
+  if (!response) {
     return res.status(400).json({
       success: false,
-      message: `Syllabus not created , Exam Name Already exist ,`,
+      message: `Syllabus  not created ,`,
     });
   }
-};
 
-export const getSyllabusByid = async (req: any, res: any) => {
-  try {
-    let syllabusid = req.query.syllabusid;
+  // let syllabus = response.topics;
 
-    let response = await prisma.syllabus.findFirst({
-      where: {
-        id: syllabusid,
-      },
-    });
+  return res.json({
+    success: true,
+    message: `Syllabus created  `,
+  });
+});
 
-    if (!response) {
-      return res
-        .status(400)
-        .json({ success: false, message: `Syllabus  not exist` });
-    }
+export const getSyllabusByid = asyncHandler(async (req: any, res: any) => {
+  let syllabusid = req.query.syllabusid;
 
-    let syllabus: any = []; //  response?.topics;
+  let response = await prisma.syllabus.findFirst({
+    where: {
+      id: syllabusid,
+    },
+  });
 
-    res.json({
-      success: true,
-      message: `Syllabus data`,
-      syllabus: syllabus,
-    });
-  } catch (error) {
-    console.log("Error in getsyllabus", error);
+  if (!response) {
+    return res
+      .status(400)
+      .json({ success: false, message: `Syllabus  not exist` });
   }
-};
 
+  let syllabus: any = []; //  response?.topics;
+
+  res.json({
+    success: true,
+    message: `Syllabus data`,
+    syllabus: syllabus,
+  });
+});
+export const fetchAllsyllabusExamYearid = asyncHandler(async (req: any, res: any) => {
+  let { id } = req.query;
+  let response = await prisma.syllabus.findMany({
+    where: {
+      exam_year_id: id,
+    },
+  });
+  if (!response) throw Error("error while featiching all  syllabus");
+
+  res.json({
+    success: true,
+    message: "all syllabus ",
+    data: response,
+  });
+});
+export const fetchAllsyllabus_id = asyncHandler(async (req: any, res: any) => {
+  let { id } = req.query;
+  let response = await prisma.syllabus.findFirst({
+    where: {
+      id: id,
+    },
+  });
+  if (!response) throw Error("error while featiching all  syllabus");
+
+  res.json({
+    success: true,
+    message: "all syllabus",
+    data: response,
+  });
+});
 export const fetchAllsyllabus = asyncHandler(async (req: any, res: any) => {
   // here i can get exam from user
 
@@ -138,17 +163,85 @@ export const fetchSyllabusName = asyncHandler(async (req: any, res: any) => {
 // docne
 
 export const addSubject = asyncHandler(async (req: any, res: any) => {
-  let processedata = AddSubjectInputZodSchema.safeParse(req.body);
+  let by: "id" | "name" | "shortname" = req.query.by ?? "id";
 
-  if (!processedata.success) {
-    throw ZodDataSafeParse(processedata, true);
+  let Subject_added;
+
+  switch (by) {
+    case "name":
+      {
+        let processedata = AddSubjectInputZodSchemaByName.safeParse(req.body);
+
+        if (!processedata.success) {
+          throw ZodDataSafeParse(processedata, true);
+        }
+
+        let { name, ...rest } = processedata.data;
+
+        let subject = await prisma.subject.findFirst({
+          where: {
+            name: name,
+          },
+        });
+
+        if (!subject) throw Error(`subject not found , given name :-${name}`);
+
+        Subject_added = await prisma.subjectSyllabusMap.create({
+          data: {
+            ...rest,
+            subject_id: subject.id,
+          },
+        });
+      }
+
+      break;
+    case "shortname":
+      {
+        let processedata = AddSubjectInputZodSchemaByShortName.safeParse(
+          req.body
+        );
+
+        if (!processedata.success) {
+          throw ZodDataSafeParse(processedata, true);
+        }
+
+        let { shortName, ...rest } = processedata.data;
+
+        let subject = await prisma.subject.findFirst({
+          where: {
+            shortName: shortName,
+          },
+        });
+
+        if (!subject)
+          throw Error(`subject not found , given shortName :-${shortName}`);
+
+        Subject_added = await prisma.subjectSyllabusMap.create({
+          data: {
+            ...processedata.data,
+            subject_id: subject.id,
+          },
+        });
+      }
+
+      break;
+
+    default:
+      {
+        let processedata = AddSubjectInputZodSchemaById.safeParse(req.body);
+
+        if (!processedata.success) {
+          throw ZodDataSafeParse(processedata, true);
+        }
+
+        Subject_added = await prisma.subjectSyllabusMap.create({
+          data: {
+            ...processedata.data,
+          },
+        });
+      }
+      break;
   }
-
-  let Subject_added = await prisma.subjectSyllabusMap.create({
-    data: {
-      ...processedata.data,
-    },
-  });
 
   if (!Subject_added) {
     return res
@@ -162,7 +255,6 @@ export const addSubject = asyncHandler(async (req: any, res: any) => {
     data: Subject_added,
   });
 });
-
 export const removeSubject = asyncHandler(async (req: any, res: any) => {
   let { syllabusid, subjectid } = req.query;
 
@@ -188,40 +280,131 @@ export const removeSubject = asyncHandler(async (req: any, res: any) => {
   });
 });
 export const addTopic = asyncHandler(async (req: any, res: any) => {
-  let processedata = AddTopicInputZodSchema.safeParse(req.body);
+  let by: "id" | "name" | "shortname" = req.query.by ?? "id";
 
-  if (!processedata.success) {
-    throw ZodDataSafeParse(processedata, true);
+  let Subject_added;
+
+  switch (by) {
+    case "name":
+      {
+        let processedata = AddTopicInputZodSchemaByName.safeParse(req.body);
+
+        if (!processedata.success) {
+          throw ZodDataSafeParse(processedata, true);
+        }
+
+        let { name, subject_id, syllabusId, weightage } = processedata.data;
+
+        let subject_map = await prisma.subjectSyllabusMap.findFirst({
+          where: {
+            syllabusId: syllabusId,
+            subject_id: subject_id,
+          },
+        });
+
+        if (!subject_map)
+          throw Error(" syllabus doesnot have selected sullabus ");
+
+        let subject_map_id: string = subject_map && subject_map?.id;
+
+        let topic = await prisma.topic.findFirst({
+          where: {
+            name: name,
+          },
+        });
+
+        if (!topic) throw Error(`selectd topic not found : name: ${name}`);
+
+        Subject_added = await prisma.topicsSubjectMap.create({
+          data: {
+            topic_id: topic.id,
+            weightage: weightage,
+            subject_map_id: subject_map_id,
+          },
+        });
+      }
+      break;
+    case "shortname":
+      {
+        let processedata = AddTopicInputZodSchemaByShortName.safeParse(
+          req.body
+        );
+
+        if (!processedata.success) {
+          throw ZodDataSafeParse(processedata, true);
+        }
+
+        let { shortName, subject_id, syllabusId, weightage } =
+          processedata.data;
+
+        let subject_map = await prisma.subjectSyllabusMap.findFirst({
+          where: {
+            syllabusId: syllabusId,
+            subject_id: subject_id,
+          },
+        });
+
+        if (!subject_map)
+          throw Error(" syllabus doesnot have selected sullabus ");
+
+        let subject_map_id: string = subject_map && subject_map?.id;
+
+        let topic = await prisma.topic.findFirst({
+          where: {
+            shortName: shortName,
+          },
+        });
+
+        if (!topic) throw Error(`selectd topic not found : name: ${shortName}`);
+
+        Subject_added = await prisma.topicsSubjectMap.create({
+          data: {
+            topic_id: topic.id,
+            weightage: weightage,
+            subject_map_id: subject_map_id,
+          },
+        });
+      }
+      break;
+
+    default:
+      {
+        let processedata = AddTopicInputZodSchemaById.safeParse(req.body);
+
+        if (!processedata.success) {
+          throw ZodDataSafeParse(processedata, true);
+        }
+
+        let { topic_id, subject_id, syllabusId, weightage } = processedata.data;
+
+        let subject_map = await prisma.subjectSyllabusMap.findFirst({
+          where: {
+            syllabusId: syllabusId,
+            subject_id: subject_id,
+          },
+        });
+
+        if (!subject_map)
+          throw Error(" syllabus doesnot have selected sullabus ");
+
+        let subject_map_id: string = subject_map && subject_map?.id;
+
+        Subject_added = await prisma.topicsSubjectMap.create({
+          data: {
+            topic_id: topic_id,
+            weightage: weightage,
+            subject_map_id: subject_map_id,
+          },
+        });
+      }
+      break;
   }
 
-  let { topic_id, subject_id, syllabusId, weightage } = processedata.data;
-
-  let subject_map = await prisma.subjectSyllabusMap.findFirst({
-    where: {
-      syllabusId: syllabusId,
-      subject_id: subject_id,
-    },
-  });
-
-  if (!subject_map) throw Error(" syllabus doesnot have selected sullabus ");
-
-  let subject_map_id: string = subject_map && subject_map?.id;
-
-  let Subject_added = await prisma.topicsSubjectMap.create({
-    data: {
-      topic_id: topic_id,
-      weightage: weightage,
-      subject_map_id: subject_map_id,
-    },
-  });
-
   if (!Subject_added) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: ` error while topie update in syllabus`,
-      });
+    return res.status(400).json({
+      success: false,
+      message: ` error while topie update in syllabus`,
+    });
   }
 
   return res.json({
@@ -230,7 +413,6 @@ export const addTopic = asyncHandler(async (req: any, res: any) => {
     data: Subject_added,
   });
 });
-
 export const removeTopic = asyncHandler(async (req: any, res: any) => {
   let { syllabusId, subjectId, topicId } = req.query;
 
@@ -255,12 +437,10 @@ export const removeTopic = asyncHandler(async (req: any, res: any) => {
   });
 
   if (!Subject_removed) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: ` error while topic  deletion for sullabus subject`,
-      });
+    return res.status(400).json({
+      success: false,
+      message: ` error while topic  deletion for sullabus subject`,
+    });
   }
 
   return res.json({
@@ -269,7 +449,6 @@ export const removeTopic = asyncHandler(async (req: any, res: any) => {
     data: Subject_removed,
   });
 });
-
 export const formatedSyllabus = asyncHandler(async (req: any, res: any) => {
   let { exam_year_id, syllabusid } = req.query;
 

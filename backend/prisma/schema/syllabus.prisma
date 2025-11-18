@@ -3,7 +3,7 @@ model Syllabus {
     created_at         DateTime             @default(now())
     type               SyllabusType         @default(EXAM)
     exam_year_id       String?
-    title              String 
+    title              String      @unique
     description        String? // optional: short details
     exam_year          ExamYear?            @relation(fields: [exam_year_id], references: [id])
     SubjectSyllabusMap SubjectSyllabusMap[]
@@ -17,7 +17,6 @@ model SubjectSyllabusMap {
     subject_id String
     weightage  Float?   @default(0)
     created_at DateTime @default(now())
-
     subject          Subject            @relation(fields: [subject_id], references: [id])
     Syllabus         Syllabus           @relation(fields: [syllabusId], references: [id])
     TopicsSubjectMap TopicsSubjectMap[]

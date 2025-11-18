@@ -10,7 +10,7 @@ model telegramGroupInfo {
   id           String    @id @unique @default(cuid())
   groupid      String    @unique
   groupname    String
-  groupType    groupType @default(group)
+  groupType    telegramgroupType @default(group)
   grouplink    String?
   isTopic      Boolean   @default(false)
   isPremium    Boolean   @default(false)
@@ -31,10 +31,10 @@ model telegramGroupInfo {
 
 model telegramGroupTopic {
   id      String            @id @default(cuid())
-  group   telegramGroupInfo @relation(fields: [groupId], references: [id])
-  groupId String
   name    String // e.g. "quiz"
   topicId Int // Telegram's internal topic ID
+  groupId String
+  group   telegramGroupInfo @relation(fields: [groupId], references: [id])
 }
 
 model telegram_ban_user {
@@ -50,7 +50,7 @@ model telegram_ban_user {
 }
 
 
-enum groupType {
+enum telegramgroupType {
   group
   private
   channel

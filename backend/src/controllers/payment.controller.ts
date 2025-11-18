@@ -3,7 +3,7 @@ import crypto, { randomUUID } from "crypto";
 // import { Payment } from "../models/paymentModel.js";
 import prisma from  "@repo/db/index";
 import dayjs from "dayjs";
-import { ExamType, primeStatus, purchaseType } from  "@repo/packages/prisma"
+import { ExamType, primeStatus, purchaseType } from  "@repo/prisma/client"
 import { subcriptionPurchase_zod_schema } from "../zod/payment.zob";
 import { TokenDeduction } from "@repo/lib/helper/payment";
 

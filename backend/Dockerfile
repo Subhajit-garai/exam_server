@@ -1,39 +1,41 @@
-# docker build command
-# docker build -t subhajitgarai04/backend:0.0.5 .
-# docker build -t subhajitgarai04/backend .
+FROM node:lts-alpine
 
-FROM node:22 AS builder
+WORKDIR /usr/src/app
 
-WORKDIR /build
+COPY package.json package-lock.json ./
 
-COPY package*.json tsconfig.json  .
 RUN npm ci
-COPY .  .
 
-RUN npm install typescript --save-dev
-RUN npx prisma generate
-RUN npx prisma generate --sql
+COPY . .
 
-
-RUN npm run build
-
-FROM  node:22
-
-ENV NODE_ENV production
-
-WORKDIR /app
-
-COPY  package*.json .
+CMD ["sh", "-c", "npm run gen && npm run gen:sql && npm run build && npm run start" ]
 
 
-COPY --from=builder /build/node_modules ./node_modules
-COPY --from=builder /build/dist ./dist
-COPY --from=builder /build/prisma ./prisma
-# COPY --from=builder /build/packages ./packages //  here solve  the issue of prisma generarte client 
- 
+# docker build -t subhajitgarai04/backend:0.0.7 .
+# docker build --progress=plain -t subhajitgarai04/backend:0.0.8 .
 
-CMD ["node", "dist/src/surver.js"]
+# FROM node:lts-alpine AS builder
+
+# WORKDIR /build
+
+# COPY package.json package-lock.json ./
+
+# RUN npm i
+
+# COPY . .
+# RUN npm run gen 
+# RUN npm run gen:sql 
 
 
+# RUN npm run build 
 
+# FROM node:lts-alpine As runner
 
+# WORKDIR /usr/src/app
+
+# COPY package.json package-lock.json ./
+# COPY --from=builder /build/node_modules ./node_modules
+# COPY --from=builder /build/dist ./dist
+# RUN cp node_modules/@prisma/engines/libquery_engine-linux-musl-openssl-3.0.x.so.node  ./dist/prisma/generated/prisma/
+
+# CMD ["sh", "-c", "npm run start"]

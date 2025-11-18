@@ -1,0 +1,111 @@
+# name: Deploy Blue‑Green
+# on:
+#   push:
+#     branches: [main]
+#     tags:
+#       - "v*"
+# env:
+#   DOCKER_IMAGE: subhajitgarai04/testcicd
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     outputs:
+#       imagetag: ${{ steps.meta.outputs.tag-names }}
+#     steps:
+#       - uses: actions/checkout@v5
+
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+#       - name: Set up QEMU
+#         uses: docker/setup-qemu-action@v3
+
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v3
+
+#       - name: Extract metadata (tag, labels)
+#         id: meta
+#         uses: docker/metadata-action@v5.9.0
+#         with:
+#           images: ${{env.DOCKER_IMAGE}}
+#           tags: |
+#             type=semver,pattern={{version}}
+#             type=sha,format=long
+
+
+#       - name: Build and push image
+#         uses: docker/build-push-action@v6
+#         with:
+#           context: .
+#           push: true
+#           tags: ${{ steps.meta.outputs.tags }}
+#           labels: ${{ steps.meta.outputs.labels }}
+
+#   deploy:
+#     needs:
+#       - build
+#     runs-on: ubuntu-latest
+#     environment: production
+#     steps:
+#       - name: check image tag
+#         run: |
+#           echo ${{ needs.build.outputs.imagetag }}
+#           echo "Deploying imagetag=${{env.DOCKER_IMAGE}}:${{ needs.build.outputs.imagetag }}"
+
+#       - name: SSH into host
+#         uses: appleboy/ssh-action@v1
+#         with:
+#           host: ${{ secrets.HOST }}
+#           username: ${{ secrets.USER }}
+#           key: ${{ secrets.SSH_KEY }}
+#           envs: DOCKER_IMAGE
+#           script: |
+#             # Pull new image as green
+#             echo "$DOCKER_IMAGE:${{ needs.build.outputs.imagetag }}"
+
+#             sudo docker pull $DOCKER_IMAGE:${{ needs.build.outputs.imagetag }}
+
+#             LIVE=$(grep -oP 'default \K(blue|green)' /etc/nginx/conf.d/app.conf)
+#             echo "LIVE IS: $LIVE"
+
+#             if [ "$LIVE" = "blue" ]; then
+#               TARGET="green"
+#               PORT=3002
+#             else
+#               TARGET="blue"
+#               PORT=3001
+#             fi
+
+
+#             echo "Deploy TARGET: $TARGET on PORT: $PORT"
+
+#             sudo docker run -d --name $TARGET -p $PORT:3000 \
+#               $DOCKER_IMAGE:${{ needs.build.outputs.imagetag }}
+
+#             # Health check loop (max 30s)
+#             for i in {1..30}; do
+#               if curl -sSf http://localhost:$PORT/health; then break; fi;
+#               sleep 1;
+#             done
+
+#             echo "Switch Nginx upstream $LIVE to $TARGET"
+#             sudo sed -i "s/default $LIVE;/default $TARGET;/" /etc/nginx/conf.d/app.conf
+#             echo "nginx reloading"
+
+#             sudo nginx -s reload
+#             echo "sleeping for 100s"
+
+#             sleep 60
+
+#             sudo nginx -t && sudo nginx -s reload
+
+#             echo "removing old and in active contanier"
+#             sudo docker stop $LIVE || true 
+#             sudo docker rm $LIVE || true
+
+#             echo "Cleanup unused Docker images ✔️"
+#             sudo docker system prune -f

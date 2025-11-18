@@ -23,12 +23,13 @@ export const createTopic_schema = z.object({
   order: z.number(),
 
 
-  isparentTopic: z.boolean().optional(),
   parentTopicId: z.string().optional(),
   iconUrl: z.string().optional(),
   color: z.string().optional(),
-  isPublic: z.boolean().optional(),
-  // category: z.string().optional(),
+
+  isparentTopic: z.string().transform((bool)=> (bool=="True"||bool=="true"||bool=="T") ? true :false).optional(),
+  isPublic:  z.string().transform((bool)=> (bool=="True"||bool=="true"||bool=="T") ? true :false).optional(),
+
   level: z.string().optional(),
   difficulty: z.number().optional(),
 });

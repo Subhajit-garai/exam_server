@@ -1,18 +1,15 @@
+import "dotenv/config";
 import express from "express";
-
 import cookieParser from "cookie-parser";
 import { userauthenticate } from "@repo/lib/security/auth";
-// import { handleWebSocketConnection } from "../lib/WebSocket.js";
 import cors from "cors";
 import WebSocket, { WebSocketServer } from "ws";
 import http from "http";
-
 import { userRouter } from "./routes/userRouter.js";
 import Razorpay from "razorpay";
-
 import "@repo/lib/cronJobs/index";
 
-// routers 
+// routers
 import { adminRouter } from "./routes/adminRouter.js";
 import { IssueRouter } from "./routes/IssueRouter.js";
 import { eventRouter } from "./routes/eventRouter.js";
@@ -27,7 +24,6 @@ import { CommonuserRoutes } from "./routes/CommonuserRoutes.js";
 import { noteRouter } from "./routes/noteRoute.js";
 import { errorHandler } from "./middleware/globalErrorHandler.js";
 import { syllabusRouter } from "./routes/syllabusRouter.js";
-
 
 export const razerpayinstance = new Razorpay({
   key_id: process.env.RAZERPAY_API_KEY as string,
@@ -45,7 +41,7 @@ interface AuthenticatedWebSocket extends WebSocket {
 // app.set("trust proxy", "loopback");
 const trustProxy = process.env.TRUST_PROXY || 1;
 
-app.set('trust proxy', trustProxy);
+app.set("trust proxy", trustProxy);
 
 const PORT = process.env.PORT || 3000;
 
@@ -77,14 +73,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-
-
 app.use("/api/v1/bulk", DataManageRouter); // bulk insert
 
-// inportent , it is veryfy and access survece 
+// inportent , it is veryfy and access survece
 
 app.post("/api/v1/payment/paymentverification", paymentVerification);
-
 
 app.get("/health", (req, res) => {
   res.json({ message: "i'm healthy now after you ask" });
@@ -106,9 +99,7 @@ app.use("/api/v1/metrix", metrixRoute);
 app.use("/api/v1/exam", examRouter);
 app.use("/api/v1/question", questionRouter);
 
-
-
-// webscocket server 
+// webscocket server
 // wss.on("connection", (ws:AuthenticatedWebSocket,req) => {
 //  // ws auth
 //   const url = req?.url || "";
@@ -130,12 +121,12 @@ app.use("/api/v1/question", questionRouter);
 //     return;
 //   }
 //   ws.user = decoded
-  
+
 //    // message handling
 //   handleWebSocketConnection(ws);
 // });
 
-app.use(errorHandler)
+app.use(errorHandler);
 
 server.listen(PORT, () => {
   console.log(`surver is listening on ${PORT}`);

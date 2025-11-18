@@ -3,10 +3,10 @@ model TargetExam {
   name        String    @unique // e.g., "GATE", "UPSC"
   shortCode   String?   @unique // e.g., "GATE", "CAT", "UPSC"
   description String?
-  examScope    ExamScope @default(NATIONAL) // examType to ExamScope
+  examScope   ExamScope @default(NATIONAL) // examType to ExamScope
 
   isPublic Boolean @default(false)
-  category  String  @default("not seted")
+  category String  @default("not seted")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -26,7 +26,7 @@ model ExamYear {
   isPublic              Boolean    @default(false)
   registrationOpenDate  DateTime?
   registrationCloseDate DateTime?
-  examDate         DateTime?
+  examDate              DateTime?
   resultDate            DateTime?
   // category              String? // e.g., "Engineering", "Management"
   notes                 Json? // flexible field for extra info
@@ -45,6 +45,7 @@ model Exam_pattern {
   examname        String
   category        String
   syllabus        syllabusType  @default(Syllabus) // Syllabus mean it follow syllabus base question paper
+  syllabusid      String?
   topics          String[]
   difficulty      diffcultlevel @default(Easy)
   part            Boolean?
@@ -68,12 +69,10 @@ model Exam {
   examname String
 
   category    String
-  examtype    ExamType    @default(Exam)
+  examtype    ExamType    @default(Test)
   access_type access_type @default(Paid)
-  mockSetId   String? // if examtype is Mock then it get mockset questions 
 
   exam_pattern_id  String
-  ansid            String        @unique // not needed
   isMultipleAttemp Boolean       @default(true)
   isLive           Boolean       @default(true)
   Visibility       Visibility    @default(Private)
@@ -87,11 +86,14 @@ model Exam {
   stage       ExamStage @default(Registration)
   register_id String    @default("")
 
+  question_difficulty_weight Json? // { "Easy": 0, "MEDIUM": 0, "HARD": 0 }
+  question_topic_count       Json? // { "OS": 0, "DBMS": 0, "C": 0 }
+  question_part_count        Json? // { "part1": 0, "part2": 0 }
+
   created_at DateTime? @default(now())
   created_by String
 
   ContestRegister ContestRegister @relation(fields: [register_id], references: [id])
-  AnsSheet        AnsSheet        @relation(fields: [ansid], references: [id]) // not needed
   User            User            @relation(fields: [created_by], references: [id])
   exam_pattern    Exam_pattern    @relation(fields: [exam_pattern_id], references: [id])
   leaderboard     leaderboard[]
@@ -112,7 +114,6 @@ enum ExamScope {
   OTHER
 }
 
-
 enum ExamStatus {
   REGISTRATION_OPEN
   REGISTRATION_CLOSED
@@ -122,10 +123,10 @@ enum ExamStatus {
   EVALUATION_IN_PROGRESS
   RESULT_PUBLISHED
   ARCHIVED
-}
+} 
 
 enum ExamType {
-  Exam // dynamic exam set 
+  Test // dynamic exam set 
   Contest // compeations
   Mock // for fixed question set like 2024 jeca set 
   PYQ // 2024 jeca Exam 

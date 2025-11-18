@@ -12,8 +12,6 @@ COPY .  .
 
 RUN npm install typescript --save-dev
 
-RUN npx prisma generate
-
 RUN npm run build
 
 FROM  node:22
@@ -25,7 +23,6 @@ COPY  package*.json .
 
 COPY --from=builder /build/node_modules ./node_modules
 COPY --from=builder /build/dist ./dist
-COPY --from=builder /build/prisma ./prisma
 
 CMD ["node", "dist/index.js"]
 

@@ -13,6 +13,9 @@ model User {
   resetTokenExpires   DateTime @default(now()) // forget password
   accesstoken         String[] @default([]) // only one device access token
 
+  isOnline Boolean  @default(false)
+  lastSeen DateTime @default(now())
+
   Exam         Exam[]
   Exam_pattern Exam_pattern[]
   Questions    Questions[]
@@ -27,7 +30,6 @@ model User {
   Comment      Comment[]
   Topic        Topic[]
 
-  botQuizTopic  botQuizTopic[]
   botQuizConfig botQuizConfig[]
   CouponUsages  CouponUsage[] // Relation: which users used it
   Coupon        Coupon[]
@@ -93,4 +95,45 @@ model blance {
   last_update DateTime @updatedAt
 
   User User @relation(fields: [userid], references: [id])
+}
+
+model UserAns {
+  id             String    @id @unique @default(cuid())
+  number         Int       @default(0) // 0- >  not updated 
+  part           String    @default("part1")
+  examId         String
+  userId         String
+  questionId     String    @default("not set")
+  shuffleMap     Int[]
+  selectedOption String[]
+  isCorrect      Boolean? // it  may  later    , if user not ansed then  it null
+  Question       Questions @relation(fields: [questionId], references: [id])
+
+  @@unique([examId, userId, questionId])
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  link      String? // optional URL
+  type      String // e.g., "exam", "system", "payment"
+  createdAt DateTime  @default(now())
+  seen      Boolean   @default(false)
+  seenAt    DateTime?
+}
+
+enum primeStatus {
+  None
+  Bronze
+  Silver
+  Gold
+}
+
+enum UserRole {
+  Admin
+  User
+  Tutor // have more privilage than normal user but less than Admin
+  Bot
 }

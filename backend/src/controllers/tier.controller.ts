@@ -1,4 +1,4 @@
-import { ExamType, primeStatus } from  "@repo/packages/prisma"
+import { ExamType, primeStatus } from  "@repo/prisma/client"
 import prisma from  "@repo/db/index";
 import { debuglog } from "@repo/lib/helper/debugLog";
 

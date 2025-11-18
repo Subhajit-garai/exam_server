@@ -1,5 +1,5 @@
 import { genToken, setCookie } from "@repo/lib/token";
-import { primeStatus } from  "@repo/packages/prisma"
+import { primeStatus } from  "@repo/prisma/client"
 import prisma from  "@repo/db/index";
 import {
   Createhash,
@@ -719,7 +719,7 @@ export const userSignin = async (req: any, res: any) => {
 
     // send token
     // if email token is veryfy then send token
-    // setCookie(res, User.id); // remove this 
+    setCookie(res, User.id); // remove this 
 
 
     res.status(200).json({

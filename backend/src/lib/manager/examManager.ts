@@ -1,10 +1,13 @@
 import { userManager } from "./userManger";
 import { RedisProvider } from "../radisProvider";
-import { ExamQuestionsids, Task } from "../types";
-import prisma from  "@repo/db/index";
+import { ExamQuestionsids } from "../types";
+import prisma from "@repo/db/index";
+import {
+  exam_question_format_for_ui_type,
+  exam_question_format_type,
+} from "../types/questionTypes";
+import { shuffleArraySeeded } from "../helper/shuffle";
 import { JsonValue } from "@prisma/client/runtime/library";
-import { examformat } from  "@repo/packages/prisma"
-import { exam_question_format_type } from "../types/questionTypes";
 
 let count = 0;
 interface exam_info {
@@ -14,8 +17,6 @@ interface exam_info {
   };
   parts: number;
 }
-
-
 
 export class examManager {
   private static instance: examManager;
@@ -51,94 +52,53 @@ export class examManager {
     examid: string,
     userid: string,
     part: string | number,
-    num: string,
-    isnewMethod: boolean = false
+    num: string
   ) {
-    console.log("---->", ++count);
+    let isValidUser = this.user.isuserexist(examid, userid);
+    let number: number = parseInt(num);
 
-    if (isnewMethod) {
-      let isValidUser = this.user.isuserexist(examid, userid);
-      let number: number = parseInt(num);
-      // console.log("isValidUser", isValidUser);
-      // console.log("number", number);
-      // console.log("num", num);
+    if (isValidUser) {
+      let total_questions = this.exam[examid].total_question[part];
+      switch (type) {
+        case "pre":
+          if (number <= 1) {
+            number = total_questions + 1;
+          }
+          --number;
+          break;
+        case "next":
+          if (number == total_questions) {
+            number = 0;
+          }
+          ++number;
+          break;
+        default:
+          break;
+      }
+      if (number) {
+        let question: exam_question_format_type = await this.redisclient.get(
+          `examquestion:${examid}:${part}:${number}`
+        );
 
-      if (isValidUser) {
-        let total_questions = this.exam[examid].total_question[part];
-        // console.log("total_question", total_questions);
+        if (!question || !question.question)
+          throw Error("question data not found");
 
-        switch (type) {
-          case "pre":
-            if (number <= 1) {
-              number = total_questions + 1;
-            }
-            --number;
-            break;
-          case "next":
-            if (number == total_questions) {
-              number = 0;
-            }
-            ++number;
-            break;
-          default:
-            break;
-        }
-        // get data from redis
-
-        console.log("number", number);
-
-        if (number) {
-          console.log(`examquestion:${examid}:${part}:${number}`);
-          let question = await this.redisclient.get(
-            `examquestion:${examid}:${part}:${number}`
-          );
-
-          // console.log("----> question",question);
-
-          return { question, number };
-        }
-      } else {
-        return null;
+        let data: exam_question_format_for_ui_type = {
+          number: question.number,
+          part: question.part,
+          question: {
+            questionid: question.question?.id,
+            title: question.question?.title,
+            options: question.question?.options,
+            extra: question.question?.extra,
+            format: question.question?.format,
+            is_multiple_ans: question.question?.is_multiple_ans,
+          },
+        };
+        return data;
       }
     } else {
-      let exam = this.exam2.find((e) => e === examid);
-
-      let user = this.user.isuserexist(examid, userid);
-      let number: number = parseInt(num);
-      let questionid;
-
-      // console.log("exam ids ", this.exam);
-      // console.log("exam ids ", this.questionsids);
-
-      if (exam && user) {
-        let partdata = this.questionsids[examid][part];
-        let total_questions = Object.keys(partdata).length;
-
-        switch (type) {
-          case "pre":
-            if (number <= 1) {
-              number = total_questions + 1;
-            }
-            questionid = partdata[--number];
-            break;
-          case "next":
-            if (number == total_questions) {
-              number = 0;
-            }
-            questionid = partdata[++number];
-            break;
-          default:
-            questionid = partdata[number];
-            break;
-        }
-        // get data from redis
-        if (questionid) {
-          let question = await this.redisclient.get(`question:${questionid}`);
-          return { question, number }; // add is multible ans
-        }
-      } else {
-        return null;
-      }
+      return null;
     }
   }
 
@@ -146,9 +106,12 @@ export class examManager {
     // delete this.exam[examid];
     this.user.removeuser(examid, userid);
     return await this.getredisclient().push({
-      type: "CreateScore",
-      examid: examid,
-      userid: userid,
+      type: "CREATE_SCORE",
+      id: examid,
+      payload: {
+        examid: examid,
+        userid: userid,
+      },
     });
   }
 
@@ -158,207 +121,87 @@ export class examManager {
     part: string,
     ans: string[],
     number: string,
-    ismultiple: boolean,
-    isnewMethod: boolean = false
+    ismultiple: boolean
   ) {
-    if (isnewMethod) {
-      let isValidUser = this.user.isuserexist(examid, userid);
-      if (!isValidUser) throw new Error("user is not given this exam ");
-      return await this.getredisclient().push({
-        type: "AnsProcessing",
+    let isValidUser = this.user.isuserexist(examid, userid);
+    if (!isValidUser) throw new Error("user is not given this exam ");
+    return await this.getredisclient().push({
+      id: examid,
+      type: "ANS_PROCESSING",
+      payload: {
         examid: examid,
         userid: userid,
         part: part,
         ans: ans,
-        // id: selectedId,
         ismultiple: ismultiple ?? false,
-        number: number,  // may add some feature which need question number
-      });
-    } else {
-      let partdata = this.questionsids[examid][part];
-      let selectedId = partdata[parseInt(number)];
-      console.log("selectedId", selectedId);
-
-      return await this.getredisclient().push({
-        type: "AnsProcessing",
-        examid: examid,
-        userid: userid,
-        part: part,
-        ans: ans,
-        number: selectedId,
-        ismultiple: ismultiple ?? false,
-        // number: number,  // may add some feature which need question number
-      });
-    }
+        number: number,
+      },
+    });
   }
 
-  async addexam(examid: string, data: any, isnewMethod: boolean = false) {
-    if (isnewMethod) {
-      let QuestionMap: Map<string, exam_question_format_type> = new Map();
-      let allquestionids: string[] = [];
-
-      let examQuestions = await prisma.question_map.findMany({
-        where: {
-          examid: examid,
+  async addexam(examid: string) {
+    let examQuestions = await prisma.question_map.findMany({
+      where: {
+        examid: examid,
+      },
+      select: {
+        number: true,
+        part: true,
+        question: {
+          select: {
+            id: true,
+            options: true,
+            title: true,
+            extra: true,
+            format: true,
+            is_multiple_ans: true,
+          },
         },
-      });
-      if (!examQuestions) throw new Error("exam's question not found");
+      },
+    });
 
-      // question data which are send / cache in redis
+    if (!examQuestions) throw new Error("exam's question not found");
 
-      // add exam info
+    // shuffling process here
 
-      this.setExamMetaData(examid);
-      examQuestions.map((que) => {
-        allquestionids.push(que.questionid);
+    // every exam have shuffled question
 
-        let temp: exam_question_format_type = {
-          id: "",
-          number: 0,
-          options: [],
-          ans: [],
-          title: "",
-          extra: {},
-          formate: "Text",
-          part: "",
-          topic_id: "",
-          is_multiple_ans: false,
-          isSuffled: false,
+    // if exam have shulled question , then shuffleed with exam id
+    // if exam have all user question shulled , like 2 user doesnot have same order then shuffled with examid+useris or user id
+
+    let formatedQuestions: exam_question_format_type[] = examQuestions.map(
+      (question, idx) => {
+        if (!question.question?.options)
+          throw Error("question doesnot have options");
+
+        let { shuffled, map } = shuffleArraySeeded(
+          question.question?.options,
+          examid
+        );
+        question.question.options = shuffled;
+
+        return {
+          ...question,
+          question: {
+            ...question.question,
+            options: shuffled,
+            map: map,
+          },
         };
-        if (que.isSuffled) {
-          temp.options = que.options;
-          temp.ans = que.ans;
-        }
-        temp.id = que.questionid;
-        temp.number = que.number;
-        temp.isSuffled = que.isSuffled;
-        temp.part = que.part ? que.part : "part1";
-
-        QuestionMap.set(que.questionid + ":" + que.part, temp);
-      });
-
-      if (allquestionids.length > 0) {
-        let res = await prisma.questions.findMany({
-          where: {
-            id: {
-              in: allquestionids,
-            },
-          },
-          select: {
-            id: true,
-            title: true,
-            options: true,
-            is_multiple_ans: true,
-            extra: true,
-            format: true,
-            ans: true,
-            topic_id: true,
-          },
-        });
-
-        let tempMap: Map<
-          string,
-          {
-            id: string;
-            options: string[];
-            ans: string[];
-            title: string;
-            extra: JsonValue;
-            format: examformat;
-            topic_id: string;
-            is_multiple_ans: boolean;
-          }
-        > = new Map();
-
-        if (!res) throw new Error("question data found , id may be invalid");
-
-        res.map((Question) => {
-          tempMap.set(Question.id, Question);
-        });
-
-        QuestionMap.forEach((value, key) => {
-          let Question = tempMap.get(key.split(":")[0]);
-          if (!Question) throw new Error("key invalid");
-
-          if (!value?.isSuffled) {
-            value.options = Question.options;
-            value.ans = Question.ans;
-          }
-          value.title = Question.title;
-          value.extra = Question.extra;
-          value.formate = Question.format;
-          value.topic_id = Question.topic_id;
-          value.is_multiple_ans = Question.is_multiple_ans;
-
-          QuestionMap.set(value.id + ":" + value.part, value);
-
-          this.redisclient.set(`examquestion:${key}:${value.number}`, value);
-        });
-
-        if (QuestionMap) {
-          QuestionMap.forEach((question) => {
-            this.redisclient.set(
-              `examquestion:${examid}:${question?.part}:${question.number}`,
-              question
-            );
-          });
-          console.log("questions added to redis");
-        } else {
-          return null;
-        }
       }
-    } else {
-      this.exam2.push(examid); // here add some extra data
-      let allids: [] = [];
-      let partinfo: any = {};
-      // here check is question and other info is already added , and if added then expiry time is > 2h
-      Object.keys(data).map((d: any) => {
-        Object.keys(data[d]).map((p: any) => {
-          let ids = Object.values(data[d][p]).flat() as [];
+    );
 
-          if (!partinfo[p]) {
-            partinfo[p] = {};
-          }
-          ids.map((id: any, i) => {
-            partinfo[p][i + 1] = id;
-          });
-          allids = [...allids, ...ids];
-        });
-      });
+    // question data which are send / cache in redis
 
-      // this added into BE ceche --> change it to redis
-      this.questionsids[examid] = partinfo;
+    this.setExamMetaData(examid);
 
-      // question data which are send / cache in redis
-
-      if (allids.length > 0) {
-        let res = await prisma.questions.findMany({
-          where: {
-            id: {
-              in: allids,
-            },
-          },
-          select: {
-            id: true,
-            title: true,
-            options: true,
-            is_multiple_ans: true,
-            extra: true,
-            format: true,
-            topic_id: true,
-          },
-        });
-
-        if (res) {
-          res.forEach((question: any) => {
-            this.redisclient.set(`question:${question.id}`, question);
-          });
-          console.log("questions added to redis");
-        } else {
-          return null;
-        }
-      }
-    }
+    formatedQuestions.forEach((question) => {
+      this.redisclient.set(
+        `examquestion:${examid}:${question?.part}:${question.number}`,
+        question
+      );
+    });
+    console.log("questions added to redis");
   } //end
 
   async setExamMetaData(examid: string) {

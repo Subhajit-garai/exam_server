@@ -1,4 +1,4 @@
-export const debuglog = (mes:any) =>{
+export const debuglog = (mes?:any) =>{
 return console.log("step ------>",mes);
 
 }

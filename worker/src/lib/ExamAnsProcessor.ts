@@ -6,29 +6,30 @@ import {
   Right_Wrong_set_type,
   Task,
 } from "./types/types";
-import { ExamQuestionProcessor } from "./ExamQuestionProcessor";
 import { RedisProvider } from "./radisProvider";
 import { debuglog } from "../utils/debugLog";
+import { Network } from "@/utils/network";
+import { exam_question_format_type } from "./types/ans-prossing-types";
 
-export class ExamAnsProcessor {
+export class examAnsManager {
   AnsStore: AnsStoreType;
   AnsKeys: AnsKeysTypes;
   ExamPatternStore: any;
-  private static instance: ExamAnsProcessor;
-  private questionprocessor: ExamQuestionProcessor;
+  private static instance: examAnsManager;
   private ansclient: RedisProvider;
+  private Network: Network;
 
   private constructor() {
     this.AnsStore = {};
     this.AnsKeys = {};
     this.ExamPatternStore = {};
-    this.questionprocessor = ExamQuestionProcessor.getInstance(5);
     this.ansclient = RedisProvider.getInstance();
+    this.Network = Network.getInstance();
   }
 
   public static getInstance() {
     if (!this.instance) {
-      this.instance = new ExamAnsProcessor();
+      this.instance = new examAnsManager();
     }
     return this.instance;
   }
@@ -39,12 +40,10 @@ export class ExamAnsProcessor {
   async getAnsKeys(examid: string) {
     try {
       let Examsans;
-      let isExist = await this.getansClient().getAnsSheet(examid);
+      let isExist = await this.getAnsSheet(examid);
       if (!isExist) {
-        Examsans = await this.questionprocessor
-          .getNetworkInstance()
-          .getExamQuestionsAns(examid);
-        this.getansClient().setAnsSheet(Examsans, examid, 18000);
+        Examsans = await this.Network.getExamQuestionsAns(examid);
+        this.setAnsSheet(Examsans, examid, 18000);
       } else {
         Examsans = JSON.parse(isExist as string);
       }
@@ -54,20 +53,43 @@ export class ExamAnsProcessor {
     }
   }
 
+  async getAnsSheet(examid: string) {
+    const StoerPrefix: string = "AnsSheet";
+    let key = `${StoerPrefix}:${examid}`;
+    let data = await this.ansclient.getclient().get(key);
+
+    return data ? data : null;
+  }
+
+  async setAnsSheet(
+    data: {
+      id: string;
+      examid: string;
+      ans: any;
+      status: string;
+    }[],
+    examid: string,
+    EX: number = 0
+  ) {
+    const StoerPrefix: string = "AnsSheet";
+    let ansSheetData: string;
+    ansSheetData = JSON.stringify(data);
+
+    return this.ansclient
+      .getclient()
+      .set(`${StoerPrefix}:${examid}`, ansSheetData, "EX", EX, "NX");
+  }
+
   async getExamPatternFormStore(examid: string) {
     try {
       let Exampattern;
 
       // exam pattern
-      let isExist = await this.getansClient().getExamPattern(examid);
+      let isExist = await this.getExamPattern(examid);
       if (!isExist) {
-        let exam_pattern_id = await this.questionprocessor
-          .getNetworkInstance()
-          .getExamPatternId(examid);
-        Exampattern = await this.questionprocessor
-          .getNetworkInstance()
-          .getExamPattern(exam_pattern_id);
-        this.getansClient().setExamPattern(Exampattern, examid, 18000);
+        let exam_pattern_id = await this.Network.getExamPatternId(examid);
+        Exampattern = await this.Network.getExamPattern(exam_pattern_id);
+        this.setExamPattern(Exampattern, examid, 18000);
       } else {
         Exampattern = JSON.parse(isExist as string);
       }
@@ -78,9 +100,27 @@ export class ExamAnsProcessor {
     }
   }
 
+  async setExamPattern(data: any, examid: string, EX: number = 0) {
+    const StoerPrefix: string = "ExamPattern";
+    let ansSheetData: string;
+    ansSheetData = JSON.stringify(data);
+
+    return this.ansclient
+      .getclient()
+      .set(`${StoerPrefix}:${examid}`, ansSheetData, "EX", EX, "NX");
+  }
+
+  async getExamPattern(examid: string) {
+    const StoerPrefix: string = "ExamPattern";
+    let key = `${StoerPrefix}:${examid}`;
+    let data = await this.ansclient.getclient().get(key);
+
+    return data ? data : null;
+  }
+
   async getUserAndExamAns(examid: string, userid: string) {
     try {
-      let userans: any = await this.getansClient().getUserans(examid, userid);
+      let userans: any = await this.getUserans(examid, userid);
       /* { number: { ans: ["1"], part: 'part1' } } */
       let examAns = await this.getAnsKeys(examid);
 
@@ -97,15 +137,114 @@ export class ExamAnsProcessor {
 
       // done data are valid for mat
       if (userans) {
-        // store user ans data in to score table
-        await this.questionprocessor
-          .getNetworkInstance()
-          .SetUserAns(examid, userid, result);
         return [examAns, userans[0]];
       }
       return [[], []];
     } catch (error) {
       console.error("error in getUserAns", error);
+    }
+  }
+
+  setUserans(data: any, EX: number = 0) {
+    const StoerPrefix: string = "ans";
+    let ansData: string;
+
+    let { examid, userid, part, ans, ismultiple, number } = data;
+
+    if (typeof ans != "string") {
+      // ansData = JSON.stringify(ansdata);
+      if (ismultiple) {
+        ansData = ans.join(","); // multiple ans ["1","2","3"]  --> "1,2,3"
+      } else {
+        ansData = ans[0]; // single ans
+      }
+    } else {
+      ansData = ans;
+    }
+    // console.log("ans str" ,`${this.StoerPrefix}:${examid}:${userid}:${part}:${id}`,"data",data);
+
+    return this.ansclient
+      .getclient()
+      .set(
+        `${StoerPrefix}:${examid}:${userid}:${part}:${number}`,
+        ansData,
+        "EX",
+        EX
+      );
+  }
+
+  async getQuestionInfoFromCatch(key: string) {
+    const question = await this.ansclient.getclient().get(`question:${key}`);
+    return question ? JSON.parse(question) : null;
+  }
+
+  async getQuestionsInfoFromCatch(
+    examid: string,
+    userid: string,
+    part: string
+  ) {
+    let key = `${"question:examquestion"}:${examid}:${part}:*`;
+
+    let keys = await this.ansclient.scanKeys(key);
+    const question_arr = await this.ansclient.getclient().mget(keys);
+
+    if (!question_arr) return;
+
+    type question_Formated_type = Record<string, exam_question_format_type>;
+
+    let question_Formated: question_Formated_type={}
+
+    question_arr.map((question) => {
+      if (!question) throw Error("question not forund");
+      let question_json:exam_question_format_type = JSON.parse(question);
+
+      question_Formated[question_json.number] = question_json
+    });
+    return question_Formated;
+  }
+
+  async getUserans(examid: string, userid: string) {
+    let key = `${"ans"}:${examid}:${userid}:*`;
+    let keys = await this.ansclient.scanKeys(key);
+
+    if (keys.length > 0) {
+      const values = await this.ansclient.getclient().mget(keys);
+
+      /* [ { number: { ans: null, part: 'part1' } ]*/
+
+      const ans_array = keys.map((key, index) => {
+        let keyArr = key.split(":");
+        let questionNumber = keyArr[4];
+        let part = keyArr[3];
+        let ans = values[index];
+        return {
+          [questionNumber]: { ans: ans, part: part },
+        };
+      });      
+      /*  { cm5nywh32003gbu5gbivsjwfk: { ans: null, part: 'part1' } , {} }*/
+
+      const ans = keys.reduce<Record<string, { ans: string; part: string }>>(
+        (acc, key, index) => {
+          const keyArr = key.split(":");
+          const questionNumber = keyArr[4];
+          const part = keyArr[3];
+          let answer = values[index];
+
+          if (answer === null) {
+            answer = "null";
+          }
+
+          if (questionNumber) {
+            acc[questionNumber] = { ans: answer, part: part };
+          }
+
+          return acc;
+        },
+        {}
+      );
+      // console.log("ans", ans);
+
+      return [ans, ans_array];
     }
   }
 
@@ -119,21 +258,9 @@ export class ExamAnsProcessor {
     all_parts_total_questions: number
   ) {
     try {
-      // debuglog(examid);
-      // debuglog(userid);
-      // debuglog(Score);
-      // debuglog(not_attempt);
-      // debuglog(Result);
-      // debuglog(subject_wise_result);
-      // debuglog(all_parts_total_questions);
-
-      // ok , ans inpute are veryfied
-
       // console.log("in data base save function  score is ", Score);
 
-      let examData = await this.questionprocessor
-        .getNetworkInstance()
-        .getExamDetails(examid);
+      let examData = await this.Network.getExamDetails(examid);
 
       if (!examData) throw new Error("Exam type not found");
       let examType = examData?.examtype;
@@ -142,12 +269,9 @@ export class ExamAnsProcessor {
         case "Mock":
           {
             console.log("user score adding into db . exam is -> Mock");
-            let Score = await this.questionprocessor
-              .getNetworkInstance()
-              .getUserScore(examid, userid);
+            let Score = await this.Network.getUserScore(examid, userid);
             let isScore = Score && Score.length > 0 ? true : false;
             if (isScore) {
-              // console.log("isSocre",isScore);
               console.log("user score already Stored");
               return 1;
             }
@@ -157,30 +281,20 @@ export class ExamAnsProcessor {
         case "PYQ":
           {
             console.log("user score adding into db . exam is -> PYQ");
-            let Score = await this.questionprocessor
-              .getNetworkInstance()
-              .getUserScore(examid, userid);
-
+            let Score = await this.Network.getUserScore(examid, userid);
             let isScore = Score && Score.length > 0 ? true : false;
-
             if (isScore) {
-              // console.log("isSocre",isScore);
               console.log("user score already Stored");
               return 1;
             }
           }
           break;
-        case "Exam":
+        case "Test":
           {
-            console.log("user score adding into db . exam is -> EXAM");
-
-            let Score = await this.questionprocessor
-              .getNetworkInstance()
-              .getUserScore(examid, userid);
+            console.log("user score adding into db . exam is -> TEST");
+            let Score = await this.Network.getUserScore(examid, userid);
             let isScore = Score && Score.length > 0 ? true : false;
-
             if (isScore) {
-              // console.log("isSocre",isScore);
               console.log("user score already Stored");
               return 1;
             }
@@ -189,15 +303,9 @@ export class ExamAnsProcessor {
         case "Dpp":
           {
             console.log("user score adding into db . exam is -> DPP");
-
-            let Score = await this.questionprocessor
-              .getNetworkInstance()
-              .getUserScore(examid, userid);
-
+            let Score = await this.Network.getUserScore(examid, userid);
             let isScore = Score && Score.length > 0 ? true : false;
-
             if (isScore) {
-              // console.log("isSocre",isScore);
               console.log("user score already Stored");
               return 1;
             }
@@ -206,7 +314,6 @@ export class ExamAnsProcessor {
 
         default:
           console.log("invalid or incorrect exam type");
-
           break;
       }
 
@@ -221,26 +328,32 @@ export class ExamAnsProcessor {
         time: new Date(),
       };
 
-      let res = await this.questionprocessor
-        .getNetworkInstance()
-        .setUserScore(examid, userid, userSocre);
+      let res = await this.Network.setUserScore(examid, userid, userSocre);
 
       // if (!res) {
       //   return 0;
       // }
       // add infomation to progress
-      let updatedProgress = await this.questionprocessor
-        .getNetworkInstance()
-        .setUserProgress(userid, {
-          lastExamid: examid,
-          examType: examType,
-        });
-
-      debuglog(updatedProgress)
+      let updatedProgress = await this.Network.setUserProgress(userid, {
+        lastExamid: examid,
+        examType: examType,
+      });
 
       return null;
     } catch (error) {
       console.log("error in setUserScore  function--- > ", error);
     }
+  }
+
+  async setUserAnsIntoDb(userans: any) {
+    // store user ans data in to score table
+    let isSended = await this.Network.SetUserAns(userans);
+
+    if (!isSended) {
+      // push into task queue
+      console.log("user ans pushed into task queue again");
+      return null;
+    }
+    return isSended;
   }
 }

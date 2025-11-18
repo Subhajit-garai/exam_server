@@ -15,7 +15,6 @@ model Subject {
   difficulty  Int? // e.g. 1-5 scale
 
   topics             Topic[]
-  botQuizTopic       botQuizTopic[]
   Questions          Questions[]
   SubjectSyllabusMap SubjectSyllabusMap[]
 }
@@ -80,7 +79,6 @@ model Topic {
   relatedByTopics Topic[] @relation("RelatedTopics")
   User            User?   @relation(fields: [createdBy], references: [id])
 
-  botQuizTopic botQuizTopic[]
 
   Questions        Questions[]
   TopicsSubjectMap TopicsSubjectMap[]

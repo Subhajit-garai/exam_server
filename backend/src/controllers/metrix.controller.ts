@@ -15,7 +15,7 @@ import {
   getweeklyscore,
   top_4_user_from_exam_leaderboard,
   top_10_user_from_exam_leaderboard,
-} from "@repo/packages/prisma/sql";
+} from "@repo/prisma/sql";
 
 export const test = async (req: any, res: any) => {
   try {

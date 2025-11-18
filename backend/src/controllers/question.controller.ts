@@ -1,4 +1,4 @@
-import { diffcultlevel, Prisma } from  "@repo/packages/prisma";
+import { diffcultlevel, Prisma } from  "@repo/prisma/client";
 import prisma from "@repo/db/index";
 import {
   QuestionFilterDataFetchZodSchema,
@@ -170,6 +170,10 @@ export const createQuestion = async (req: any, res: any) => {
         ans: ans,
         format: format,
         category: category,
+
+        // temp data
+        old_sub_topic:"",
+        old_topic:"",
 
         topic_id: topic_id, // change to sub_topic
         subject_id: subject_id,

@@ -1,7 +1,7 @@
 import prisma from "../../db/index";
 import { Questions_type, Task } from "../types";
 import { waitForSomeThink } from "../helper/delay";
-import { CreationTypes } from  "@repo/packages/prisma"
+import { CreationTypes } from  "@repo/prisma/client"
 import _ from "lodash";
 import { debuglog } from "../helper/debugLog";
 import { examManager } from "../manager/examManager";
@@ -16,36 +16,41 @@ export const MockSetProcessingStatus = async (
 
   switch (action) {
     case "UPDATE":
-      mockSet = await prisma.mock_questions_set.update({
+      mockSet = await prisma.exam.update({
         where: { id },
         data: {
-          status: data,
+          creationstatus: data,
         },
         select: {
-          status: true,
+          creationstatus: true,
         },
       });
 
       break;
 
     default:
-      mockSet = await prisma.mock_questions_set.findFirst({
+      mockSet = await prisma.exam.findFirst({
         where: { id },
         select: {
-          status: true,
+          creationstatus: true,
         },
       });
       break;
   }
 
-  return (mockSet && mockSet?.status) ?? null;
+  return (mockSet && mockSet?.creationstatus) ?? null;
 };
 
 export const ProcessMockSet = async (id: string, action: string) => {
   let data: Task = {
-    type: "MockSetProcessing",
+    id:id,
+    type: "CREATE_EXAM",
+    payload:{
     mockid: id,
     action: action,
+    },
+    variant:"Mock",
+    category:"JECA"
   };
    em.getredisclient().push(data);  // create a queue 
 };

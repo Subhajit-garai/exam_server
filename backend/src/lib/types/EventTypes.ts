@@ -7,9 +7,10 @@ import {
   Visibility,
   ExamStatus,
   ExamType,
-  groupType,
+  telegramgroupType,
   UserRole,
-} from  "@repo/packages/prisma"
+  botPlatform,
+} from  "@repo/prisma/client"
 
 // default event type
 
@@ -106,7 +107,8 @@ export type Create_Dpp_type = {
 export type Create_Telegram_Quiz_data_type = {
   type: "quiz" | "rapidquiz";
   bot_user_id: string; // bot id
-  chat_type: groupType;
+  platform: botPlatform
+  chat_type: telegramgroupType;
   bot_provided_user_id: number;
   bot_provided_chat_id: number;
   thread_id?: number;

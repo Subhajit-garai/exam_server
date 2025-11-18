@@ -15,10 +15,8 @@ import {
 import {
   eventRuns,
   eventType,
-  ExamStatus,
-  groupType,
   UserRole,
-} from  "@repo/packages/prisma"
+} from  "@repo/prisma/client"
 import dayjs, { Dayjs } from "dayjs";
 import { createDpp, createExam } from "./exam_create_cron";
 

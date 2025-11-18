@@ -1,4 +1,4 @@
-import { eventType } from  "@repo/packages/prisma"
+import { eventType } from "@repo/prisma/client";
 import prisma from "../../db/index";
 import { examManager } from "../manager/examManager";
 import { Create_Exam_type, events } from "../types/EventTypes";
@@ -8,7 +8,6 @@ const em = examManager.getInstance();
 
 export const createDpp = async (event: events) => {
   // clear examManger cache
-
 
   if (event.type == eventType.CREATE_DPP) {
     let new_exam_names: string[][] = [];
@@ -191,11 +190,7 @@ export const createDpp = async (event: events) => {
             User: {
               connect: { id: user?.id }, // createdby
             },
-            AnsSheet: {
-              create: {
-                ans: {},
-              },
-            },
+            
             ContestRegister: {
               create: {},
             },
@@ -204,12 +199,17 @@ export const createDpp = async (event: events) => {
 
         //   // send it into queue to process question
         let { id } = response;
-        
+
         let Notifystatus = await em.getredisclient().push({
-          type: "CreateExam",
-          examid: id,
-          userid: user?.id as string,
-          examtype: response.examtype,
+          type: "CREATE_EXAM",
+          id: id,
+          payload: {
+            examid: id,
+            userid: user?.id as string,
+            examtype: response.examtype,
+          },
+          variant: response.examtype,
+          category: "JECA",
         });
       }
     }
@@ -276,7 +276,7 @@ export const createExam = async (event: events) => {
         let isExamExaist = await prisma.exam.findMany({
           where: {
             created_by: user?.id,
-            examtype: "Exam",
+            examtype: "Test",
             date: {
               gte: day.startOf("day").toDate(), // Start of the day (00:00:00)
               lt: day.endOf("day").toDate(), // End of the day (23:59:59)
@@ -391,11 +391,6 @@ export const createExam = async (event: events) => {
             User: {
               connect: { id: user?.id }, // createdby
             },
-            AnsSheet: {
-              create: {
-                ans: {},
-              },
-            },
             ContestRegister: {
               create: {},
             },
@@ -405,10 +400,15 @@ export const createExam = async (event: events) => {
         //   // send it into queue to process question
         let { id } = response;
         let Notifystatus = await em.getredisclient().push({
-          type: "CreateExam",
-          examid: id,
-          userid: user?.id as string,
-          examtype: response.examtype,
+          type: "CREATE_EXAM",
+          id: id,
+          payload: {
+            examid: id,
+            userid: user?.id as string,
+            examtype: response.examtype,
+          },
+          category: "JECA",
+          variant: response.examtype,
         });
       }
     }

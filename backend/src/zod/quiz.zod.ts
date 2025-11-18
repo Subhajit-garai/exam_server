@@ -1,4 +1,4 @@
-import { CreationTypes, ExamStage, ExamStatus, quiz_type } from  "@repo/packages/prisma"
+import { CreationTypes, ExamStage, ExamStatus, quiz_type } from  "@repo/prisma/client"
 import z, { date } from "zod";
 
 

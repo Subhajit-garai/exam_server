@@ -1,4 +1,4 @@
-import { ExamType, Visibility } from  "@repo/packages/prisma"
+import { ExamType, Visibility } from  "@repo/prisma/client"
 import z, { date } from "zod";
 
 export const singupZodSchema = z.object({
@@ -39,6 +39,8 @@ export const ExampatternInputZodSchema = z.object({
   title: z.string(),
   format: z.enum(["Text", "Image"]),
   examname: z.string(),
+  examyear: z.string(),
+  syllabus: z.string().optional(),
   category: z.string(),
   topics: z.array(z.string()).optional(),
   difficulty: z.enum(["Easy", "Medium", "Hard"]),

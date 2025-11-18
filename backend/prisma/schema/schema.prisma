@@ -1,6 +1,7 @@
 generator client {
-  provider        = "prisma-client-js"
-  output   = "../../dist/packages/prisma"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
   previewFeatures = ["typedsql"]
 }
 
@@ -29,13 +30,15 @@ model Comment {
 }
 
 
-
-enum UserRole {
-  Admin
-  User
-  Tutor // have more privilage than normal user but less than Admin
-  Bot
+model AppConfig {
+  id         String   @id @default(cuid())
+  feature    String   @unique
+  settings   Json
+  updated_at DateTime @updatedAt
 }
+
+
+
 
 
 model EntryChargeList {
@@ -47,18 +50,6 @@ model EntryChargeList {
 }
 
 
-
-enum primeStatus {
-  None
-  Bronze
-  Silver
-  Gold
-}
-
-
-
-
-
 model ContestRegister {
   id     String   @id @unique @default(cuid())
   examId String?  @default("new_value_not_seted")
@@ -66,26 +57,15 @@ model ContestRegister {
   users  String[] @default([])
   Exam   Exam[]
 }
-model AnsSheet {
-  id     String        @id @unique @default(cuid())
-  ans    Json?
-  examId String?
-  status CreationTypes @default(Processing)
-  Exam   Exam?
-  // quiz   quiz?
-}
+
+
 enum ExamStage {
   Registration
   Started
   Ended
 }
 
-model UserAns {
-  id     String @id @unique @default(cuid())
-  ans    Json
-  examId String
-  userId String
-}
+
 
 enum diffcultlevel {
   Easy
@@ -133,12 +113,6 @@ enum examformat {
 
 
 
-model AppConfig {
-  id         String   @id @default(cuid())
-  feature    String   @unique
-  settings   Json
-  updated_at DateTime @updatedAt
-}
 
 
 

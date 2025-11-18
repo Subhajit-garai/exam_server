@@ -1,3 +1,4 @@
+import { botPlatform, telegramgroupType } from "@repo/prisma/client";
 import z, { date } from "zod";
 
 export const bot_singupZodSchema = z.object({
@@ -20,9 +21,8 @@ export const update_botwebhook_ZodSchema = z.object({
 
 export const bot_create_quiz_data_ZodSchema = z.object({
   type: z.enum(["quiz", "rapidquiz"]),
-  chat_type: z
-    .enum(["group", "private", "channel", "supergroup"])
-    .default("group"),
+  chat_type:z.nativeEnum(telegramgroupType),
+  platform:z.nativeEnum(botPlatform).default("NONE"),
   bot_provided_user_id: z.number(),
   bot_provided_chat_id: z.number(),
 });

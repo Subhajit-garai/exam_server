@@ -2,10 +2,10 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"], 
-      "@repo/db/*": ["./src/db/*"], 
-      "@repo/lib/*": ["./src/lib/*"], 
-      "@repo/packages/*": ["./dist/packages/*"]  // here prisma is js file not ts so ts compiler should  not add into dist so we generated packages in dist directly
+      "@/*": ["./src/*"],
+      "@repo/db/*": ["./src/db/*"],
+      "@repo/lib/*": ["./src/lib/*"],
+      "@repo/prisma/*": ["./prisma/generated/prisma/*"] // here prisma is js file not ts so ts compiler should  not add into dist so we generated packages in dist directly
     },
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
@@ -22,6 +22,9 @@
 
     /* Type Checking */
     "strict": true /* Enable all strict type-checking options. */,
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */
+    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
+    "allowJs": true,
+    "resolveJsonModule": true
   },
+  "include": ["src/**/*", "prisma/**/*"]
 }

@@ -41,12 +41,9 @@ model quiz_question_map {
   id         String   @id @unique @default(cuid())
   number     Int      @default(0)
   questionid String
-  options    String[] @default([])
-  ans        String[] @default([])
-  suffleKey  String?
-  isSuffled  Boolean  @default(false)
   quizid     String?
   quiz       quiz?    @relation(fields: [quizid], references: [id])
+  question       Questions?    @relation(fields: [questionid], references: [id])
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt

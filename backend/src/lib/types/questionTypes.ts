@@ -1,26 +1,29 @@
-import { examformat } from  "@repo/packages/prisma"
+import { examformat } from "@repo/prisma/client";
 import { JsonValue } from "@prisma/client/runtime/library";
 
 export type exam_question_format_type = {
-  id: string;
   number: number;
-  options: string[];
-  ans: string[];
-  title: string;
-  extra: JsonValue;
-  formate: examformat;
   part: string;
-  topic_id: string;
-  is_multiple_ans: boolean;
-  isSuffled: boolean;
+  question: {
+    id: string;
+    title: string;
+    options: string[];
+    map: number[];
+    extra: JsonValue;
+    format: string;
+    is_multiple_ans: boolean;
+  } | null;
 };
 
-type exam_question_map_format = {
+export type exam_question_format_for_ui_type = {
   number: number;
-  questionid: string;
   part: string;
-  options: string[];
-  ans: string[];
-  examid: string;
-  isSuffled: boolean;
+  question: {
+    questionid: string;
+    title: string;
+    options: string[];
+    extra: JsonValue;
+    format: string;
+    is_multiple_ans: boolean;
+  };
 };

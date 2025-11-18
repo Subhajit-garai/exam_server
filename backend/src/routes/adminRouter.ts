@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { isAdmin } from "@repo/lib/security/auth";
-import { addbotToken, createNewBot, setQuizTopic, updateBotWebhook } from "../controllers/bot.controller";
 import { updateAppConfig ,SendAppConfig } from "../controllers/settings.controller";
+import { addbotToken, createNewBot, setQuizTopic, updateBotWebhook } from "@/controllers/bot/bot.admin.controller";
 
 
 export const adminRouter = Router();

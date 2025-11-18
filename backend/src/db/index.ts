@@ -1,5 +1,5 @@
 // import { PrismaClient as PgClient } from "../src/generated/prisma/client";
-import { PrismaClient as PgClient } from "@repo/packages/prisma";
+import { PrismaClient as PgClient ,Prisma } from "@repo/prisma/client";
 // import { PrismaClient as TsClient } from "@prisma/timescale-client";
 
 
@@ -28,5 +28,5 @@ if (process.env.NODE_ENV !== 'production') {
   // globalThis.tsprisma = tsprisma
 }
 
-
+export {Prisma}
 export default prisma

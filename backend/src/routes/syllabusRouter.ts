@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { isAdmin } from "@repo/lib/security/auth";
-import { CreateSyllabus, fetchAllsyllabus, getSyllabusByid ,addSubject, formatedSyllabus, removeSubject, addTopic, removeTopic} from "@/controllers/syllabus.controller";
+import { CreateSyllabus, fetchAllsyllabus, getSyllabusByid ,addSubject, formatedSyllabus, removeSubject, addTopic, removeTopic, fetchAllsyllabus_id, fetchAllsyllabusExamYearid} from "@/controllers/syllabus.controller";
 
 
 
@@ -11,6 +11,8 @@ export const syllabusRouter = Router();
 syllabusRouter.get("/get/formated",formatedSyllabus)
 
 syllabusRouter.get("/get/all" , isAdmin , fetchAllsyllabus);
+syllabusRouter.get("/get/id" , isAdmin , fetchAllsyllabus_id);
+syllabusRouter.get("/get/examyearid" , isAdmin , fetchAllsyllabusExamYearid);
 syllabusRouter.get("/name/get/all" , isAdmin , fetchAllsyllabus);
 
 syllabusRouter.post("/admin/create" , isAdmin , CreateSyllabus);

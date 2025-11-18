@@ -1,11 +1,12 @@
 import { exam_question_map_format, Task } from "./types/types";
 import axios from "axios";
 import { Network } from "../utils/network";
+import { debuglog } from "../utils/debugLog";
 export type SelectQuestionNumber_type = Record<string, number>;
 export type SelectQuestion_type = Record<string, string[]>;
 
 interface QuestionsId {
-  topic: string;
+  old_topic: string;
   ids: string[];
 }
 // export type QuestionsIDS_type = QuestionsId[];
@@ -14,11 +15,11 @@ export type QuestionsIDS_type = {
   multipleAns: QuestionsId[];
 };
 
-export class ExamQuestionProcessor {
+export class examQuestionManger {
   Questions: QuestionsIDS_type;
   refreshtime: number;
   count: number = 0;
-  private static instance: ExamQuestionProcessor;
+  private static instance: examQuestionManger;
   private Network: Network;
 
   private constructor(refreshtime: number) {
@@ -32,16 +33,14 @@ export class ExamQuestionProcessor {
     this.refreshQuestionsIdList();
   }
 
-  public static getInstance(refreshtime: number) {
+  public static getInstance(refreshtime?: number) {
     if (!this.instance) {
-      this.instance = new ExamQuestionProcessor(refreshtime);
+      this.instance = new examQuestionManger(refreshtime ?? 5);
     }
     return this.instance;
   }
 
-  public getNetworkInstance() {
-    return  this.Network
-  }
+ 
 
   private refreshQuestionsIdList() {
     setInterval(async () => {
@@ -75,6 +74,7 @@ export class ExamQuestionProcessor {
       console.log(error);
     }
   }
+
 
   dreawArandomNumber = (remainingQuestion: number, range: number): number => {
     this.count++;
@@ -195,14 +195,9 @@ export class ExamQuestionProcessor {
     is_multiple_ans: any
   ): Promise<SelectQuestion_type | null> => {
     try {
-      // console.log('is_multiple_ans' , is_multiple_ans);  ok  1,0
-
       subject = subject.map((sub: string) => sub.toUpperCase());
-      let questionset = this.selecteQuestionsNumber(totalQusestions, subject); //questionset  { OS: 2, DBMS: 2, UNIX: 1 }
 
-      // console.log("questionset", questionset);
-      // console.log("subject", subject);
-      // console.log("is_multiple_ans", is_multiple_ans);
+      let questionset = this.selecteQuestionsNumber(totalQusestions, subject); //questionset  { OS: 2, DBMS: 2, UNIX: 1 }
 
       this.count = 0; //debug  how many loop it takes to get the result
       let selectedElements: SelectQuestion_type = {};
@@ -247,11 +242,13 @@ export class ExamQuestionProcessor {
             Object.keys(questionset).length <= Questions.length ||
             Object.keys(questionset).length <= singleAns_Questions.length
           ) {
+
+            // here topic changed into old_topic , in new archi tecture we saprate subjcet , topic tables for note
             Questions.forEach((topic) => {
               singleAns_Questions.forEach((singleTopic) => {
-                if (topic.topic == singleTopic.topic) {
+                if (topic.old_topic == singleTopic.old_topic) {
                   Object.keys(questionset).map((selectedTopic) => {
-                    if (topic.topic == selectedTopic) {
+                    if (topic.old_topic == selectedTopic) {
                       let normalShuffled = [...singleTopic.ids].sort(
                         () => Math.random() - 0.5
                       ); // Shuffle elements
@@ -271,8 +268,8 @@ export class ExamQuestionProcessor {
                         () => Math.random() - 0.5
                       ); // merge ans shuffle normal and multiple
 
-                      selectedElements[topic.topic] = [
-                        ...shuffled.slice(0, questionset[topic.topic]),
+                      selectedElements[topic.old_topic] = [
+                        ...shuffled.slice(0, questionset[topic.old_topic]),
                       ];
                     }
                   });
@@ -287,15 +284,19 @@ export class ExamQuestionProcessor {
         }
       } else {
         let Questions = this.Questions.normal; // normal ans  questions
+
         if (Object.keys(questionset).length <= Questions.length) {
           Questions.forEach((topic) => {
+            debuglog(topic.old_topic);
+
             Object.keys(questionset).map((selectedTopic) => {
-              if (topic.topic == selectedTopic) {
+              if (topic.old_topic == selectedTopic) {
                 let shuffled = [...topic.ids].sort(() => Math.random() - 0.5); // Shuffle elements
                 shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
                 shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
-                selectedElements[topic.topic] = [
-                  ...shuffled.slice(0, questionset[topic.topic]),
+
+                selectedElements[topic.old_topic] = [
+                  ...shuffled.slice(0, questionset[topic.old_topic]),
                 ];
               }
             });
@@ -313,7 +314,6 @@ export class ExamQuestionProcessor {
     }
   };
 
-
   async AddQuestionsIntoExam(examid: string, questions: any) {
     let formated_questions: exam_question_map_format[] = [];
 
@@ -323,10 +323,7 @@ export class ExamQuestionProcessor {
           number: idx + 1,
           questionid: questionid,
           part: part,
-          options: [],
-          ans: [],
           examid: examid,
-          isSuffled: false,
         };
 
         formated_questions.push(temp);
@@ -334,14 +331,6 @@ export class ExamQuestionProcessor {
     });
 
     let res = await this.Network.AddQuestions(examid, formated_questions);
-
-    console.log("res -- > ", res);
-    
-
-    return  res ? res : false
+    return res ? res : false;
   }
-
-
-
-
 }

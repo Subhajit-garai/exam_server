@@ -1,6 +1,7 @@
 import axios from "axios";
 import dotenv from "dotenv";
 import { debuglog } from "./debugLog";
+import { botPlatform } from "../lib/types/types";
 dotenv.config();
 
 export type CreationTypes =
@@ -47,7 +48,7 @@ export class Network {
     isOnlyMessage: boolean = false
   ) {
     try {
-      if (!this.botauthtoken) {        
+      if (!this.botauthtoken) {
         await this.login();
       }
 
@@ -63,8 +64,8 @@ export class Network {
           : responce.data;
       }
       return null;
-    } catch (error: any) {      
-      console.log(error?.response?.data?.message);
+    } catch (error: any) {
+      console.log("Error info --->" ,error?.response?.data?.message);
       return null;
     }
   }
@@ -102,6 +103,7 @@ export class Network {
       let header = {
         Authorization: this.botauthtoken,
       };
+
       let request = await axios.get(url, { headers: header });
       console.log("response", request.status);
     } catch (error) {}
@@ -140,6 +142,7 @@ export class Network {
           if (request?.data?.success) {
             console.log("Setting bot token....");
             this.botauthtoken = request?.data?.data;
+
             this.islogin = true;
             console.log("Bot token set successfully");
             return true;
@@ -172,6 +175,15 @@ export class Network {
     }
   }
 
+  async examQuestionAddedStatusChange(examid: string) {
+    try {
+      let url = this.getUrl(`/exam/questions/add/status/${examid}`);
+      return this.getRequest(url, false, true);
+    } catch (error) {
+      throw new Error("Error from AddQuestions / Network ");
+    }
+  }
+
   async getExamQuestionsAns(examid: string) {
     try {
       let url = this.getUrl(`/questions/ans/get/${examid}`);
@@ -191,7 +203,7 @@ export class Network {
   async getQuestions_byIds(ids: string[]) {
     try {
       let url = this.getUrl(`/questions/get/byids`);
-      return  this.postRequest(url,ids, true);
+      return this.postRequest(url, ids, true);
     } catch (error) {
       throw new Error("Error from getQuestions / Network ");
     }
@@ -225,6 +237,14 @@ export class Network {
   async getExamDetails(examid: string) {
     try {
       let url = this.getUrl(`/exam/details/get/${examid}`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getExamDetails / Network ");
+    }
+  }
+  async requestToupdateExamCreationStatus(examid: string) {
+    try {
+      let url = this.getUrl(`/exam/update/creation/status/${examid}`);
       return this.getRequest(url, true);
     } catch (error) {
       throw new Error("Error from getExamDetails / Network ");
@@ -271,9 +291,9 @@ export class Network {
       throw new Error("Error from getUserAns / Network ");
     }
   }
-  async SetUserAns(examid: string, userid: string, userAns: any) {
+  async SetUserAns( userAns: any) {
     try {
-      let url = this.getUrl(`/user/ans/set?examid=${examid}&userid=${userid}`);
+      let url = this.getUrl(`/user/ans/set`);
       return this.postRequest(url, userAns, false, true);
     } catch (error) {
       throw new Error("Error from SetUserAns / Network ");
@@ -310,6 +330,50 @@ export class Network {
     }
   }
 
+  async getSyllabusDataForExamCreattion(syllabusid: string) {
+    try {
+      let url = this.getUrl(`/syllabus/exam/get?syllabusid=${syllabusid}`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getSyllabusDataForExamCreattion / Network ");
+    }
+  }
+
+  async getQuizConfigData(
+    chatid: number,
+    platform: botPlatform,
+    userid: number
+  ) {
+    try {
+      let url = this.getUrl(
+        `/get/quiz/config?chatid=${chatid}&userid=${userid}&platform=${platform}`
+      );
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getSyllabusDataForExamCreattion / Network ");
+    }
+  }
+
+  // telegram group
+
+  async telegramgroupinfo(chat_id: number) {
+    try {
+      let url = this.getUrl(`/group/info?chatid=${chat_id}`);
+      return await this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from telegramgroupinfo / Network ");
+    }
+  }
+  async telegramGroupTopicInfo(groupId: number, name: string) {
+    try {
+      let url = this.getUrl(
+        `/group/topic/info/get?groupId=${groupId}&name=${name}`
+      );
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from telegramgroupinfo / Network ");
+    }
+  }
   //
 }
 

@@ -43,7 +43,7 @@ let PROCESS_Ans: Task = {
 const main = async () => {
   try {
     let redisClient = RedisProvider.getInstance();
-    // await redisClient.push(CREATE_SCORE);
+    // await redisClient.push(CREATE_SCORE); // added testing
 
     while (true) {
       let data = await redisClient.pop();

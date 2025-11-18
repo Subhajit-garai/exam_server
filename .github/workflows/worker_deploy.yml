@@ -15,7 +15,7 @@ jobs:
   build-worker:
     runs-on: ubuntu-latest
     outputs:
-      imagetag: ${{ steps.meta.outputs.tag-names }}
+      imagetag: ${{ steps.image_tag.outputs.imagetag }}
     steps:
       - uses: actions/checkout@v5
 
@@ -45,6 +45,18 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Deploy worker (first tag only)
+        id: image_tag
+        run: |
+          # Get first tag from metadata (split by newline)
+          FIRST_TAG=$(echo "${{ steps.meta.outputs.tag-names }}" | head -n1)
+          if [ -z "$FIRST_TAG" ]; then
+            echo "No tag found, exiting."
+            exit 1
+          fi
+          echo "Deploying tag: $FIRST_TAG"
+          echo "imagetag=$FIRST_TAG" >> $GITHUB_OUTPUT
 
   deploy-worker:
     needs: 

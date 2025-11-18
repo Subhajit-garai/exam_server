@@ -80,6 +80,9 @@ jobs:
             sudo docker --signal=SIGTERM stop worker || true
             sudo docker rm worker || true
 
-            sudo docker run -d --name worker $IMAGE
+            sudo docker run -d \
+            --name worker \
+            --env-file /home/ubuntu/deploy/.worker.env
+            \$IMAGE
 
             sudo docker system prune -f

@@ -73,15 +73,18 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/v1/bulk", DataManageRouter); // bulk insert
 
-// inportent , it is veryfy and access survece
 
-app.post("/api/v1/payment/paymentverification", paymentVerification);
 
 app.get("/health", (req, res) => {
-  res.json({ message: "i'm healthy now after you ask" });
+  res.json({ message: "i'm healthy now,after you ask" });
 });
+
+app.use("/api/v1/bulk", DataManageRouter); // bulk insert
+// inportent , it is veryfy and access survece
+app.post("/api/v1/payment/paymentverification", paymentVerification);
+
+
 
 app.use("/api/v1/user", CommonuserRoutes);
 app.use("/api/v1/bot", botRouter);

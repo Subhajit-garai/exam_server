@@ -81,7 +81,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: BACKEND_IMAGE,DOCKER_NETWORK
+          envs: BACKEND_IMAGE
           script: |
             # Pull new image as green
             echo "$BACKEND_IMAGE:${{ needs.build-backend.outputs.imagetag }}"
@@ -104,8 +104,8 @@ jobs:
 
             sudo docker run -d \
               --name $TARGET \
-              --env-file /home/ubuntu/deploy/.backend.env
-              --network $DOCKER_NETWORK \
+              --env-file /home/ubuntu/deploy/.backend.env \
+              --network ${{ secrets.DOCKER_NETWORK}} \
               -p $PORT:3000 \
               $BACKEND_IMAGE:${{ needs.build-backend.outputs.imagetag }}
 

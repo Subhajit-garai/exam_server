@@ -82,7 +82,7 @@ jobs:
 
             sudo docker run -d \
             --name worker \
-            --env-file /home/ubuntu/deploy/.worker.env
-            \$IMAGE
+            --env-file /home/ubuntu/deploy/.worker.env \
+            $IMAGE
 
             sudo docker system prune -f

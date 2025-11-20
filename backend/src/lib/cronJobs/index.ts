@@ -158,9 +158,9 @@ pgClient.connect().then(async () => {
 
 
 
-//end
-// it converts the time string to cron format like "0 2 * * *" for 2:00 am
 
+
+// implements it in oops 
 
 export type scheduledJob_type = {
   [key: string]: CronJob;

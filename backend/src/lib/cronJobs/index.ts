@@ -30,6 +30,7 @@ import { MockSetProcessingStatus, ProcessMockSet } from "./Mockset.processing";
 import { isFeatureAvailable } from "src/controllers/tier.controller";
 import { webhook_type } from "../types/botTypes";
 import axios from "axios";
+import { timeToCron } from "./cronHelper";
 
 const pgClient = new Client({ connectionString: process.env.DATABASE_URL });
 
@@ -158,17 +159,8 @@ pgClient.connect().then(async () => {
 
 
 //end
-
 // it converts the time string to cron format like "0 2 * * *" for 2:00 am
-function timeToCron(timeStr: string): string {
-  const time = dayjs(timeStr, ["h:mm a"]);
 
-  // console.log("time is ", time.format("H:mm a"));
-
-  const hour = time.format("H");
-  const minute = time.format("m");
-  return `${minute} ${hour} * * *`;
-}
 
 export type scheduledJob_type = {
   [key: string]: CronJob;
@@ -244,7 +236,6 @@ function scheduleJob(event: events) {
           break;
         default:
           console.log("Unknown event type, no action taken.");
-        // Add SEND_MESSAGE logic if needed
       }
     },
     null,
@@ -261,7 +252,6 @@ function scheduleJob(event: events) {
 
 async function sendMessageWithtelegram(event: events) {
   if (event.type == "SEND_MESSAGE") {
-    // console.log(console.log(event?.data?.message));
   }
 }
 
@@ -367,7 +357,7 @@ const parseEvent = async (event: any) => {
   return parsedEvent;
 };
 
-// loadAndScheduleAllEvents(); // Load and schedule all events on startup
+loadAndScheduleAllEvents(); // Load and schedule all events on startup
 
 
 

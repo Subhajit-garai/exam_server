@@ -18,7 +18,7 @@ export class TaskFactory {
       case "SEND_QUIZ_DATA":
         return new QuizProcessingTask(task);
       default:
-        throw new Error(`Unknown task type: ${task.type}`);
+        throw new Error(`unknown task type: ${task.type}`);
     }
   }
 }

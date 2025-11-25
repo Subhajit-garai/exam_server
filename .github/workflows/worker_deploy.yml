@@ -74,10 +74,8 @@ jobs:
           script: |
           
             IMAGE=${WORKER_IMAGE}:${{ needs.build-worker.outputs.imagetag }}
-
             sudo docker pull $IMAGE
-
-            sudo docker --signal=SIGTERM stop worker || true
+            sudo docker stop worker || true
             sudo docker rm worker || true
 
             sudo docker run -d \

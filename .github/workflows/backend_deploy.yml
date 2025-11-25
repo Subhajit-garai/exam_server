@@ -106,6 +106,7 @@ jobs:
               --name $TARGET \
               --env-file /home/ubuntu/deploy/.backend.env \
               --network ${{ secrets.DOCKER_NETWORK}} \
+              --network-alias backend \
               -p $PORT:3000 \
               $BACKEND_IMAGE:${{ needs.build-backend.outputs.imagetag }}
 

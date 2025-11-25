@@ -1,13 +1,9 @@
 import prisma from "@repo/db/index";
-import {  ExamType,
-  botPlatform,
-} from "@repo/prisma/client";
+import { ExamType } from "@repo/prisma/client";
 import {
   banuser_notification_zod_type,
-  bot_create_quiz_data_ZodSchema,
   unbanuser_notification_zod_type,
 } from "../zod/bot.zod";
-import { QuizeSetupFunction } from "@repo/lib/helper/TelegramQuiz";
 import { asyncHandler } from "@repo/lib/helper/asyncHandler";
 
 export const test = asyncHandler(async (req: any, res: any) => {
@@ -35,24 +31,26 @@ export const examQuestionAddedCompletionStatusCheck = asyncHandler(
     if (!exam_data) throw Error("exam data not found for status checking ");
 
     if (exam_data.creationstatus == "Done") {
-      throw Error("exam's status already checked  ");
+      throw Error("exam's status already checked");
     } else {
-      exam_data.exam_pattern.total_questions.map(async (num, idx) => {
-        let count = await prisma.question_map.count({
-          where: {
-            examid: examid,
-            part: `part${idx + 1}`,
-          },
-        });
+      await Promise.all(
+        exam_data.exam_pattern.total_questions.map(async (num, idx) => {
+          let count = await prisma.question_map.count({
+            where: {
+              examid: examid,
+              part: `part${idx + 1}`,
+            },
+          });
 
-        if (count !== num) {
-          throw Error(
-            `exam's(${examid}) part${
-              idx + 1
-            }  question count not match with question number   `
-          );
-        }
-      });
+          if (count !== num) {
+            throw Error(
+              `exam's(${examid}) part${
+                idx + 1
+              }  question count not match with question number`
+            );
+          }
+        })
+      );
     }
 
     let exam = await prisma.exam.update({
@@ -85,8 +83,6 @@ export const getSyllabusDataForExamCreattion = asyncHandler(
 
     if (!syllabusid) throw Error("syllabus id not recived ....");
 
-    
-
     let syllabus_data = await prisma.syllabus.findFirst({
       where: {
         id: syllabusid,
@@ -106,11 +102,9 @@ export const getSyllabusDataForExamCreattion = asyncHandler(
 
     if (!syllabus_data) throw Error("syllabus data not found ....");
 
-    let syllabus = syllabus_data.SubjectSyllabusMap.map((item) => {      
+    let syllabus = syllabus_data.SubjectSyllabusMap.map((item) => {
       return item.subject.shortName;
     });
-
-
 
     return res.json({ success: true, message: "message", data: syllabus });
   }
@@ -143,7 +137,6 @@ export const getQuestionViaIds = asyncHandler(async (req: any, res: any) => {
     data: question_data,
   });
 });
-
 
 export const setUserProgress = asyncHandler(async (req: any, res: any) => {
   let { userid } = req.query;
@@ -356,7 +349,3 @@ export const processNotification = async (req: any, res: any) => {
     console.log("Error in metrix --->", error);
   }
 };
-
-
-
-

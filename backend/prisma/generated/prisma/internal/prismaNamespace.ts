@@ -3821,7 +3821,7 @@ export const EventsScalarFieldEnum = {
   id: 'id',
   type: 'type',
   description: 'description',
-  data: 'data',
+  payload: 'payload',
   conditions: 'conditions',
   isActive: 'isActive',
   created_by: 'created_by',
@@ -4032,9 +4032,9 @@ export type SubcriptionOffersScalarFieldEnum = (typeof SubcriptionOffersScalarFi
 export const OrderScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  order_id: 'order_id',
-  type: 'type',
+  razorpay_order_id: 'razorpay_order_id',
   amount: 'amount',
+  type: 'type',
   token: 'token',
   subcription: 'subcription',
   status: 'status',
@@ -4862,6 +4862,20 @@ export type ListEnumpurchaseTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'primeStatus'
+ */
+export type EnumprimeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'primeStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'primeStatus[]'
+ */
+export type ListEnumprimeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'primeStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'quiz_type'
  */
 export type Enumquiz_typeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'quiz_type'>
@@ -4914,20 +4928,6 @@ export type Enumban_statusFieldRefInput<$PrismaModel> = FieldRefInputType<$Prism
  * Reference to a field of type 'ban_status[]'
  */
 export type ListEnumban_statusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ban_status[]'>
-    
-
-
-/**
- * Reference to a field of type 'primeStatus'
- */
-export type EnumprimeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'primeStatus'>
-    
-
-
-/**
- * Reference to a field of type 'primeStatus[]'
- */
-export type ListEnumprimeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'primeStatus[]'>
     
 
 /**

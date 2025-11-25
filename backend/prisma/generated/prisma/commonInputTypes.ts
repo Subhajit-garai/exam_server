@@ -694,6 +694,23 @@ export type EnumpurchaseTypeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumpurchaseTypeFilter<$PrismaModel>
 }
 
+export type EnumprimeStatusNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.primeStatus | Prisma.EnumprimeStatusFieldRefInput<$PrismaModel> | null
+  in?: $Enums.primeStatus[] | Prisma.ListEnumprimeStatusFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.primeStatus[] | Prisma.ListEnumprimeStatusFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumprimeStatusNullableFilter<$PrismaModel> | $Enums.primeStatus | null
+}
+
+export type EnumprimeStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.primeStatus | Prisma.EnumprimeStatusFieldRefInput<$PrismaModel> | null
+  in?: $Enums.primeStatus[] | Prisma.ListEnumprimeStatusFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.primeStatus[] | Prisma.ListEnumprimeStatusFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumprimeStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.primeStatus | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumprimeStatusNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumprimeStatusNullableFilter<$PrismaModel>
+}
+
 export type Enumquiz_typeFilter<$PrismaModel = never> = {
   equals?: $Enums.quiz_type | Prisma.Enumquiz_typeFieldRefInput<$PrismaModel>
   in?: $Enums.quiz_type[] | Prisma.ListEnumquiz_typeFieldRefInput<$PrismaModel>
@@ -1394,6 +1411,23 @@ export type NestedEnumpurchaseTypeWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumpurchaseTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumpurchaseTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumprimeStatusNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.primeStatus | Prisma.EnumprimeStatusFieldRefInput<$PrismaModel> | null
+  in?: $Enums.primeStatus[] | Prisma.ListEnumprimeStatusFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.primeStatus[] | Prisma.ListEnumprimeStatusFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumprimeStatusNullableFilter<$PrismaModel> | $Enums.primeStatus | null
+}
+
+export type NestedEnumprimeStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.primeStatus | Prisma.EnumprimeStatusFieldRefInput<$PrismaModel> | null
+  in?: $Enums.primeStatus[] | Prisma.ListEnumprimeStatusFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.primeStatus[] | Prisma.ListEnumprimeStatusFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumprimeStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.primeStatus | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumprimeStatusNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumprimeStatusNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumquiz_typeFilter<$PrismaModel = never> = {

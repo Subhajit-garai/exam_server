@@ -1,14 +1,8 @@
 import {
-  ExamStatus,
-  ExamType,
-  syllabusType,
   Visibility,
 } from "@repo/prisma/client";
 import prisma from "@repo/db/index";
-import {
-  ExamCreateInputeSchema,
-  ExampatternInputZodSchema,
-} from "../zod/user.zod";
+
 import { examManager } from "@repo/lib/manager/examManager";
 import { ExamMetaData } from "@repo/lib/types";
 import { SubmitedQuestionAnsZodSchema } from "../zod/question.zod";
@@ -20,13 +14,9 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import { getServiceCharge, TokenDeduction } from "@repo/lib/helper/payment";
 import { asyncHandler } from "@repo/lib/helper/asyncHandler";
 import {
-  create_targated_exam_year_zodSchemea,
-  create_targated_exam_zodSchemea,
   updare_targated_exam_year_zodSchemea,
 } from "../zod/exam.zod";
 import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker";
-import { debuglog } from "util";
-import { ConvertInSlug } from "@/lib/slug";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);

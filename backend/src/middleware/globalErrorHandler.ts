@@ -10,7 +10,6 @@ export class CustomError extends Error {
   }
 }
 
-// ✅ Correct type
 export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   console.error("Global error:", err);
 

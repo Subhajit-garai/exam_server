@@ -1,6 +1,4 @@
-import { Task } from "@/lib/types/types";
 import { BaseWorkerTask } from "./base-task";
-import { examAnsManager } from "@/lib/ExamAnsProcessor";
 import { Network } from "@/utils/network";
 import {
   examQuestionManger,
@@ -37,9 +35,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
         case "supergroup":
           {
             console.log("supergroup chat");
-
             let groupData = await newtWorkClient.telegramgroupinfo(chatid);
-
             if (!groupData) {
               throw new Error(
                 `No group data found or it may be banned",${chatid}`

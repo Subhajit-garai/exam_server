@@ -50,7 +50,7 @@ export type EventsCountAggregateOutputType = {
   id: number
   type: number
   description: number
-  data: number
+  payload: number
   conditions: number
   isActive: number
   created_by: number
@@ -87,7 +87,7 @@ export type EventsCountAggregateInputType = {
   id?: true
   type?: true
   description?: true
-  data?: true
+  payload?: true
   conditions?: true
   isActive?: true
   created_by?: true
@@ -173,8 +173,8 @@ export type EventsGroupByOutputType = {
   id: string
   type: $Enums.eventType
   description: string
-  data: runtime.JsonValue
-  conditions: runtime.JsonValue
+  payload: runtime.JsonValue
+  conditions: runtime.JsonValue | null
   isActive: boolean
   created_by: $Enums.UserRole
   created_at: Date
@@ -207,8 +207,8 @@ export type eventsWhereInput = {
   id?: Prisma.StringFilter<"events"> | string
   type?: Prisma.EnumeventTypeFilter<"events"> | $Enums.eventType
   description?: Prisma.StringFilter<"events"> | string
-  data?: Prisma.JsonFilter<"events">
-  conditions?: Prisma.JsonFilter<"events">
+  payload?: Prisma.JsonFilter<"events">
+  conditions?: Prisma.JsonNullableFilter<"events">
   isActive?: Prisma.BoolFilter<"events"> | boolean
   created_by?: Prisma.EnumUserRoleFilter<"events"> | $Enums.UserRole
   created_at?: Prisma.DateTimeFilter<"events"> | Date | string
@@ -220,8 +220,8 @@ export type eventsOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   type?: Prisma.SortOrder
   description?: Prisma.SortOrder
-  data?: Prisma.SortOrder
-  conditions?: Prisma.SortOrder
+  payload?: Prisma.SortOrder
+  conditions?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   created_by?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
@@ -236,8 +236,8 @@ export type eventsWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.eventsWhereInput | Prisma.eventsWhereInput[]
   type?: Prisma.EnumeventTypeFilter<"events"> | $Enums.eventType
   description?: Prisma.StringFilter<"events"> | string
-  data?: Prisma.JsonFilter<"events">
-  conditions?: Prisma.JsonFilter<"events">
+  payload?: Prisma.JsonFilter<"events">
+  conditions?: Prisma.JsonNullableFilter<"events">
   isActive?: Prisma.BoolFilter<"events"> | boolean
   created_by?: Prisma.EnumUserRoleFilter<"events"> | $Enums.UserRole
   created_at?: Prisma.DateTimeFilter<"events"> | Date | string
@@ -249,8 +249,8 @@ export type eventsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   type?: Prisma.SortOrder
   description?: Prisma.SortOrder
-  data?: Prisma.SortOrder
-  conditions?: Prisma.SortOrder
+  payload?: Prisma.SortOrder
+  conditions?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   created_by?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
@@ -268,8 +268,8 @@ export type eventsScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"events"> | string
   type?: Prisma.EnumeventTypeWithAggregatesFilter<"events"> | $Enums.eventType
   description?: Prisma.StringWithAggregatesFilter<"events"> | string
-  data?: Prisma.JsonWithAggregatesFilter<"events">
-  conditions?: Prisma.JsonWithAggregatesFilter<"events">
+  payload?: Prisma.JsonWithAggregatesFilter<"events">
+  conditions?: Prisma.JsonNullableWithAggregatesFilter<"events">
   isActive?: Prisma.BoolWithAggregatesFilter<"events"> | boolean
   created_by?: Prisma.EnumUserRoleWithAggregatesFilter<"events"> | $Enums.UserRole
   created_at?: Prisma.DateTimeWithAggregatesFilter<"events"> | Date | string
@@ -281,8 +281,8 @@ export type eventsCreateInput = {
   id?: string
   type: $Enums.eventType
   description: string
-  data: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  conditions: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  payload: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  conditions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
   created_by?: $Enums.UserRole
   created_at?: Date | string
@@ -294,8 +294,8 @@ export type eventsUncheckedCreateInput = {
   id?: string
   type: $Enums.eventType
   description: string
-  data: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  conditions: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  payload: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  conditions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
   created_by?: $Enums.UserRole
   created_at?: Date | string
@@ -307,8 +307,8 @@ export type eventsUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumeventTypeFieldUpdateOperationsInput | $Enums.eventType
   description?: Prisma.StringFieldUpdateOperationsInput | string
-  data?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  conditions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  conditions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_by?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -320,8 +320,8 @@ export type eventsUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumeventTypeFieldUpdateOperationsInput | $Enums.eventType
   description?: Prisma.StringFieldUpdateOperationsInput | string
-  data?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  conditions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  conditions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_by?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -333,8 +333,8 @@ export type eventsCreateManyInput = {
   id?: string
   type: $Enums.eventType
   description: string
-  data: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  conditions: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  payload: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  conditions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: boolean
   created_by?: $Enums.UserRole
   created_at?: Date | string
@@ -346,8 +346,8 @@ export type eventsUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumeventTypeFieldUpdateOperationsInput | $Enums.eventType
   description?: Prisma.StringFieldUpdateOperationsInput | string
-  data?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  conditions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  conditions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_by?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -359,8 +359,8 @@ export type eventsUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumeventTypeFieldUpdateOperationsInput | $Enums.eventType
   description?: Prisma.StringFieldUpdateOperationsInput | string
-  data?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  conditions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  payload?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  conditions?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_by?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -372,7 +372,7 @@ export type eventsCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   type?: Prisma.SortOrder
   description?: Prisma.SortOrder
-  data?: Prisma.SortOrder
+  payload?: Prisma.SortOrder
   conditions?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   created_by?: Prisma.SortOrder
@@ -421,7 +421,7 @@ export type eventsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   id?: boolean
   type?: boolean
   description?: boolean
-  data?: boolean
+  payload?: boolean
   conditions?: boolean
   isActive?: boolean
   created_by?: boolean
@@ -434,7 +434,7 @@ export type eventsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   type?: boolean
   description?: boolean
-  data?: boolean
+  payload?: boolean
   conditions?: boolean
   isActive?: boolean
   created_by?: boolean
@@ -447,7 +447,7 @@ export type eventsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   type?: boolean
   description?: boolean
-  data?: boolean
+  payload?: boolean
   conditions?: boolean
   isActive?: boolean
   created_by?: boolean
@@ -460,7 +460,7 @@ export type eventsSelectScalar = {
   id?: boolean
   type?: boolean
   description?: boolean
-  data?: boolean
+  payload?: boolean
   conditions?: boolean
   isActive?: boolean
   created_by?: boolean
@@ -469,7 +469,7 @@ export type eventsSelectScalar = {
   run_at?: boolean
 }
 
-export type eventsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "description" | "data" | "conditions" | "isActive" | "created_by" | "created_at" | "runs" | "run_at", ExtArgs["result"]["events"]>
+export type eventsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "type" | "description" | "payload" | "conditions" | "isActive" | "created_by" | "created_at" | "runs" | "run_at", ExtArgs["result"]["events"]>
 
 export type $eventsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "events"
@@ -478,8 +478,8 @@ export type $eventsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     id: string
     type: $Enums.eventType
     description: string
-    data: runtime.JsonValue
-    conditions: runtime.JsonValue
+    payload: runtime.JsonValue
+    conditions: runtime.JsonValue | null
     isActive: boolean
     created_by: $Enums.UserRole
     created_at: Date
@@ -911,7 +911,7 @@ export interface eventsFieldRefs {
   readonly id: Prisma.FieldRef<"events", 'String'>
   readonly type: Prisma.FieldRef<"events", 'eventType'>
   readonly description: Prisma.FieldRef<"events", 'String'>
-  readonly data: Prisma.FieldRef<"events", 'Json'>
+  readonly payload: Prisma.FieldRef<"events", 'Json'>
   readonly conditions: Prisma.FieldRef<"events", 'Json'>
   readonly isActive: Prisma.FieldRef<"events", 'Boolean'>
   readonly created_by: Prisma.FieldRef<"events", 'UserRole'>

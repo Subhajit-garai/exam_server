@@ -2,8 +2,8 @@ model events {
   id          String    @id @unique @default(cuid())
   type        eventType
   description String
-  data        Json
-  conditions  Json
+  payload     Json
+  conditions  Json?
   isActive    Boolean   @default(true)
   created_by  UserRole  @default(Bot)
   created_at  DateTime  @default(now())
@@ -14,7 +14,6 @@ model events {
   @@index([runs]) // Index for scheduling queries
   @@index([run_at]) // Index for scheduling queries
 }
-
 
 enum eventType {
   RUN_NEW_QUIZ

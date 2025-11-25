@@ -7,15 +7,27 @@ import { runWorker } from "./tasks/worker-runner";
 
 let CREATE_EXAM_TASK: Task = {
   type: "CREATE_EXAM",
-  id: "cmhlqarx40000buywta8zdm2z",
+  id: "cmiebk9nz005gbuz45k4km3oi",
   payload: {
-    examid: "cmhlqarx40000buywta8zdm2z",
-    userid: "cmhlkoklm0005bubkzmbxyks7",
+    examid: "cmiebk9nz005gbuz45k4km3oi",
+    userid: "cmicprsee000abue43mtu3dwg",
     examtype: "Test",
   },
   variant: "Test",
   category: "JECA",
 };
+
+// let RUN_QUIZ: Task = {
+//   type: "",
+//   id: "cmhuo1jia0002buh43og57hek",
+//   payload: {
+//     cburl: "https://7e5afa2c0330.ngrok-free.app/survertask",
+//     userid: 1192445803,
+//     chatid: -1002314879281,
+//     platfrom: "TELEGRAM",
+//     chat_type: "supergroup",
+//   },
+// };
 
 let CREATE_SCORE: Task = {
   type: "CREATE_SCORE",
@@ -25,7 +37,6 @@ let CREATE_SCORE: Task = {
     userid: "cmhsr86zy0005buro0pgdp9lf",
   },
 };
-
 
 let PROCESS_Ans: Task = {
   type: "ANS_PROCESSING",
@@ -43,8 +54,7 @@ let PROCESS_Ans: Task = {
 const main = async () => {
   try {
     let redisClient = RedisProvider.getInstance();
-    // await redisClient.push(CREATE_SCORE); // added testing
-
+    // await redisClient.push(CREATE_EXAM_TASK); // added testing
     while (true) {
       let data = await redisClient.pop();
       if (!data) {

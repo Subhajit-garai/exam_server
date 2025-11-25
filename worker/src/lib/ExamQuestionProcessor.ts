@@ -2,6 +2,7 @@ import { exam_question_map_format, Task } from "./types/types";
 import axios from "axios";
 import { Network } from "../utils/network";
 import { debuglog } from "../utils/debugLog";
+import { logger } from "@/utils/logger";
 export type SelectQuestionNumber_type = Record<string, number>;
 export type SelectQuestion_type = Record<string, string[]>;
 
@@ -40,18 +41,28 @@ export class examQuestionManger {
     return this.instance;
   }
 
- 
-
   private refreshQuestionsIdList() {
     setInterval(async () => {
-      // console.log("Refreshing question list...");
+      logger.info("Refreshing question list...");
       await this.updateQuestionIds();
     }, this.refreshtime * 1000 * 60 * 60);
   }
 
   private async updateQuestionIds() {
     try {
+      logger.info("Updating questions ids...");
+
       let responce = await this.Network.getQuestionsIds();
+
+      logger.info("request send");
+
+      if (responce) {
+        logger.success("Question ids info recived ");
+      } else {
+        logger.error("Question ids info recived ");
+        console.log(responce);
+      }
+
       let { topicNormalAnsQuestions, topicMultiplaAnsQuestions } = responce;
 
       let NormalAnsQuestions: QuestionsId[] = topicNormalAnsQuestions;
@@ -75,7 +86,6 @@ export class examQuestionManger {
     }
   }
 
-
   dreawArandomNumber = (remainingQuestion: number, range: number): number => {
     this.count++;
     if (Number.isNaN(remainingQuestion) || Number.isNaN(range)) return 0;
@@ -98,6 +108,8 @@ export class examQuestionManger {
     totalQusestions: number,
     subject: string[]
   ): SelectQuestionNumber_type => {
+    logger.info("Selecting Questions Number");
+
     let takenQuestion: SelectQuestionNumber_type = {};
     let totaltakenQuestion: number = 0;
     let remainingQuestion: number = totalQusestions;
@@ -165,11 +177,7 @@ export class examQuestionManger {
                   takenQuestion[`${sub}`] + number > mandatory
                 ) {
                   if (counter) --counter;
-                  // console.log("counter ," , counter);
-                  // console.log("skip.....");
-                  // console.log("++++++> avg", avg);
                   if (!counter) {
-                    // console.log("change avg",avg/2);
                     avg = Math.floor(avg / 2 + avg / 4);
                   }
                   return;
@@ -195,6 +203,7 @@ export class examQuestionManger {
     is_multiple_ans: any
   ): Promise<SelectQuestion_type | null> => {
     try {
+      logger.info("Selecting Questions");
       subject = subject.map((sub: string) => sub.toUpperCase());
 
       let questionset = this.selecteQuestionsNumber(totalQusestions, subject); //questionset  { OS: 2, DBMS: 2, UNIX: 1 }
@@ -215,7 +224,6 @@ export class examQuestionManger {
           } else {
             count--;
             if (!count) {
-              console.log("run");
               if (
                 this.Questions.normal.length > 0 ||
                 this.Questions.multipleAns.length > 0
@@ -234,15 +242,12 @@ export class examQuestionManger {
 
       if (is_multiple_ans) {
         let Questions = this.Questions.multipleAns; // multiple ans  questions
-
         let singleAns_Questions = this.Questions.normal; // normal ans  questions for varience
-
         if (Object.keys(questionset).length <= singleAns_Questions.length) {
           if (
             Object.keys(questionset).length <= Questions.length ||
             Object.keys(questionset).length <= singleAns_Questions.length
           ) {
-
             // here topic changed into old_topic , in new archi tecture we saprate subjcet , topic tables for note
             Questions.forEach((topic) => {
               singleAns_Questions.forEach((singleTopic) => {
@@ -258,8 +263,22 @@ export class examQuestionManger {
                       normalShuffled = [...normalShuffled].sort(
                         () => Math.random() - 0.5
                       ); // Shuffle elements
-                      selectedNormal = [...normalShuffled.slice(0, 5)];
 
+                      let select_normal_question_number: number = 5;
+
+                      while (
+                        select_normal_question_number + topic.ids.length <
+                        questionset[topic.old_topic]
+                      ) {
+                        select_normal_question_number +=5;
+                      }
+
+                      selectedNormal = [
+                        ...normalShuffled.slice(
+                          0,
+                          select_normal_question_number
+                        ),
+                      ];                      
                       let shuffled = [...topic.ids].sort(
                         () => Math.random() - 0.5
                       ); // Shuffle elements
@@ -287,8 +306,6 @@ export class examQuestionManger {
 
         if (Object.keys(questionset).length <= Questions.length) {
           Questions.forEach((topic) => {
-            debuglog(topic.old_topic);
-
             Object.keys(questionset).map((selectedTopic) => {
               if (topic.old_topic == selectedTopic) {
                 let shuffled = [...topic.ids].sort(() => Math.random() - 0.5); // Shuffle elements

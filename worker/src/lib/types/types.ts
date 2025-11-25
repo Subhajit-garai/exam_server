@@ -51,9 +51,19 @@ export type ExamVariant = "Test" | "Contest" | "Mock" | "PYQ" | "Subject" | "Dpp
 export type TaskType =
   | "CREATE_EXAM"
   | "CREATE_SCORE"
-  | "ANS_PROCESSING";
+  | "ANS_PROCESSING"
+  | "SEND_QUIZ_DATA"
+  | "SEND_NOFTIFICATION";
 
 export interface Task {
+  id: string;
+  type: TaskType;
+  payload: Record<string, any>;
+  category?: ExamCategory;
+  variant?: ExamVariant;
+  retries?: number;
+}
+export interface EventTask {
   id: string;
   type: TaskType;
   payload: Record<string, any>;
@@ -104,49 +114,3 @@ export type exam_pattern = {
   neg_values: number[];
   is_multiple_ans: number[];
 } | null;
-
-
-
-// export type Task =
-//   | {
-//       type: "CreateExam";
-//       subType:"JECA";
-//       examid: string;
-//       userid: string;
-//       examtype: ExamType;
-//     }
-//   | {
-//       type: "MockSetProcessing";
-//       mockid: string;
-//       action: string;
-//       // status: string;
-//     }
-//   | {
-//       type: "CreateScore";
-//       examid: string;
-//       userid: string;
-//     }
-//   | {
-//       type: "Notify";
-//       // id:string,
-//       status: boolean;
-//       data: object;
-//       message: string;
-//     }
-//   | {
-//       type: "AnsProcessing";
-//       examid: string;
-//       userid: string;
-//       part: string;
-//       ans: string[];
-//       number: string;
-//       ismultiple: boolean;
-//     }
-//   | {
-//       type: "createQuiz";
-//       cburl: string;
-//       platform: botPlatform;
-//       chatid: number;
-//       userid: number;
-//       chat_type:telegramgroupType
-//     };

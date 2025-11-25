@@ -98,9 +98,19 @@ export const IssueType = {
 export type IssueType = (typeof IssueType)[keyof typeof IssueType]
 
 
+export const OfferPlan = {
+  BASIC: 'BASIC',
+  STANDARD: 'STANDARD',
+  PREMIUM: 'PREMIUM',
+  PLATINUM: 'PLATINUM'
+} as const
+
+export type OfferPlan = (typeof OfferPlan)[keyof typeof OfferPlan]
+
+
 export const purchaseType = {
-  subcription: 'subcription',
-  token: 'token'
+  SUBSCRIPTION: 'SUBSCRIPTION',
+  TOKEN: 'TOKEN'
 } as const
 
 export type purchaseType = (typeof purchaseType)[keyof typeof purchaseType]

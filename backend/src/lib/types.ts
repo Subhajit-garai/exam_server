@@ -27,7 +27,8 @@ export type ExamCategory = "JECA" | "GATE";
 export type TaskType =
   | "CREATE_EXAM"
   | "CREATE_SCORE"
-  | "ANS_PROCESSING";
+  | "ANS_PROCESSING"
+  | "SEND_QUIZ_DATA";
 
 export interface Task {
   id: string;

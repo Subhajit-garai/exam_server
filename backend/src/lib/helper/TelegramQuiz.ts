@@ -16,8 +16,8 @@ export const QuizeSetupFunction = async (
   data: BotCreateQuizData
 ) => {
   let {
-    bot_provided_user_id,
-    bot_provided_chat_id,
+    user_id,
+    chat_id,
     type = "quiz",
     platform,
     chat_type,
@@ -26,7 +26,7 @@ export const QuizeSetupFunction = async (
   let bot_webhook = await prisma.botInfo.findFirst({
     where: {
       botuser_id: bot_user,
-    },
+  },
   });
   if (!bot_webhook) {
     console.log("No bot webhook found");
@@ -36,12 +36,12 @@ export const QuizeSetupFunction = async (
   let cbUrl = `${webhook.baseurl}${webhook.endpoint.survertask}`;
 
   let Notifystatus = await em.getredisclient().push({
-    type: "CREATE_EXAM",
-    id: String(bot_provided_chat_id),
+    type: "SEND_QUIZ_DATA",
+    id: String(chat_id),
     payload: {
       cburl: cbUrl,
-      userid: bot_provided_user_id,
-      chatid: bot_provided_chat_id,
+      userid: user_id,
+      chatid: chat_id,
       platfrom: platform,
       chat_type: chat_type,
     },

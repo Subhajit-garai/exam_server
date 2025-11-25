@@ -5,13 +5,13 @@ import prisma from "@repo/db/index";
 
 
 
-export const getQuestionsIds = asyncHandler(async (req: any, res: any) => {
+export const getQuestionsIds = asyncHandler(async (req: any, res: any) => {  
   // here topic is chage to an other table so  old_topic now represrnt topic
+
   let topicNormalAnsQuestions =
     await prisma.$queryRaw`SELECT old_topic, ARRAY_AGG(id) AS ids FROM "Questions"  WHERE is_multiple_ans = false AND status = 'Done' GROUP BY old_topic; `;
   let topicMultiplaAnsQuestions =
-    await prisma.$queryRaw`SELECT old_topic, ARRAY_AGG(id) AS ids FROM "Questions"  WHERE is_multiple_ans = true AND status = 'Done' GROUP BY old_topic; `;
-
+    await prisma.$queryRaw`SELECT old_topic, ARRAY_AGG(id) AS ids FROM "Questions"  WHERE is_multiple_ans = true AND status = 'Done' GROUP BY old_topic; `;    
   res.json({
     success: true,
     message: "message",

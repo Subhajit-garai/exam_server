@@ -20,6 +20,9 @@ model subcriptionOffers {
   tier        Tier?       @relation(fields: [tierId], references: [id])
 }
 
-
-
-
+enum OfferPlan {
+  BASIC
+  STANDARD
+  PREMIUM
+  PLATINUM
+}

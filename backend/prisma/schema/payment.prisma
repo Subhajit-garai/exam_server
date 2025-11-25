@@ -1,20 +1,20 @@
 enum purchaseType {
-  subcription
-  token
+  SUBSCRIPTION
+  TOKEN
 }
+
 
 model Order {
   id          String       @id @default(cuid())
   userId      String // Link to your user model
-  order_id    String       @unique // if it is payment then it store rezorpay_order_id
-  type        purchaseType @default(token)
+  razorpay_order_id    String       @unique // if it is payment then it store rezorpay_order_id
   amount      Int
+  type        purchaseType @default(TOKEN)
   token       Int?         @default(0)
-  subcription String?      @default("")
-  status      String       @default("pending") // Track order status
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
+  subcription primeStatus?  @default(None)
+  status    String   @default("pending") // Track order status
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   User User @relation(fields: [userId], references: [id])
 }
 

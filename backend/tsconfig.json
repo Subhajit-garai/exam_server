@@ -26,5 +26,5 @@
     "allowJs": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*", "prisma/**/*"]
+  "include": ["src/**/*", "prisma/**/*", "prisma/seed.ts"],
 }

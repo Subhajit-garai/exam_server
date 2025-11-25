@@ -2,6 +2,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 import { debuglog } from "./debugLog";
 import { botPlatform } from "../lib/types/types";
+import { logger } from "./logger";
 dotenv.config();
 
 export type CreationTypes =
@@ -65,7 +66,7 @@ export class Network {
       }
       return null;
     } catch (error: any) {
-      console.log("Error info --->" ,error?.response?.data?.message);
+      logger.error(error?.response?.data?.message)
       return null;
     }
   }
@@ -93,7 +94,7 @@ export class Network {
       }
       return null;
     } catch (error: any) {
-      console.log(error?.response?.data?.message);
+      logger.error(error?.response?.data?.message)
       return null;
     }
   }
@@ -126,9 +127,6 @@ export class Network {
       try {
         console.log("login porcess started .... ", `Attempt ${attempt}`);
         let url = this.getUrl(`/login`);
-
-        console.log("login url  ", url);
-
         let logindata = {
           email: this.username,
           password: this.password,
@@ -228,7 +226,7 @@ export class Network {
   }
   async getQuestionsIds() {
     try {
-      let url = this.getUrl(`/questions/ids`);
+      let url = this.getUrl(`/questions/ids`);      
       return this.getRequest(url, true);
     } catch (error) {
       throw new Error("Error from getQuestionsIds / Network ");

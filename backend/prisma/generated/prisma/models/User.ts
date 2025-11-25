@@ -274,6 +274,7 @@ export type UserWhereInput = {
   botQuizConfig?: Prisma.BotQuizConfigListRelationFilter
   CouponUsages?: Prisma.CouponUsageListRelationFilter
   Coupon?: Prisma.CouponListRelationFilter
+  botInfo?: Prisma.BotInfoListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -308,6 +309,7 @@ export type UserOrderByWithRelationInput = {
   botQuizConfig?: Prisma.botQuizConfigOrderByRelationAggregateInput
   CouponUsages?: Prisma.CouponUsageOrderByRelationAggregateInput
   Coupon?: Prisma.CouponOrderByRelationAggregateInput
+  botInfo?: Prisma.botInfoOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -345,6 +347,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   botQuizConfig?: Prisma.BotQuizConfigListRelationFilter
   CouponUsages?: Prisma.CouponUsageListRelationFilter
   Coupon?: Prisma.CouponListRelationFilter
+  botInfo?: Prisma.BotInfoListRelationFilter
 }, "id" | "id" | "email" | "telegramid" | "verificationid" | "progressid">
 
 export type UserOrderByWithAggregationInput = {
@@ -419,6 +422,7 @@ export type UserCreateInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -451,6 +455,7 @@ export type UserUncheckedCreateInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -483,6 +488,7 @@ export type UserUpdateInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -515,6 +521,7 @@ export type UserUncheckedUpdateInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -643,6 +650,20 @@ export type UserUpdateOneRequiredWithoutBotQuizConfigNestedInput = {
   upsert?: Prisma.UserUpsertWithoutBotQuizConfigInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutBotQuizConfigInput, Prisma.UserUpdateWithoutBotQuizConfigInput>, Prisma.UserUncheckedUpdateWithoutBotQuizConfigInput>
+}
+
+export type UserCreateNestedOneWithoutBotInfoInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutBotInfoInput, Prisma.UserUncheckedCreateWithoutBotInfoInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutBotInfoInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutBotInfoNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutBotInfoInput, Prisma.UserUncheckedCreateWithoutBotInfoInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutBotInfoInput
+  upsert?: Prisma.UserUpsertWithoutBotInfoInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutBotInfoInput, Prisma.UserUpdateWithoutBotInfoInput>, Prisma.UserUncheckedUpdateWithoutBotInfoInput>
 }
 
 export type UserCreateNestedOneWithoutCouponInput = {
@@ -935,6 +956,7 @@ export type UserCreateWithoutBotQuizConfigInput = {
   Topic?: Prisma.TopicCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutBotQuizConfigInput = {
@@ -966,6 +988,7 @@ export type UserUncheckedCreateWithoutBotQuizConfigInput = {
   Topic?: Prisma.TopicUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutBotQuizConfigInput = {
@@ -1013,6 +1036,7 @@ export type UserUpdateWithoutBotQuizConfigInput = {
   Topic?: Prisma.TopicUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutBotQuizConfigInput = {
@@ -1042,6 +1066,151 @@ export type UserUncheckedUpdateWithoutBotQuizConfigInput = {
   prime?: Prisma.primeUncheckedUpdateOneWithoutUserNestedInput
   Comment?: Prisma.CommentUncheckedUpdateManyWithoutAuthorNestedInput
   Topic?: Prisma.TopicUncheckedUpdateManyWithoutUserNestedInput
+  CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
+  Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutBotInfoInput = {
+  id?: string
+  name: string
+  email: string
+  contactno?: string | null
+  password: string
+  progressid?: string | null
+  role?: $Enums.UserRole
+  join_at?: Date | string
+  forgotpasswordToken?: string | null
+  resetTokenExpires?: Date | string
+  accesstoken?: Prisma.UserCreateaccesstokenInput | string[]
+  isOnline?: boolean
+  lastSeen?: Date | string
+  Exam?: Prisma.ExamCreateNestedManyWithoutUserInput
+  Exam_pattern?: Prisma.Exam_patternCreateNestedManyWithoutUserInput
+  Questions?: Prisma.QuestionsCreateNestedManyWithoutUserInput
+  telegram?: Prisma.telegramCreateNestedOneWithoutUserInput
+  verification?: Prisma.verificationCreateNestedOneWithoutUserInput
+  blance?: Prisma.blanceCreateNestedOneWithoutUserInput
+  Order?: Prisma.OrderCreateNestedManyWithoutUserInput
+  payment?: Prisma.paymentCreateNestedManyWithoutUserInput
+  leaderboard?: Prisma.leaderboardCreateNestedManyWithoutUserInput
+  quiz?: Prisma.quizCreateNestedManyWithoutUserInput
+  prime?: Prisma.primeCreateNestedOneWithoutUserInput
+  Comment?: Prisma.CommentCreateNestedManyWithoutAuthorInput
+  Topic?: Prisma.TopicCreateNestedManyWithoutUserInput
+  botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
+  CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
+  Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+}
+
+export type UserUncheckedCreateWithoutBotInfoInput = {
+  id?: string
+  name: string
+  email: string
+  contactno?: string | null
+  password: string
+  telegramid?: string | null
+  verificationid?: string | null
+  progressid?: string | null
+  role?: $Enums.UserRole
+  join_at?: Date | string
+  forgotpasswordToken?: string | null
+  resetTokenExpires?: Date | string
+  accesstoken?: Prisma.UserCreateaccesstokenInput | string[]
+  isOnline?: boolean
+  lastSeen?: Date | string
+  Exam?: Prisma.ExamUncheckedCreateNestedManyWithoutUserInput
+  Exam_pattern?: Prisma.Exam_patternUncheckedCreateNestedManyWithoutUserInput
+  Questions?: Prisma.QuestionsUncheckedCreateNestedManyWithoutUserInput
+  blance?: Prisma.blanceUncheckedCreateNestedOneWithoutUserInput
+  Order?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+  payment?: Prisma.paymentUncheckedCreateNestedManyWithoutUserInput
+  leaderboard?: Prisma.leaderboardUncheckedCreateNestedManyWithoutUserInput
+  quiz?: Prisma.quizUncheckedCreateNestedManyWithoutUserInput
+  prime?: Prisma.primeUncheckedCreateNestedOneWithoutUserInput
+  Comment?: Prisma.CommentUncheckedCreateNestedManyWithoutAuthorInput
+  Topic?: Prisma.TopicUncheckedCreateNestedManyWithoutUserInput
+  botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
+  CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
+  Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+}
+
+export type UserCreateOrConnectWithoutBotInfoInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutBotInfoInput, Prisma.UserUncheckedCreateWithoutBotInfoInput>
+}
+
+export type UserUpsertWithoutBotInfoInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutBotInfoInput, Prisma.UserUncheckedUpdateWithoutBotInfoInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutBotInfoInput, Prisma.UserUncheckedCreateWithoutBotInfoInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutBotInfoInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutBotInfoInput, Prisma.UserUncheckedUpdateWithoutBotInfoInput>
+}
+
+export type UserUpdateWithoutBotInfoInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  contactno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  progressid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  join_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  forgotpasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetTokenExpires?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accesstoken?: Prisma.UserUpdateaccesstokenInput | string[]
+  isOnline?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSeen?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  Exam?: Prisma.ExamUpdateManyWithoutUserNestedInput
+  Exam_pattern?: Prisma.Exam_patternUpdateManyWithoutUserNestedInput
+  Questions?: Prisma.QuestionsUpdateManyWithoutUserNestedInput
+  telegram?: Prisma.telegramUpdateOneWithoutUserNestedInput
+  verification?: Prisma.verificationUpdateOneWithoutUserNestedInput
+  blance?: Prisma.blanceUpdateOneWithoutUserNestedInput
+  Order?: Prisma.OrderUpdateManyWithoutUserNestedInput
+  payment?: Prisma.paymentUpdateManyWithoutUserNestedInput
+  leaderboard?: Prisma.leaderboardUpdateManyWithoutUserNestedInput
+  quiz?: Prisma.quizUpdateManyWithoutUserNestedInput
+  prime?: Prisma.primeUpdateOneWithoutUserNestedInput
+  Comment?: Prisma.CommentUpdateManyWithoutAuthorNestedInput
+  Topic?: Prisma.TopicUpdateManyWithoutUserNestedInput
+  botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
+  CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
+  Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutBotInfoInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  contactno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  telegramid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verificationid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  progressid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  join_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  forgotpasswordToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetTokenExpires?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accesstoken?: Prisma.UserUpdateaccesstokenInput | string[]
+  isOnline?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSeen?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  Exam?: Prisma.ExamUncheckedUpdateManyWithoutUserNestedInput
+  Exam_pattern?: Prisma.Exam_patternUncheckedUpdateManyWithoutUserNestedInput
+  Questions?: Prisma.QuestionsUncheckedUpdateManyWithoutUserNestedInput
+  blance?: Prisma.blanceUncheckedUpdateOneWithoutUserNestedInput
+  Order?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+  payment?: Prisma.paymentUncheckedUpdateManyWithoutUserNestedInput
+  leaderboard?: Prisma.leaderboardUncheckedUpdateManyWithoutUserNestedInput
+  quiz?: Prisma.quizUncheckedUpdateManyWithoutUserNestedInput
+  prime?: Prisma.primeUncheckedUpdateOneWithoutUserNestedInput
+  Comment?: Prisma.CommentUncheckedUpdateManyWithoutAuthorNestedInput
+  Topic?: Prisma.TopicUncheckedUpdateManyWithoutUserNestedInput
+  botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
 }
@@ -1075,6 +1244,7 @@ export type UserCreateWithoutCouponInput = {
   Topic?: Prisma.TopicCreateNestedManyWithoutUserInput
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCouponInput = {
@@ -1106,6 +1276,7 @@ export type UserUncheckedCreateWithoutCouponInput = {
   Topic?: Prisma.TopicUncheckedCreateNestedManyWithoutUserInput
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCouponInput = {
@@ -1153,6 +1324,7 @@ export type UserUpdateWithoutCouponInput = {
   Topic?: Prisma.TopicUpdateManyWithoutUserNestedInput
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCouponInput = {
@@ -1184,6 +1356,7 @@ export type UserUncheckedUpdateWithoutCouponInput = {
   Topic?: Prisma.TopicUncheckedUpdateManyWithoutUserNestedInput
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCouponUsagesInput = {
@@ -1215,6 +1388,7 @@ export type UserCreateWithoutCouponUsagesInput = {
   Topic?: Prisma.TopicCreateNestedManyWithoutUserInput
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCouponUsagesInput = {
@@ -1246,6 +1420,7 @@ export type UserUncheckedCreateWithoutCouponUsagesInput = {
   Topic?: Prisma.TopicUncheckedCreateNestedManyWithoutUserInput
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCouponUsagesInput = {
@@ -1293,6 +1468,7 @@ export type UserUpdateWithoutCouponUsagesInput = {
   Topic?: Prisma.TopicUpdateManyWithoutUserNestedInput
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCouponUsagesInput = {
@@ -1324,6 +1500,7 @@ export type UserUncheckedUpdateWithoutCouponUsagesInput = {
   Topic?: Prisma.TopicUncheckedUpdateManyWithoutUserNestedInput
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutExam_patternInput = {
@@ -1355,6 +1532,7 @@ export type UserCreateWithoutExam_patternInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutExam_patternInput = {
@@ -1386,6 +1564,7 @@ export type UserUncheckedCreateWithoutExam_patternInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutExam_patternInput = {
@@ -1433,6 +1612,7 @@ export type UserUpdateWithoutExam_patternInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutExam_patternInput = {
@@ -1464,6 +1644,7 @@ export type UserUncheckedUpdateWithoutExam_patternInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutExamInput = {
@@ -1495,6 +1676,7 @@ export type UserCreateWithoutExamInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutExamInput = {
@@ -1526,6 +1708,7 @@ export type UserUncheckedCreateWithoutExamInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutExamInput = {
@@ -1573,6 +1756,7 @@ export type UserUpdateWithoutExamInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutExamInput = {
@@ -1604,6 +1788,7 @@ export type UserUncheckedUpdateWithoutExamInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTopicInput = {
@@ -1635,6 +1820,7 @@ export type UserCreateWithoutTopicInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTopicInput = {
@@ -1666,6 +1852,7 @@ export type UserUncheckedCreateWithoutTopicInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTopicInput = {
@@ -1713,6 +1900,7 @@ export type UserUpdateWithoutTopicInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTopicInput = {
@@ -1744,6 +1932,7 @@ export type UserUncheckedUpdateWithoutTopicInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOrderInput = {
@@ -1775,6 +1964,7 @@ export type UserCreateWithoutOrderInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOrderInput = {
@@ -1806,6 +1996,7 @@ export type UserUncheckedCreateWithoutOrderInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOrderInput = {
@@ -1853,6 +2044,7 @@ export type UserUpdateWithoutOrderInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrderInput = {
@@ -1884,6 +2076,7 @@ export type UserUncheckedUpdateWithoutOrderInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutPaymentInput = {
@@ -1915,6 +2108,7 @@ export type UserCreateWithoutPaymentInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPaymentInput = {
@@ -1946,6 +2140,7 @@ export type UserUncheckedCreateWithoutPaymentInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPaymentInput = {
@@ -1993,6 +2188,7 @@ export type UserUpdateWithoutPaymentInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPaymentInput = {
@@ -2024,6 +2220,7 @@ export type UserUncheckedUpdateWithoutPaymentInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutQuestionsInput = {
@@ -2055,6 +2252,7 @@ export type UserCreateWithoutQuestionsInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutQuestionsInput = {
@@ -2086,6 +2284,7 @@ export type UserUncheckedCreateWithoutQuestionsInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutQuestionsInput = {
@@ -2133,6 +2332,7 @@ export type UserUpdateWithoutQuestionsInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutQuestionsInput = {
@@ -2164,6 +2364,7 @@ export type UserUncheckedUpdateWithoutQuestionsInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutQuizInput = {
@@ -2195,6 +2396,7 @@ export type UserCreateWithoutQuizInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutQuizInput = {
@@ -2226,6 +2428,7 @@ export type UserUncheckedCreateWithoutQuizInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutQuizInput = {
@@ -2273,6 +2476,7 @@ export type UserUpdateWithoutQuizInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutQuizInput = {
@@ -2304,6 +2508,7 @@ export type UserUncheckedUpdateWithoutQuizInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCommentInput = {
@@ -2335,6 +2540,7 @@ export type UserCreateWithoutCommentInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCommentInput = {
@@ -2366,6 +2572,7 @@ export type UserUncheckedCreateWithoutCommentInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCommentInput = {
@@ -2413,6 +2620,7 @@ export type UserUpdateWithoutCommentInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCommentInput = {
@@ -2444,6 +2652,7 @@ export type UserUncheckedUpdateWithoutCommentInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutLeaderboardInput = {
@@ -2475,6 +2684,7 @@ export type UserCreateWithoutLeaderboardInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutLeaderboardInput = {
@@ -2506,6 +2716,7 @@ export type UserUncheckedCreateWithoutLeaderboardInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutLeaderboardInput = {
@@ -2553,6 +2764,7 @@ export type UserUpdateWithoutLeaderboardInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLeaderboardInput = {
@@ -2584,6 +2796,7 @@ export type UserUncheckedUpdateWithoutLeaderboardInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTelegramInput = {
@@ -2615,6 +2828,7 @@ export type UserCreateWithoutTelegramInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTelegramInput = {
@@ -2646,6 +2860,7 @@ export type UserUncheckedCreateWithoutTelegramInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTelegramInput = {
@@ -2693,6 +2908,7 @@ export type UserUpdateWithoutTelegramInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTelegramInput = {
@@ -2724,6 +2940,7 @@ export type UserUncheckedUpdateWithoutTelegramInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutPrimeInput = {
@@ -2755,6 +2972,7 @@ export type UserCreateWithoutPrimeInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPrimeInput = {
@@ -2786,6 +3004,7 @@ export type UserUncheckedCreateWithoutPrimeInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPrimeInput = {
@@ -2833,6 +3052,7 @@ export type UserUpdateWithoutPrimeInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPrimeInput = {
@@ -2864,6 +3084,7 @@ export type UserUncheckedUpdateWithoutPrimeInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutVerificationInput = {
@@ -2895,6 +3116,7 @@ export type UserCreateWithoutVerificationInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutVerificationInput = {
@@ -2926,6 +3148,7 @@ export type UserUncheckedCreateWithoutVerificationInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutVerificationInput = {
@@ -2973,6 +3196,7 @@ export type UserUpdateWithoutVerificationInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVerificationInput = {
@@ -3004,6 +3228,7 @@ export type UserUncheckedUpdateWithoutVerificationInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutBlanceInput = {
@@ -3035,6 +3260,7 @@ export type UserCreateWithoutBlanceInput = {
   botQuizConfig?: Prisma.botQuizConfigCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutBlanceInput = {
@@ -3066,6 +3292,7 @@ export type UserUncheckedCreateWithoutBlanceInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedCreateNestedManyWithoutUserInput
   CouponUsages?: Prisma.CouponUsageUncheckedCreateNestedManyWithoutUserInput
   Coupon?: Prisma.CouponUncheckedCreateNestedManyWithoutCreatedUserInput
+  botInfo?: Prisma.botInfoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutBlanceInput = {
@@ -3113,6 +3340,7 @@ export type UserUpdateWithoutBlanceInput = {
   botQuizConfig?: Prisma.botQuizConfigUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutBlanceInput = {
@@ -3144,6 +3372,7 @@ export type UserUncheckedUpdateWithoutBlanceInput = {
   botQuizConfig?: Prisma.botQuizConfigUncheckedUpdateManyWithoutUserNestedInput
   CouponUsages?: Prisma.CouponUsageUncheckedUpdateManyWithoutUserNestedInput
   Coupon?: Prisma.CouponUncheckedUpdateManyWithoutCreatedUserNestedInput
+  botInfo?: Prisma.botInfoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -3164,6 +3393,7 @@ export type UserCountOutputType = {
   botQuizConfig: number
   CouponUsages: number
   Coupon: number
+  botInfo: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3179,6 +3409,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   botQuizConfig?: boolean | UserCountOutputTypeCountBotQuizConfigArgs
   CouponUsages?: boolean | UserCountOutputTypeCountCouponUsagesArgs
   Coupon?: boolean | UserCountOutputTypeCountCouponArgs
+  botInfo?: boolean | UserCountOutputTypeCountBotInfoArgs
 }
 
 /**
@@ -3275,6 +3506,13 @@ export type UserCountOutputTypeCountCouponArgs<ExtArgs extends runtime.Types.Ext
   where?: Prisma.CouponWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountBotInfoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.botInfoWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3308,6 +3546,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   botQuizConfig?: boolean | Prisma.User$botQuizConfigArgs<ExtArgs>
   CouponUsages?: boolean | Prisma.User$CouponUsagesArgs<ExtArgs>
   Coupon?: boolean | Prisma.User$CouponArgs<ExtArgs>
+  botInfo?: boolean | Prisma.User$botInfoArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -3387,6 +3626,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   botQuizConfig?: boolean | Prisma.User$botQuizConfigArgs<ExtArgs>
   CouponUsages?: boolean | Prisma.User$CouponUsagesArgs<ExtArgs>
   Coupon?: boolean | Prisma.User$CouponArgs<ExtArgs>
+  botInfo?: boolean | Prisma.User$botInfoArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3417,6 +3657,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     botQuizConfig: Prisma.$botQuizConfigPayload<ExtArgs>[]
     CouponUsages: Prisma.$CouponUsagePayload<ExtArgs>[]
     Coupon: Prisma.$CouponPayload<ExtArgs>[]
+    botInfo: Prisma.$botInfoPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3844,6 +4085,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   botQuizConfig<T extends Prisma.User$botQuizConfigArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$botQuizConfigArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$botQuizConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   CouponUsages<T extends Prisma.User$CouponUsagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$CouponUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CouponUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Coupon<T extends Prisma.User$CouponArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$CouponArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CouponPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  botInfo<T extends Prisma.User$botInfoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$botInfoArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$botInfoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4645,6 +4887,30 @@ export type User$CouponArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   distinct?: Prisma.CouponScalarFieldEnum | Prisma.CouponScalarFieldEnum[]
+}
+
+/**
+ * User.botInfo
+ */
+export type User$botInfoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the botInfo
+   */
+  select?: Prisma.botInfoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the botInfo
+   */
+  omit?: Prisma.botInfoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoInclude<ExtArgs> | null
+  where?: Prisma.botInfoWhereInput
+  orderBy?: Prisma.botInfoOrderByWithRelationInput | Prisma.botInfoOrderByWithRelationInput[]
+  cursor?: Prisma.botInfoWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BotInfoScalarFieldEnum | Prisma.BotInfoScalarFieldEnum[]
 }
 
 /**

@@ -15,7 +15,6 @@ export const create_targated_exam_year_zodSchemea = z.object({
   status: z.nativeEnum(ExamStatus).default("SCHEDULED"),
   isPublic: z.boolean().default(false),
   isDeleted: z.boolean().default(false),
-
   slug: z.string().optional(),
   registrationOpenDate: z.coerce.date().optional(),
   registrationCloseDate: z.coerce.date().optional(), // coerce -->  conver number and string in to date

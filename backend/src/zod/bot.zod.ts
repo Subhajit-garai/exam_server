@@ -20,11 +20,11 @@ export const update_botwebhook_ZodSchema = z.object({
 });
 
 export const bot_create_quiz_data_ZodSchema = z.object({
-  type: z.enum(["quiz", "rapidquiz"]),
+  type: z.enum(["quiz"]),
   chat_type:z.nativeEnum(telegramgroupType),
   platform:z.nativeEnum(botPlatform).default("NONE"),
-  bot_provided_user_id: z.number(),
-  bot_provided_chat_id: z.number(),
+  user_id: z.number(),
+  chat_id: z.number(),
 });
 
 export const unbanuser_notification_zod_type = z.object({

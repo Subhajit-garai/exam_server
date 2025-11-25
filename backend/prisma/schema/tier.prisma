@@ -4,7 +4,6 @@ model Tier {
   benefits  TierBenefit[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
-
   subcriptionOffers subcriptionOffers[]
 }
 
@@ -18,6 +17,5 @@ model TierBenefit {
   tier      Tier     @relation(fields: [tierId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   @@unique([tierId, feature]) // prevent duplicates
 }

@@ -55,6 +55,12 @@ export class RedisProvider {
 
   async pop(): Promise<Task | null> {
     let rawdata = await this.redisClient.brpop([this.queue], 0);
+
+    // if priority queue have any task then pop it first  then others
+    // task:normal
+    //task:high
+
+    
     if (rawdata) {
       let data: Task = JSON.parse(rawdata[1]);
       return data;

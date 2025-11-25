@@ -1,5 +1,6 @@
-import { ExamType, purchaseType } from  "@repo/prisma/client"
-import prisma from  "@repo/db/index";
+import { ExamType, primeStatus, purchaseType } from "@repo/prisma/client";
+import prisma from "@repo/db/index";
+import dayjs from "dayjs";
 
 // price is merketpricce
 export const getFinalPrice = (markedPrice: number, discountPercent: number) => {
@@ -88,6 +89,61 @@ type subcription = {
   time?: string;
 };
 
+
+export const isUserHavePrime = async (userid: string) => {
+  let status = await prisma.prime.findFirst({
+    where: {
+      userid: userid,
+    },
+  });
+
+  let isExist = dayjs().isAfter(dayjs(status?.expiry));
+
+  if (!isExist) {
+    throw new Error("Already have a subscription");
+  }
+};
+
+export const ProvideSubcriptionTouser = async (
+  userid: string,
+  plan: primeStatus,
+  razerpay_data: any
+) => {
+  let trx = await prisma.$transaction(async (tx) => {
+    // adding time and prime status
+    let getSubcriptionDetails = await tx.subcriptionOffers.findFirst({
+      where: {
+        type: purchaseType.SUBSCRIPTION,
+        title: plan,
+      },
+      select: {
+        price: true,
+        time: true,
+      },
+    });
+
+    console.log(" checking getSubcriptionDetails .....", getSubcriptionDetails);
+
+    let time: number =
+      parseInt(getSubcriptionDetails?.time?.split(" ")[0] as string) ?? 3;
+    let timeUnit = getSubcriptionDetails?.time?.split(" ")[1].toLowerCase();
+
+    if (timeUnit !== "month") throw new Error("time unit not valid");
+
+    console.log("timeUnit", timeUnit, time);
+
+    // need dynamic plan and time
+    let updatedStatus = await tx.prime.update({
+      where: {
+        userid: userid,
+      },
+      data: {
+        status: plan as primeStatus,
+        expiry: dayjs().add(time, "month").toDate(),
+      },
+    });
+  });
+};
 export const TokenDeduction = async (
   tx: any,
   userid: string,
@@ -103,7 +159,7 @@ export const TokenDeduction = async (
       case "subscription":
         let allsubcription = await tx.subcriptionOffers.findMany({
           where: {
-            type: purchaseType.subcription,
+            type: purchaseType.SUBSCRIPTION,
           },
           select: {
             title: true,
@@ -117,7 +173,7 @@ export const TokenDeduction = async (
         let subcriptionType = data; // gold , silver , bronch
         switch (subcriptionType) {
           case "Gold":
-            allsubcription?.map((subcription:subcription) => {
+            allsubcription?.map((subcription: subcription) => {
               if (subcription.title === "Gold") {
                 charge = subcription.price ?? 300;
               }

@@ -170,6 +170,7 @@ export type botInfoWhereInput = {
   botuser_id?: Prisma.StringFilter<"botInfo"> | string
   token?: Prisma.StringFilter<"botInfo"> | string
   webhook?: Prisma.JsonNullableFilter<"botInfo">
+  User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type botInfoOrderByWithRelationInput = {
@@ -177,6 +178,7 @@ export type botInfoOrderByWithRelationInput = {
   botuser_id?: Prisma.SortOrder
   token?: Prisma.SortOrder
   webhook?: Prisma.SortOrderInput | Prisma.SortOrder
+  User?: Prisma.UserOrderByWithRelationInput
 }
 
 export type botInfoWhereUniqueInput = Prisma.AtLeast<{
@@ -187,6 +189,7 @@ export type botInfoWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.botInfoWhereInput | Prisma.botInfoWhereInput[]
   token?: Prisma.StringFilter<"botInfo"> | string
   webhook?: Prisma.JsonNullableFilter<"botInfo">
+  User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id" | "id" | "botuser_id">
 
 export type botInfoOrderByWithAggregationInput = {
@@ -211,9 +214,9 @@ export type botInfoScalarWhereWithAggregatesInput = {
 
 export type botInfoCreateInput = {
   id?: string
-  botuser_id: string
   token: string
   webhook?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  User: Prisma.UserCreateNestedOneWithoutBotInfoInput
 }
 
 export type botInfoUncheckedCreateInput = {
@@ -225,9 +228,9 @@ export type botInfoUncheckedCreateInput = {
 
 export type botInfoUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  botuser_id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
   webhook?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  User?: Prisma.UserUpdateOneRequiredWithoutBotInfoNestedInput
 }
 
 export type botInfoUncheckedUpdateInput = {
@@ -246,7 +249,6 @@ export type botInfoCreateManyInput = {
 
 export type botInfoUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  botuser_id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
   webhook?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
@@ -277,6 +279,130 @@ export type botInfoMinOrderByAggregateInput = {
   token?: Prisma.SortOrder
 }
 
+export type BotInfoListRelationFilter = {
+  every?: Prisma.botInfoWhereInput
+  some?: Prisma.botInfoWhereInput
+  none?: Prisma.botInfoWhereInput
+}
+
+export type botInfoOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
+export type botInfoCreateNestedManyWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.botInfoCreateWithoutUserInput, Prisma.botInfoUncheckedCreateWithoutUserInput> | Prisma.botInfoCreateWithoutUserInput[] | Prisma.botInfoUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.botInfoCreateOrConnectWithoutUserInput | Prisma.botInfoCreateOrConnectWithoutUserInput[]
+  createMany?: Prisma.botInfoCreateManyUserInputEnvelope
+  connect?: Prisma.botInfoWhereUniqueInput | Prisma.botInfoWhereUniqueInput[]
+}
+
+export type botInfoUncheckedCreateNestedManyWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.botInfoCreateWithoutUserInput, Prisma.botInfoUncheckedCreateWithoutUserInput> | Prisma.botInfoCreateWithoutUserInput[] | Prisma.botInfoUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.botInfoCreateOrConnectWithoutUserInput | Prisma.botInfoCreateOrConnectWithoutUserInput[]
+  createMany?: Prisma.botInfoCreateManyUserInputEnvelope
+  connect?: Prisma.botInfoWhereUniqueInput | Prisma.botInfoWhereUniqueInput[]
+}
+
+export type botInfoUpdateManyWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.botInfoCreateWithoutUserInput, Prisma.botInfoUncheckedCreateWithoutUserInput> | Prisma.botInfoCreateWithoutUserInput[] | Prisma.botInfoUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.botInfoCreateOrConnectWithoutUserInput | Prisma.botInfoCreateOrConnectWithoutUserInput[]
+  upsert?: Prisma.botInfoUpsertWithWhereUniqueWithoutUserInput | Prisma.botInfoUpsertWithWhereUniqueWithoutUserInput[]
+  createMany?: Prisma.botInfoCreateManyUserInputEnvelope
+  set?: Prisma.botInfoWhereUniqueInput | Prisma.botInfoWhereUniqueInput[]
+  disconnect?: Prisma.botInfoWhereUniqueInput | Prisma.botInfoWhereUniqueInput[]
+  delete?: Prisma.botInfoWhereUniqueInput | Prisma.botInfoWhereUniqueInput[]
+  connect?: Prisma.botInfoWhereUniqueInput | Prisma.botInfoWhereUniqueInput[]
+  update?: Prisma.botInfoUpdateWithWhereUniqueWithoutUserInput | Prisma.botInfoUpdateWithWhereUniqueWithoutUserInput[]
+  updateMany?: Prisma.botInfoUpdateManyWithWhereWithoutUserInput | Prisma.botInfoUpdateManyWithWhereWithoutUserInput[]
+  deleteMany?: Prisma.botInfoScalarWhereInput | Prisma.botInfoScalarWhereInput[]
+}
+
+export type botInfoUncheckedUpdateManyWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.botInfoCreateWithoutUserInput, Prisma.botInfoUncheckedCreateWithoutUserInput> | Prisma.botInfoCreateWithoutUserInput[] | Prisma.botInfoUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.botInfoCreateOrConnectWithoutUserInput | Prisma.botInfoCreateOrConnectWithoutUserInput[]
+  upsert?: Prisma.botInfoUpsertWithWhereUniqueWithoutUserInput | Prisma.botInfoUpsertWithWhereUniqueWithoutUserInput[]
+  createMany?: Prisma.botInfoCreateManyUserInputEnvelope
+  set?: Prisma.botInfoWhereUniqueInput | Prisma.botInfoWhereUniqueInput[]
+  disconnect?: Prisma.botInfoWhereUniqueInput | Prisma.botInfoWhereUniqueInput[]
+  delete?: Prisma.botInfoWhereUniqueInput | Prisma.botInfoWhereUniqueInput[]
+  connect?: Prisma.botInfoWhereUniqueInput | Prisma.botInfoWhereUniqueInput[]
+  update?: Prisma.botInfoUpdateWithWhereUniqueWithoutUserInput | Prisma.botInfoUpdateWithWhereUniqueWithoutUserInput[]
+  updateMany?: Prisma.botInfoUpdateManyWithWhereWithoutUserInput | Prisma.botInfoUpdateManyWithWhereWithoutUserInput[]
+  deleteMany?: Prisma.botInfoScalarWhereInput | Prisma.botInfoScalarWhereInput[]
+}
+
+export type botInfoCreateWithoutUserInput = {
+  id?: string
+  token: string
+  webhook?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+}
+
+export type botInfoUncheckedCreateWithoutUserInput = {
+  id?: string
+  token: string
+  webhook?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+}
+
+export type botInfoCreateOrConnectWithoutUserInput = {
+  where: Prisma.botInfoWhereUniqueInput
+  create: Prisma.XOR<Prisma.botInfoCreateWithoutUserInput, Prisma.botInfoUncheckedCreateWithoutUserInput>
+}
+
+export type botInfoCreateManyUserInputEnvelope = {
+  data: Prisma.botInfoCreateManyUserInput | Prisma.botInfoCreateManyUserInput[]
+  skipDuplicates?: boolean
+}
+
+export type botInfoUpsertWithWhereUniqueWithoutUserInput = {
+  where: Prisma.botInfoWhereUniqueInput
+  update: Prisma.XOR<Prisma.botInfoUpdateWithoutUserInput, Prisma.botInfoUncheckedUpdateWithoutUserInput>
+  create: Prisma.XOR<Prisma.botInfoCreateWithoutUserInput, Prisma.botInfoUncheckedCreateWithoutUserInput>
+}
+
+export type botInfoUpdateWithWhereUniqueWithoutUserInput = {
+  where: Prisma.botInfoWhereUniqueInput
+  data: Prisma.XOR<Prisma.botInfoUpdateWithoutUserInput, Prisma.botInfoUncheckedUpdateWithoutUserInput>
+}
+
+export type botInfoUpdateManyWithWhereWithoutUserInput = {
+  where: Prisma.botInfoScalarWhereInput
+  data: Prisma.XOR<Prisma.botInfoUpdateManyMutationInput, Prisma.botInfoUncheckedUpdateManyWithoutUserInput>
+}
+
+export type botInfoScalarWhereInput = {
+  AND?: Prisma.botInfoScalarWhereInput | Prisma.botInfoScalarWhereInput[]
+  OR?: Prisma.botInfoScalarWhereInput[]
+  NOT?: Prisma.botInfoScalarWhereInput | Prisma.botInfoScalarWhereInput[]
+  id?: Prisma.StringFilter<"botInfo"> | string
+  botuser_id?: Prisma.StringFilter<"botInfo"> | string
+  token?: Prisma.StringFilter<"botInfo"> | string
+  webhook?: Prisma.JsonNullableFilter<"botInfo">
+}
+
+export type botInfoCreateManyUserInput = {
+  id?: string
+  token: string
+  webhook?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+}
+
+export type botInfoUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  token?: Prisma.StringFieldUpdateOperationsInput | string
+  webhook?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+}
+
+export type botInfoUncheckedUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  token?: Prisma.StringFieldUpdateOperationsInput | string
+  webhook?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+}
+
+export type botInfoUncheckedUpdateManyWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  token?: Prisma.StringFieldUpdateOperationsInput | string
+  webhook?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+}
+
 
 
 export type botInfoSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -284,6 +410,7 @@ export type botInfoSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   botuser_id?: boolean
   token?: boolean
   webhook?: boolean
+  User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["botInfo"]>
 
 export type botInfoSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -291,6 +418,7 @@ export type botInfoSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   botuser_id?: boolean
   token?: boolean
   webhook?: boolean
+  User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["botInfo"]>
 
 export type botInfoSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -298,6 +426,7 @@ export type botInfoSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   botuser_id?: boolean
   token?: boolean
   webhook?: boolean
+  User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["botInfo"]>
 
 export type botInfoSelectScalar = {
@@ -308,10 +437,21 @@ export type botInfoSelectScalar = {
 }
 
 export type botInfoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "botuser_id" | "token" | "webhook", ExtArgs["result"]["botInfo"]>
+export type botInfoInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+}
+export type botInfoIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+}
+export type botInfoIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+}
 
 export type $botInfoPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "botInfo"
-  objects: {}
+  objects: {
+    User: Prisma.$UserPayload<ExtArgs>
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     botuser_id: string
@@ -711,6 +851,7 @@ readonly fields: botInfoFieldRefs;
  */
 export interface Prisma__botInfoClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  User<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -761,6 +902,10 @@ export type botInfoFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Inter
    */
   omit?: Prisma.botInfoOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoInclude<ExtArgs> | null
+  /**
    * Filter, which botInfo to fetch.
    */
   where: Prisma.botInfoWhereUniqueInput
@@ -779,6 +924,10 @@ export type botInfoFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extension
    */
   omit?: Prisma.botInfoOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoInclude<ExtArgs> | null
+  /**
    * Filter, which botInfo to fetch.
    */
   where: Prisma.botInfoWhereUniqueInput
@@ -796,6 +945,10 @@ export type botInfoFindFirstArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Omit specific fields from the botInfo
    */
   omit?: Prisma.botInfoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoInclude<ExtArgs> | null
   /**
    * Filter, which botInfo to fetch.
    */
@@ -845,6 +998,10 @@ export type botInfoFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions
    */
   omit?: Prisma.botInfoOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoInclude<ExtArgs> | null
+  /**
    * Filter, which botInfo to fetch.
    */
   where?: Prisma.botInfoWhereInput
@@ -893,6 +1050,10 @@ export type botInfoFindManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    */
   omit?: Prisma.botInfoOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoInclude<ExtArgs> | null
+  /**
    * Filter, which botInfos to fetch.
    */
   where?: Prisma.botInfoWhereInput
@@ -936,6 +1097,10 @@ export type botInfoCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   omit?: Prisma.botInfoOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoInclude<ExtArgs> | null
+  /**
    * The data needed to create a botInfo.
    */
   data: Prisma.XOR<Prisma.botInfoCreateInput, Prisma.botInfoUncheckedCreateInput>
@@ -969,6 +1134,10 @@ export type botInfoCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensi
    */
   data: Prisma.botInfoCreateManyInput | Prisma.botInfoCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -983,6 +1152,10 @@ export type botInfoUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the botInfo
    */
   omit?: Prisma.botInfoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoInclude<ExtArgs> | null
   /**
    * The data needed to update a botInfo.
    */
@@ -1035,6 +1208,10 @@ export type botInfoUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensi
    * Limit how many botInfos to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1049,6 +1226,10 @@ export type botInfoUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the botInfo
    */
   omit?: Prisma.botInfoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoInclude<ExtArgs> | null
   /**
    * The filter to search for the botInfo to update in case it exists.
    */
@@ -1075,6 +1256,10 @@ export type botInfoDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the botInfo
    */
   omit?: Prisma.botInfoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoInclude<ExtArgs> | null
   /**
    * Filter which botInfo to delete.
    */
@@ -1107,4 +1292,8 @@ export type botInfoDefaultArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Omit specific fields from the botInfo
    */
   omit?: Prisma.botInfoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.botInfoInclude<ExtArgs> | null
 }

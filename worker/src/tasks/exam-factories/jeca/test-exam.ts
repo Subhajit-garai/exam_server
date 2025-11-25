@@ -6,7 +6,6 @@ import {
 import { IExamCreator } from "../base-exam";
 import { exam_pattern } from "@/lib/types/types";
 import { Network } from "@/utils/network";
-import { debuglog } from "../../../utils/debugLog";
 
 export class JecaTestExam implements IExamCreator {
   constructor(private payload: any) {}
@@ -45,9 +44,8 @@ export class JecaTestExam implements IExamCreator {
         if (subject) {
           topics.push(subject);
         } else {
-          console.log(
-            "----RED----",
-            "subject short Name Null recive and ignoring it for Exam question selection"
+          throw Error(
+            "----RED---- subject short Name Null recive and ignoring it for Exam question selection"
           );
         }
       });
@@ -62,7 +60,7 @@ export class JecaTestExam implements IExamCreator {
           question,
           topics,
           is_multiple_ans[index]
-        );
+        );        
 
         let Question_array: string[] = [];
 
@@ -87,10 +85,10 @@ export class JecaTestExam implements IExamCreator {
 
       // request to update exam status
 
-     let status =  await newtWorkClient.examQuestionAddedStatusChange(examid);
-     if(status){
-      // send notification
-     }
+      let status = await newtWorkClient.examQuestionAddedStatusChange(examid);
+      if (status) {
+        // send notification
+      }
 
       // this.getredisClient().push({
       //   type: "Notify",

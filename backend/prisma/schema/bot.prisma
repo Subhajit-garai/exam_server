@@ -35,6 +35,7 @@ model botInfo {
   botuser_id String @unique
   token      String
   webhook    Json?
+  User       User   @relation(fields: [botuser_id], references: [id])
 }
 
 enum botPlatform {

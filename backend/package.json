@@ -12,16 +12,11 @@
     "migrate:dev": "npx prisma migrate dev ",
     "gen": "npx prisma generate",
     "gen:sql": "npx prisma generate --sql",
-    "studio": "npx prisma studio ",
-    "seed": "ts-node  prisma/seed.ts",
-    "seed:prod": "tsc -b && tsc-alias && node prisma/seed_prod.js",
-    "seed:prod:js": "node  dist/prisma/seed_prod.js",
-    "seed:mockset:tregger": "ts-node  prisma/tregger/mockSetChecker.ts",
-    "seed:rmtable": "ts-node  prisma/removeAlltables.ts",
-    "seed:test": "ts-node  prisma/seed_prod_test.ts",
-    "seed:addtempdata": "ts-node  prisma/tempDataAdd.ts",
-    "migrate:restore": "ts-node  prisma/Db_backUp_Restore_scrpts/restore.ts",
-    "migrate:process": "ts-node  prisma/Db_backUp_Restore_scrpts/process.ts"
+    "studio": "npx prisma studio",
+    "db:seed": "prisma db seed"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "keywords": [],
   "author": "",

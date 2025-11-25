@@ -33,6 +33,7 @@ model User {
   botQuizConfig botQuizConfig[]
   CouponUsages  CouponUsage[] // Relation: which users used it
   Coupon        Coupon[]
+  botInfo        botInfo[]
 
   @@index([role])
 }

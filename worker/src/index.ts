@@ -3,8 +3,6 @@ import { RedisProvider } from "@/lib/radisProvider";
 import { network } from "@/utils/network";
 import { runWorker } from "./tasks/worker-runner";
 
-//cmbpafq590000buoonrdqgwu5
-
 let CREATE_EXAM_TASK: Task = {
   type: "CREATE_EXAM",
   id: "cmiebk9nz005gbuz45k4km3oi",

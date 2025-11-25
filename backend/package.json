@@ -13,10 +13,11 @@
     "gen": "npx prisma generate",
     "gen:sql": "npx prisma generate --sql",
     "studio": "npx prisma studio",
-    "db:seed": "prisma db seed"
+    "db:seed": "ts-node prisma/seed.ts",
+    "db:seed:prod": "ts-node prisma/seed_prod.ts"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed_prod.ts"
   },
   "keywords": [],
   "author": "",

@@ -15,18 +15,6 @@ let CREATE_EXAM_TASK: Task = {
   category: "JECA",
 };
 
-// let RUN_QUIZ: Task = {
-//   type: "",
-//   id: "cmhuo1jia0002buh43og57hek",
-//   payload: {
-//     cburl: "https://7e5afa2c0330.ngrok-free.app/survertask",
-//     userid: 1192445803,
-//     chatid: -1002314879281,
-//     platfrom: "TELEGRAM",
-//     chat_type: "supergroup",
-//   },
-// };
-
 let CREATE_SCORE: Task = {
   type: "CREATE_SCORE",
   id: "cmhuo1jia0002buh43og57hek",

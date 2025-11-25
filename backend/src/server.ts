@@ -38,7 +38,6 @@ interface AuthenticatedWebSocket extends WebSocket {
   user?: any; // Extend WebSocket to include 'user'
 }
 
-// app.set("trust proxy", "loopback");
 const trustProxy = process.env.TRUST_PROXY || 1;
 
 app.set("trust proxy", trustProxy);

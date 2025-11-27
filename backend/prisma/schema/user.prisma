@@ -1,9 +1,12 @@
 model User {
-  id                  String   @id @unique @default(cuid())
-  name                String
-  email               String   @unique
-  contactno           String?  @default("0000000000") // only india
-  password            String
+  id            String  @id @unique @default(cuid())
+  name          String
+  email         String  @unique
+  contactno     String? @default("0000000000") // only india
+  password      String
+  targeted_exam String? @default("not set")
+  exam_year     String? @default("not set")
+
   telegramid          String?  @unique
   verificationid      String?  @unique
   progressid          String?  @unique

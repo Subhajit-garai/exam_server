@@ -51,10 +51,10 @@ export class examManager {
     examid: string,
     userid: string,
     part: string | number,
-    num: string
+    num: number
   ) {
     let isValidUser = this.user.isuserexist(examid, userid);
-    let number: number = parseInt(num);
+    let number: number = num;
 
     if (isValidUser) {
       let total_questions = this.exam[examid].total_question[part];

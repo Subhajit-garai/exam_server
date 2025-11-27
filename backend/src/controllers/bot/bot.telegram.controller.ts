@@ -90,30 +90,18 @@ export const IsprimeUser = async (req: any, res: any) => {
 
 export const bot_login = async (req: any, res: any) => {
   try {
-    const { email, password } = req.body;
-
-    let responce = await prisma.user.findFirst({
-      where: { email: email, role: UserRole.Bot },
-      select: { id: true, password: true },
-    });
-
-    if (!responce) {
-      throw new Error("bot_login not found");
-    }
-
-    let isVerified = veryfyhashPasswordFn(password, responce?.password);
-
-    if (!isVerified) {
-      res.status(403).json({ success: false, message: "bot not verified" });
-    }
-    let newToken = genToken(responce.id);
+    const newToken = await botService.admin.botLogin(req.body);
     res.json({ success: true, message: "successful", data: newToken });
-  } catch (error) {
+  } catch (error: any) {
     console.log("Error in bot login --->", error);
+    if (error.message === "bot not verified") {
+      res.status(403).json({ success: false, message: "bot not verified" });
+    } else {
+      res.status(400).json({ success: false, message: error.message });
+    }
   }
 };
 
-// Added processNotification here as it fits with telegram logic
 export const processNotification = async (req: any, res: any) => {
   try {
     const type = req.query.type;

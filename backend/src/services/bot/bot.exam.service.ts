@@ -42,6 +42,45 @@ export class BotExamService {
         });
     }
 
+    async getSyllabusDataForExamCreattion(syllabusid: string) {
+        if (!syllabusid) throw new Error("Syllabus ID not received");
+
+        const syllabusData = await prisma.syllabus.findFirst({
+            where: { id: syllabusid },
+            select: {
+                SubjectSyllabusMap: {
+                    select: {
+                        subject: { select: { shortName: true } },
+                    },
+                },
+            },
+        });
+
+        if (!syllabusData) throw new Error("Syllabus data not found");
+
+        const syllabus = syllabusData.SubjectSyllabusMap.map((item) => item.subject.shortName);
+        return syllabus;
+    }
+
+    async getQuestionDetailsForBot(ids: string[]) {
+        const questionData = await prisma.questions.findMany({
+            where: { id: { in: ids } },
+            select: {
+                id: true,
+                title: true,
+                topic_id: true,
+                difficulty: true,
+                subject_id: true,
+                explanation: true,
+                is_multiple_ans: true,
+                status: true,
+            },
+        });
+
+        if (!questionData || questionData.length === 0) throw new Error("Questions not found or invalid IDs");
+        return questionData;
+    }
+
     // ### Question Logic
     async getQuestionsIds() {
         const topicNormalAnsQuestions = await prisma.$queryRawUnsafe(`SELECT old_topic, ARRAY_AGG(id) AS ids FROM "Questions"  WHERE is_multiple_ans = false AND status = 'Done' GROUP BY old_topic;`);

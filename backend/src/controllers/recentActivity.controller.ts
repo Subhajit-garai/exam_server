@@ -32,7 +32,11 @@ export const createActivity = asyncHandler(async (req: AuthenticatedRequest, res
   // 2. Business Logic (Service)
   const newActivity = await activityService.create(userId, processedData.data);
 
-  res.status(201).json(newActivity);
+  res.status(201).json({
+    success: true,
+    data: newActivity,
+    message: "Activity created successfully",
+  });
 });
 
 // ### Fetch recent activities for a user
@@ -59,5 +63,9 @@ export const getRecentActivities = asyncHandler(async (req: AuthenticatedRequest
     }),
   }));
 
-  res.json(formattedActivities);
+  res.json({
+    success: true,
+    data: formattedActivities,
+    message: "Recent activities fetched successfully",
+  });
 });

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { auth, Logout, userPurchases, usertelegramidValidationTokengen, usertetegramidValidationTokenVerify } from "../controllers/user.controller.js";
 import { otpLimiter } from "@repo/lib/security/ratelimiter.js";
 import { IsUserLoginOpen } from "@repo/lib/security/Security.js";
+import { recentActivityRouter } from "./recentActivity.routes.js";
 
 export const userRouter = Router();
 
@@ -16,11 +17,12 @@ userRouter.get("/profile", (req, res) => {
 });
 
 
-
-
 userRouter.post("/validate/telegramid", otpLimiter, usertelegramidValidationTokengen);
 userRouter.post("/verify/telegramid", otpLimiter, usertetegramidValidationTokenVerify);
 
 //purchases 
 userRouter.get("/purchases", userPurchases);
 
+
+// recentactivity router
+userRouter.use("/recentactivity", recentActivityRouter);

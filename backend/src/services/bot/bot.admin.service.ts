@@ -1,3 +1,5 @@
+import { veryfyhashPasswordFn } from "@/lib/security/hash.js";
+import { genToken } from "@/lib/token.js";
 import prisma from "@repo/db/index.js";
 import { UserRole } from "@repo/prisma/client.js";
 
@@ -82,5 +84,26 @@ export class BotAdminService {
         return await prisma.botInfo.create({
             data: { token, botuser_id: botUserId },
         });
+    }
+
+    async botLogin(data: any) {
+        const { email, password } = data;
+
+        let responce = await prisma.user.findFirst({
+            where: { email: email, role: UserRole.Bot },
+            select: { id: true, password: true },
+        });
+
+        if (!responce) {
+            throw new Error("bot_login not found");
+        }
+
+        let isVerified = veryfyhashPasswordFn(password, responce?.password);
+
+        if (!isVerified) {
+            throw new Error("bot not verified");
+        }
+        let newToken = genToken(responce.id);
+        return newToken;
     }
 }

@@ -16,26 +16,25 @@ model TargetExam {
 }
 
 model ExamYear {
-  id String @id @default(cuid())
-
-  targetExamId String
-
+  id                    String      @id @default(cuid())
+  targetExamId          String
   year                  Int // e.g., 2025
-  slug                  String     @unique // e.g., "gate-2025"
-  status                ExamStatus @default(SCHEDULED)
-  isPublic              Boolean    @default(false)
+  slug                  String      @unique // e.g., "gate-2025"
+  status                ExamStatus  @default(SCHEDULED)
+  isPublic              Boolean     @default(false)
   registrationOpenDate  DateTime?
   registrationCloseDate DateTime?
   examDate              DateTime?
   resultDate            DateTime?
   // category              String? // e.g., "Engineering", "Management"
   notes                 Json? // flexible field for extra info
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
-  isDeleted             Boolean    @default(false)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  isDeleted             Boolean     @default(false)
   // relation
-  targetExam            TargetExam @relation(fields: [targetExamId], references: [id])
+  targetExam            TargetExam  @relation(fields: [targetExamId], references: [id])
   Syllabus              Syllabus[]
+  ExamEvent             ExamEvent[]
 }
 
 model Exam_pattern {
@@ -123,7 +122,7 @@ enum ExamStatus {
   EVALUATION_IN_PROGRESS
   RESULT_PUBLISHED
   ARCHIVED
-} 
+}
 
 enum ExamType {
   Test // dynamic exam set 

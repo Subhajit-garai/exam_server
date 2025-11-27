@@ -31,24 +31,7 @@ export class BotController {
    */
   public getSyllabusDataForExamCreattion = asyncHandler(async (req: Request, res: Response) => {
     const syllabusid = req.query.syllabusid as string;
-
-    if (!syllabusid) throw new Error("Syllabus ID not received");
-
-    const syllabusData = await prisma.syllabus.findFirst({
-      where: { id: syllabusid },
-      select: {
-        SubjectSyllabusMap: {
-          select: {
-            subject: { select: { shortName: true } },
-          },
-        },
-      },
-    });
-
-    if (!syllabusData) throw new Error("Syllabus data not found");
-
-    const syllabus = syllabusData.SubjectSyllabusMap.map((item) => item.subject.shortName);
-
+    const syllabus = await botService.exam.getSyllabusDataForExamCreattion(syllabusid);
     res.json({ success: true, message: "message", data: syllabus });
   });
 
@@ -57,22 +40,7 @@ export class BotController {
    */
   public getQuestionViaIds = asyncHandler(async (req: Request, res: Response) => {
     const ids = req.body; // Array of IDs
-
-    const questionData = await prisma.questions.findMany({
-      where: { id: { in: ids } },
-      select: {
-        id: true,
-        title: true,
-        topic_id: true,
-        difficulty: true,
-        subject_id: true,
-        explanation: true,
-        is_multiple_ans: true,
-        status: true,
-      },
-    });
-
-    if (!questionData || questionData.length === 0) throw new Error("Questions not found or invalid IDs");
+    const questionData = await botService.exam.getQuestionDetailsForBot(ids);
 
     res.json({
       success: true,
@@ -102,13 +70,7 @@ export class BotController {
    */
   public getExamDetails = asyncHandler(async (req: Request, res: Response) => {
     const { examid } = req.params;
-
-    const data = await prisma.exam.findFirst({
-      where: { id: examid },
-    });
-
-    if (!data) throw new Error("Exam details not found!");
-
+    const data = await botService.exam.getExamDetails(examid);
     res.json({ success: true, message: "message", data: data });
   });
 

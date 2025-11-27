@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { isAdmin } from "@repo/lib/security/auth";
-import { CreateSyllabus, fetchAllsyllabus, getSyllabusByid ,addSubject, formatedSyllabus, removeSubject, addTopic, removeTopic, fetchAllsyllabus_id, fetchAllsyllabusExamYearid} from "@/controllers/syllabus.controller";
+import { isAdmin } from "@repo/lib/security/auth.js";
+import { CreateSyllabus, fetchAllsyllabus, getSyllabusByid, addSubject, formatedSyllabus, removeSubject, addTopic, removeTopic, fetchAllsyllabus_id, fetchAllsyllabusExamYearid } from "@/controllers/syllabus.controller.js";
 
 
 
@@ -8,21 +8,21 @@ import { CreateSyllabus, fetchAllsyllabus, getSyllabusByid ,addSubject, formated
 
 export const syllabusRouter = Router();
 
-syllabusRouter.get("/get/formated",formatedSyllabus)
+syllabusRouter.get("/get/formated", formatedSyllabus)
 
-syllabusRouter.get("/get/all" , isAdmin , fetchAllsyllabus);
-syllabusRouter.get("/get/id" , isAdmin , fetchAllsyllabus_id);
-syllabusRouter.get("/get/examyearid" , isAdmin , fetchAllsyllabusExamYearid);
-syllabusRouter.get("/name/get/all" , isAdmin , fetchAllsyllabus);
+syllabusRouter.get("/get/all", isAdmin, fetchAllsyllabus);
+syllabusRouter.get("/get/id", isAdmin, fetchAllsyllabus_id);
+syllabusRouter.get("/get/examyearid", isAdmin, fetchAllsyllabusExamYearid);
+syllabusRouter.get("/name/get/all", isAdmin, fetchAllsyllabus);
 
-syllabusRouter.post("/admin/create" , isAdmin , CreateSyllabus);
-syllabusRouter.put("/admin/update" , isAdmin , fetchAllsyllabus);
-syllabusRouter.delete("/admin/delete" , isAdmin , fetchAllsyllabus);
+syllabusRouter.post("/admin/create", isAdmin, CreateSyllabus);
+syllabusRouter.put("/admin/update", isAdmin, fetchAllsyllabus);
+syllabusRouter.delete("/admin/delete", isAdmin, fetchAllsyllabus);
 
-syllabusRouter.post("/admin/add/subject" , isAdmin , addSubject);
-syllabusRouter.delete("/admin/remove/subject" , isAdmin , removeSubject);
-syllabusRouter.post("/admin/add/topic" , isAdmin , addTopic);
-syllabusRouter.delete("/admin/remove/topic" , isAdmin , removeTopic);
+syllabusRouter.post("/admin/add/subject", isAdmin, addSubject);
+syllabusRouter.delete("/admin/remove/subject", isAdmin, removeSubject);
+syllabusRouter.post("/admin/add/topic", isAdmin, addTopic);
+syllabusRouter.delete("/admin/remove/topic", isAdmin, removeTopic);
 
 
 

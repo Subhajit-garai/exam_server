@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { isAdmin } from "@repo/lib/security/auth";
-import { CloseIssue, createNewIssue, getAllIssue, getIssueByid, Isprocessed_issue, RemoveIssue, setDownVote, setPriorityVote, setupVote, update_issue, updateStatus ,GetquestionIssuecount} from "../controllers/issue.controller";
+import { isAdmin } from "@repo/lib/security/auth.js";
+import { CloseIssue, createNewIssue, getAllIssue, getIssueByid, Isprocessed_issue, RemoveIssue, setDownVote, setPriorityVote, setupVote, update_issue, updateStatus, GetquestionIssuecount } from "../controllers/issue.controller.js";
 export const IssueRouter = Router();
 
 
@@ -39,8 +39,8 @@ IssueRouter.post("/close", CloseIssue)
 
 
 // admin
-IssueRouter.post("/delete",isAdmin ,RemoveIssue)
-IssueRouter.post("/updatestatus",isAdmin ,updateStatus)
+IssueRouter.post("/delete", isAdmin, RemoveIssue)
+IssueRouter.post("/updatestatus", isAdmin, updateStatus)
 
 
 

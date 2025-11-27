@@ -1,12 +1,12 @@
 import { error } from "console";
-import prisma from "@repo/db/index";
-import { asyncHandler } from "@repo/lib/helper/asyncHandler";
+import prisma from "@repo/db/index.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 import {
   createSubject_schema,
   createTopic_schema,
   noteUpdate_schema,
-} from "../zod/note.zod";
-import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker";
+} from "../zod/note.zod.js";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
 
 export const test = async (req: any, res: any) => {
   try {
@@ -344,7 +344,7 @@ export const getAllNoteTopic = async (req: any, res: any) => {
       },
     });
 
-    
+
     if (!topicdatas) {
       return res.status(400).json({
         success: false,

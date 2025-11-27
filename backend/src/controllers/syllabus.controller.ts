@@ -1,5 +1,5 @@
-import { asyncHandler } from "@/lib/helper/asyncHandler";
-import prisma from "@/db";
+import { asyncHandler } from "@/lib/helper/asyncHandler.js";
+import prisma from "@/db/index.js";
 import {
   AddSubjectInputZodSchemaById,
   AddSubjectInputZodSchemaByName,
@@ -8,8 +8,8 @@ import {
   AddTopicInputZodSchemaByName,
   AddTopicInputZodSchemaByShortName,
   SyllabusInputZodSchema,
-} from "@/zod/syllabus.zod";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker";
+} from "@/zod/syllabus.zod.js";
+import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 
 type fomatedSubject_type = {
   subject: string;
@@ -24,7 +24,7 @@ type formatedSyllabus_type = {
   examYear: number | null | undefined;
 };
 
-export const text = asyncHandler(async (req: any, res: any) => {});
+export const text = asyncHandler(async (req: any, res: any) => { });
 
 export const CreateSyllabus = asyncHandler(async (req: any, res: any) => {
   let data = SyllabusInputZodSchema.safeParse(req.body);

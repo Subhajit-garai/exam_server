@@ -1,11 +1,11 @@
-import { diffcultlevel, Prisma } from  "@repo/prisma/client";
-import prisma from "@repo/db/index";
+import { diffcultlevel, Prisma } from "@repo/prisma/client.js";
+import prisma from "@repo/db/index.js";
 import {
   QuestionFilterDataFetchZodSchema,
   questionInputZodSchema,
   questionUpdateZodSchema,
-} from "../zod/question.zod";
-import { asyncHandler } from "@repo/lib/helper/asyncHandler";
+} from "../zod/question.zod.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 
 export const updateQuestion = async (req: any, res: any) => {
   try {
@@ -172,8 +172,8 @@ export const createQuestion = async (req: any, res: any) => {
         category: category,
 
         // temp data
-        old_sub_topic:"",
-        old_topic:"",
+        old_sub_topic: "",
+        old_topic: "",
 
         topic_id: topic_id, // change to sub_topic
         subject_id: subject_id,
@@ -301,24 +301,24 @@ export const getAllQuestions = async (req: any, res: any) => {
     let Formatedfilter: any = id
       ? { id: id }
       : {
-          ...(category && { category: category.toUpperCase() }),
-          ...(topic && { topic: topic.toUpperCase() }),
-          ...(difficulty && { difficulty: difficulty }),
-          ...(formate && { formate: formate }),
-          ...(status && { status: status }),
-          ...(filtertitle && { title: filtertitle }),
-          ...(ismultipleans && { is_multiple_ans: ismultipleans }),
-          ...(links && {
-            links: {
-              has: links,
-            },
-          }), // array
-          ...(history && {
-            history: {
-              has: history,
-            },
-          }), // array
-        };
+        ...(category && { category: category.toUpperCase() }),
+        ...(topic && { topic: topic.toUpperCase() }),
+        ...(difficulty && { difficulty: difficulty }),
+        ...(formate && { formate: formate }),
+        ...(status && { status: status }),
+        ...(filtertitle && { title: filtertitle }),
+        ...(ismultipleans && { is_multiple_ans: ismultipleans }),
+        ...(links && {
+          links: {
+            has: links,
+          },
+        }), // array
+        ...(history && {
+          history: {
+            has: history,
+          },
+        }), // array
+      };
 
     if (id) {
       responce = await prisma.questions.findMany({

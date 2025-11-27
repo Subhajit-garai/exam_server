@@ -1,6 +1,6 @@
-import { ExamType, primeStatus } from  "@repo/prisma/client"
-import prisma from  "@repo/db/index";
-import { debuglog } from "@repo/lib/helper/debugLog";
+import { ExamType, primeStatus } from "@repo/prisma/client.js"
+import prisma from "@repo/db/index.js";
+
 
 type BenefitInput = {
   feature: ExamType;
@@ -110,8 +110,8 @@ export async function isFeatureAvailable(
 }> {
   const tier = await prisma.tier.findUnique({
     where: { name: tierName },
-    select:{
-      benefits:{
+    select: {
+      benefits: {
         where: { feature: feature },
         select: {
           access: true,
@@ -120,7 +120,7 @@ export async function isFeatureAvailable(
         },
       }
     }
-   
+
   });
 
   if (!tier || tier.benefits.length === 0) {

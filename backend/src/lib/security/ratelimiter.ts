@@ -1,6 +1,6 @@
 import rateLimit from "express-rate-limit";
 import { Request, Response } from "express";
-import { RedisProvider } from "../radisProvider";
+import { RedisProvider } from "../radisProvider.js";
 import { RedisReply, RedisStore, SendCommandFn } from 'rate-limit-redis'
 
 let otpLimiter_count = parseInt(process.env.OTP_RATE_LIMIT as string) || 5;
@@ -18,24 +18,24 @@ const getClientIp = (req: any) => {
   const forwardedFor = req.headers['x-forwarded-for'];
   const realIp = req.headers['x-real-ip'];
 
-  console.log("forwardedFor" , forwardedFor);
-  console.log("realIp" , realIp);
-  
+  console.log("forwardedFor", forwardedFor);
+  console.log("realIp", realIp);
+
   if (forwardedFor) {
     const ips = forwardedFor.split(',');  // get list of IPs
     return ips[0];  // Return the first one (the original client IP)
   }
 
-  console.log("req.connection.remoteAddress" , req.connection.remoteAddress);
+  console.log("req.connection.remoteAddress", req.connection.remoteAddress);
   return req.connection.remoteAddress;  // Fall back to the connection IP
 };
 
 const redisClient = RedisProvider.getInstance().getclient();
 
 const sendCommand: SendCommandFn = (command: string, ...args: (string | number)[]): Promise<RedisReply> => {
-    return redisClient.call(command, ...args) as  Promise<RedisReply>;
-  };
-  
+  return redisClient.call(command, ...args) as Promise<RedisReply>;
+};
+
 
 // Rate limiter configuration
 export const otpLimiter = rateLimit({
@@ -46,8 +46,8 @@ export const otpLimiter = rateLimit({
   // for storing data into redis catch
   store: new RedisStore({
     prefix: "otp_limit:",
-    sendCommand: sendCommand ,// (...args: string[]) => redisClient.call(...args),
-}),
+    sendCommand: sendCommand,// (...args: string[]) => redisClient.call(...args),
+  }),
   keyGenerator: getClientIp,
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers

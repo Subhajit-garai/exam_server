@@ -1,5 +1,5 @@
-import prisma from  "@repo/db/index";
-import { timeinpute } from "../zod/metrix.zod";
+import prisma from "@repo/db/index.js";
+import { timeinpute } from "../zod/metrix.zod.js";
 import dayjs from "dayjs";
 
 import {
@@ -15,7 +15,7 @@ import {
   getweeklyscore,
   top_4_user_from_exam_leaderboard,
   top_10_user_from_exam_leaderboard,
-} from "@repo/prisma/sql";
+} from "@repo/prisma/sql.js";
 
 export const test = async (req: any, res: any) => {
   try {
@@ -27,25 +27,25 @@ export const test = async (req: any, res: any) => {
 
 export const examQuestionAttemp = async (req: any, res: any) => {
   try {
-      let data = await prisma.score.findFirst({
-        where:{
-          user_id: req.user,
-          exam_id: req.query.examid
-        },
-        select:{
-          not_attempt:true
-          // add total question 
-        },
+    let data = await prisma.score.findFirst({
+      where: {
+        user_id: req.user,
+        exam_id: req.query.examid
+      },
+      select: {
+        not_attempt: true
+        // add total question 
+      },
+    })
+
+
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        message: "user's data not found in score"
       })
+    }
 
-
-      if(!data){
-        return res.status(404).json({
-          success: false,
-          message: "user's data not found in score"
-        })
-      }
-      
     res.json({ success: true, message: "message", data: data });
   } catch (error) {
     console.log("Error in metrix --->", error);
@@ -73,8 +73,8 @@ export const WeekNessGraphOfAnExam = async (req: any, res: any) => {
     let examid = req.query.examid as string;
     let userid = req.user;
 
-    if(!examid || !userid) return;
-    
+    if (!examid || !userid) return;
+
     let data = await prisma.score.findFirst({
       where: {
         user_id: userid,
@@ -86,17 +86,17 @@ export const WeekNessGraphOfAnExam = async (req: any, res: any) => {
     });
 
     type item = {
-      [key:string]:{
+      [key: string]: {
         Right: number,
         Wrong: number,
       }
-    
+
     }
 
 
-    let sanitizedFn = (items:item) => {
-      if(!items) return
-      let arr:any[] = [];
+    let sanitizedFn = (items: item) => {
+      if (!items) return
+      let arr: any[] = [];
       Object.keys(items).forEach(item => {
 
         let eleA = items[item].Right;
@@ -104,17 +104,17 @@ export const WeekNessGraphOfAnExam = async (req: any, res: any) => {
         if (eleA > range || eleB > range) {
           range = range + 10;
         }
-        arr.push( {
+        arr.push({
           subject: item as string,
           A: eleA,
           B: eleB,
           fullMark: eleA + eleB,
         })
-      })      
+      })
       return arr;
-    }    
+    }
     let sanitizedData = sanitizedFn(data?.topic_wise_result as item)
-    res.json({ success: true, message: "message", data: sanitizedData ,range: range });
+    res.json({ success: true, message: "message", data: sanitizedData, range: range });
   } catch (error) {
     console.log("Error in metrix --->", error);
   }

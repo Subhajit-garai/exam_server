@@ -1,4 +1,4 @@
-import { ExamScope, ExamStatus, ExamType } from "@repo/prisma/client";
+import { ExamScope, ExamStatus, ExamType } from "@repo/prisma/client.js";
 import { z } from "zod";
 
 export const create_targated_exam_zodSchemea = z.object({

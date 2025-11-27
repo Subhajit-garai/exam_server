@@ -1,7 +1,7 @@
-import { examManager } from "@/lib/manager/examManager";
-import { BaseEvent } from "../bace-event";
-import prisma from "@/db";
-import { event_exam_data_type } from "@/lib/types/EventTypes";
+import { examManager } from "@/lib/manager/examManager.js";
+import { BaseEvent } from "../bace-event.js";
+import prisma from "@/db/index.js";
+import { event_exam_data_type } from "@/lib/types/EventTypes.js";
 import dayjs from "dayjs";
 
 export class create_exam_event extends BaseEvent {
@@ -88,8 +88,8 @@ export class create_exam_event extends BaseEvent {
           });
 
 
-          console.log("----> exams -> ",isExamExaist);
-          
+          console.log("----> exams -> ", isExamExaist);
+
 
 
           if (isExamExaist.length > 0) {
@@ -120,7 +120,7 @@ export class create_exam_event extends BaseEvent {
         );
       }
 
-      
+
       if (title === "autoincrement") {
         let new_exam_number_str = lastExam?.name?.split("@")[1];
         if (!new_exam_number_str) {

@@ -1,8 +1,8 @@
 import { Response, Request } from "express";
-import prisma from  "@repo/db/index";
-import { asyncHandler } from "@repo/lib/helper/asyncHandler";
-import { examManager } from "@repo/lib/manager/examManager";
-import { create_quiz_data_ZodSchema, createQuizType } from "../zod/quiz.zod";
+import prisma from "@repo/db/index.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
+import { examManager } from "@repo/lib/manager/examManager.js";
+import { create_quiz_data_ZodSchema, createQuizType } from "../zod/quiz.zod.js";
 
 const em = examManager.getInstance();
 

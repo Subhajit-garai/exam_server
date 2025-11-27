@@ -1,9 +1,9 @@
-import { verifyToken } from "../token";
+import { verifyToken } from "../token.js";
 // import prisma from  "@repo/db/index";
-import prisma from  "@repo/db/index";
+import prisma from "@repo/db/index.js";
 
 export const userauthenticate = (req: any, res: any, next: () => any) => {
-  let token = req.cookies.token;  
+  let token = req.cookies.token;
   if (!token) {
     return res
       .status(401)
@@ -29,9 +29,9 @@ export const isAdmin = async (
 ) => {
   try {
     // with token
-    let user:any
-   
-    if(req.user){
+    let user: any
+
+    if (req.user) {
       user = await prisma.user.findFirst({
         where: {
           id: req.user,
@@ -41,8 +41,8 @@ export const isAdmin = async (
           role: true,
         },
       });
-  
-    }else{
+
+    } else {
       user = await prisma.user.findFirst({
         where: {
           email: req.body.email,
@@ -52,7 +52,7 @@ export const isAdmin = async (
           role: true,
         },
       });
-  
+
     }
     if (user) {
       if (user.role == "Admin") {

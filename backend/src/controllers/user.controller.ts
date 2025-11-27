@@ -1,12 +1,12 @@
-import { genToken, setCookie } from "@repo/lib/token";
-import { primeStatus } from  "@repo/prisma/client"
-import prisma from  "@repo/db/index";
+import { genToken, setCookie } from "@repo/lib/token.js";
+import { primeStatus } from "@repo/prisma/client.js"
+import prisma from "@repo/db/index.js";
 import {
   Createhash,
   generateResetToken,
   hashPasswordFn,
   veryfyhashPasswordFn,
-} from "@repo/lib/security/hash";
+} from "@repo/lib/security/hash.js";
 import {
   forgotpasswordVerifyZodSchema,
   forgotpasswordZodSchema,
@@ -15,10 +15,10 @@ import {
   useremailValidationZodSchema,
   usertelegramidValidationZodSchema,
   validateTokenZodSchema,
-} from "../zod/user.zod";
-import Mailer from "@repo/lib/messageService/nodemail";
+} from "../zod/user.zod.js";
+import Mailer from "@repo/lib/messageService/nodemail.js";
 import dayjs from "dayjs";
-import { sendMessage_HtmlParse } from "@repo/lib/messageService/telgramMessenger";
+import { sendMessage_HtmlParse } from "@repo/lib/messageService/telgramMessenger.js";
 
 export const userPurchases = async (req: any, res: any) => {
   try {

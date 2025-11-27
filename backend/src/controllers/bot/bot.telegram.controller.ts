@@ -1,32 +1,14 @@
-import { veryfyhashPasswordFn } from "@/lib/security/hash";
-import { genToken } from "@/lib/token";
-import prisma from "@repo/db/index";
-import { primeStatus, UserRole } from "@repo/prisma/client";
+import { veryfyhashPasswordFn } from "@/lib/security/hash.js";
+import { genToken } from "@/lib/token.js";
+import prisma from "@repo/db/index.js";
+import { UserRole } from "@repo/prisma/client.js";
+import { BotService } from "../../services/bot.service.js";
 
-
-
+const botService = new BotService();
 
 export const sendAlluser = async (req: any, res: any) => {
   try {
-    let users = await prisma.user.findMany({
-      select: {
-        telegram: {
-          select: { telegramid: true },
-        },
-        prime: {
-          select: {
-            status: true,
-          },
-        },
-      },
-    });
-
-    if (!users) {
-      return res.status(403).json({
-        success: false,
-        message: "user not found",
-      });
-    }
+    const users = await botService.telegram.getAllUsersForTelegram();
     res.json({ success: true, message: "sending users", users: users });
   } catch (error) {
     console.log("Error in bot.controller sendAlluser  --->", error);
@@ -36,48 +18,20 @@ export const sendAlluser = async (req: any, res: any) => {
     });
   }
 };
+
 export const sendValidchatids = async (req: any, res: any) => {
   try {
-    let groupDatas = await prisma.telegramGroupInfo.findMany({
-      select: {
-        groupid: true,
-        groupType: true,
-        isBanned: true,
-        isPremium: true,
-      },
-    });
-
-    let formatedValidChatIds: Object[] = [];
-
-    groupDatas.map((groupData) => {
-      if (!groupData.isBanned) {
-        let tempdata = {
-          id: groupData.groupid,
-          type: groupData.groupType,
-          isPremium: groupData.isPremium,
-        };
-
-        formatedValidChatIds.push(tempdata);
-      }
-    });
-    res.json({ success: true, message: "message", data: formatedValidChatIds });
+    const data = await botService.telegram.getValidChatIds();
+    res.json({ success: true, message: "message", data: data });
   } catch (error) {
     console.log("Error in metrix --->", error);
   }
 };
+
 export const sendGroupTopicinfo = async (req: any, res: any) => {
   try {
-    let { groupId, name } = req.query;
-
-    let groupTopicInfo = await prisma.telegramGroupTopic.findFirst({
-      where: {
-        id: groupId,
-        name: name,
-      },
-    });
-
-    if (!groupTopicInfo) throw Error(" group topic info not avalible ");
-
+    const { groupId, name } = req.query;
+    const groupTopicInfo = await botService.telegram.getGroupTopicInfo(groupId, name);
     return res.json({
       success: true,
       message: "message",
@@ -87,105 +41,53 @@ export const sendGroupTopicinfo = async (req: any, res: any) => {
     console.log("Error in metrix --->", error);
   }
 };
+
 export const sendGroupinfo = async (req: any, res: any) => {
   try {
-    let group_telegramid = req.query.chatid;
+    const group_telegramid = req.query.chatid;
+    const chatid = typeof group_telegramid !== "string" ? String(group_telegramid) : group_telegramid;
 
-    let groupInfo = await prisma.telegramGroupInfo.findFirst({
-      where: {
-        groupid:
-          typeof group_telegramid !== "string"
-            ? String(group_telegramid)
-            : group_telegramid,
-      },
-    });
+    const groupInfo = await botService.telegram.getGroupInfo(chatid);
     res.json({ success: true, message: "message", data: groupInfo });
   } catch (error) {
     console.log("Error in metrix --->", error);
   }
 };
+
 export const isGroupJoinable = async (req: any, res: any) => {
   try {
-    let group_telegramid = req.query.chatid;
+    const group_telegramid = req.query.chatid;
+    const chatid = typeof group_telegramid !== "string" ? String(group_telegramid) : group_telegramid;
 
-    let groupInfo = await prisma.telegramGroupInfo.findFirst({
-      where: {
-        groupid:
-          typeof group_telegramid !== "string"
-            ? String(group_telegramid)
-            : group_telegramid,
-      },
-    });
-
-    let isjoinable = groupInfo?.isBanned == false ? true : false;
+    const isjoinable = await botService.telegram.isGroupJoinable(chatid);
     res.json({ success: true, message: "message", data: isjoinable });
   } catch (error) {
     console.log("Error in bot.controller (in isgroupjoinable)  --->", error);
   }
 };
+
 export const AllUserData = async (req: any, res: any) => {
   try {
-    let role = req.query.role;
-
-    let users = await prisma.user.findMany({
-      where: {
-        role: role ?? "User",
-      },
-      select: {
-        telegram: {
-          select: {
-            telegramid: true,
-          },
-        },
-        prime: {
-          select: {
-            status: true,
-            expiry: true,
-          },
-        },
-      },
-    });
-
-    if (!users) {
-      return res
-        .status(404)
-        .json({ success: false, message: "no user found " });
-    }
+    const role = req.query.role;
+    const users = await botService.telegram.getUsersByRole(role);
     res.json({ success: true, message: "success ", data: users });
   } catch (error) {
     console.log("Error in bot.controller (in allUserdata) --->", error);
+    res.status(404).json({ success: false, message: "no user found " });
   }
 };
+
 export const IsprimeUser = async (req: any, res: any) => {
   try {
-    let user_telegramid = req.query.userid;
-    let user = await prisma.user.findFirst({
-      where: {
-        telegram: {
-          telegramid: user_telegramid,
-        },
-      },
-      select: {
-        prime: {
-          select: {
-            status: true,
-          },
-        },
-      },
-    });
-    if (!user) {
-      return res.status(403).json({
-        success: false,
-        message: "user not found",
-      });
-    }
-    let isPrime = user.prime?.status == primeStatus.None ? false : true;
-
+    const user_telegramid = req.query.userid;
+    const isPrime = await botService.telegram.isPrimeUser(user_telegramid);
     res.json({ success: true, message: "is user prime ", data: isPrime });
   } catch (error) {
     console.log("Error in IsprimeUser --->", error);
+    res.status(403).json({ success: false, message: "user not found" });
   }
 };
+
 export const bot_login = async (req: any, res: any) => {
   try {
     const { email, password } = req.body;
@@ -208,5 +110,24 @@ export const bot_login = async (req: any, res: any) => {
     res.json({ success: true, message: "successful", data: newToken });
   } catch (error) {
     console.log("Error in bot login --->", error);
+  }
+};
+
+// Added processNotification here as it fits with telegram logic
+export const processNotification = async (req: any, res: any) => {
+  try {
+    const type = req.query.type;
+    const data = req.body;
+    const botUserId = req.bot_user;
+
+    const result = await botService.telegram.processNotification(type, data, botUserId);
+    res.json({ success: true, ...result });
+  } catch (error: any) {
+    console.error("Error in processNotification:", error);
+    const statusCode = error.message.includes("Invalid data") || error.message.includes("Unknown") ? 400 : 500;
+    res.status(statusCode).json({
+      success: false,
+      message: error.message || "Server error while processing notification",
+    });
   }
 };

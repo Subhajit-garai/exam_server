@@ -1,8 +1,8 @@
-import { events } from "@/lib/types/EventTypes";
-import { BaseEvent } from "./bace-event";
-import { create_exam_event } from "./event_statergis/create-exam-event";
-import { run_quiz_event } from "./event_statergis/run-quiz-event";
-import { send_notification_event } from "./event_statergis/send-notification-event";
+import { events } from "@/lib/types/EventTypes.js";
+import { BaseEvent } from "./bace-event.js";
+import { create_exam_event } from "./event_statergis/create-exam-event.js";
+import { run_quiz_event } from "./event_statergis/run-quiz-event.js";
+import { send_notification_event } from "./event_statergis/send-notification-event.js";
 
 export class EventFactory {
   static create(event: events): BaseEvent {

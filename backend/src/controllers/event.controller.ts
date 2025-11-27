@@ -1,7 +1,7 @@
-import prisma from "@repo/db/index";
-import { eventSchema } from "../zod/event.zod";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker";
-import { asyncHandler } from "@/lib/helper/asyncHandler";
+import prisma from "@repo/db/index.js";
+import { eventSchema } from "../zod/event.zod.js";
+import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
+import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 
 export const test = async (req: any, res: any) => {
   try {
@@ -14,7 +14,7 @@ export const test = async (req: any, res: any) => {
 export const createEvent = asyncHandler(async (req: any, res: any) => {
   let eventdata = eventSchema.safeParse(req.body);
 
-  eventdata.error && console.log("[logging error]",eventdata.error);
+  eventdata.error && console.log("[logging error]", eventdata.error);
 
   if (!eventdata.success) {
     throw ZodDataSafeParse(eventdata);

@@ -1,13 +1,12 @@
-import { userManager } from "./userManger";
-import { RedisProvider } from "../radisProvider";
-import { ExamQuestionsids } from "../types";
-import prisma from "@repo/db/index";
+import { userManager } from "./userManger.js";
+import { RedisProvider } from "../radisProvider.js";
+import { ExamQuestionsids } from "../types.js";
+import prisma from "@repo/db/index.js";
 import {
   exam_question_format_for_ui_type,
   exam_question_format_type,
-} from "../types/questionTypes";
-import { shuffleArraySeeded } from "../helper/shuffle";
-import { JsonValue } from "@prisma/client/runtime/library";
+} from "../types/questionTypes.js";
+import { shuffleArraySeeded } from "../helper/shuffle.js";
 
 let count = 0;
 interface exam_info {

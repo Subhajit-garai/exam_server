@@ -2,7 +2,7 @@ import {
   botPlatform,
   ExamType,
   telegramgroupType,
-} from "@repo/prisma/client";
+} from "@repo/prisma/client.js";
 import dayjs from "dayjs";
 export type ExamMetaData = {
   examid: string;

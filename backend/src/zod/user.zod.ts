@@ -1,4 +1,4 @@
-import { ExamType, Visibility } from  "@repo/prisma/client"
+import { ExamType, Visibility } from "@repo/prisma/client.js"
 import z, { date } from "zod";
 
 export const singupZodSchema = z.object({
@@ -63,7 +63,7 @@ export const ExampatternInputZodSchema = z.object({
 //   jointime:z.string().optional(),
 //   duration: z.string().optional(),
 //   date: z.string(),
-  
+
 // });
 export const ExamCreateInputeSchema = z.object({
   name: z.string(),
@@ -71,11 +71,11 @@ export const ExamCreateInputeSchema = z.object({
   category: z.string(),
   exam_pattern_id: z.string(),
   Visibility: z.nativeEnum(Visibility),
-  starttime:z.string(),
-  jointime:z.string().optional(),
+  starttime: z.string(),
+  jointime: z.string().optional(),
   duration: z.string().optional(),
   date: z.string(),
   mock_questions_set_id: z.string().optional(), // new
   examtype: z.nativeEnum(ExamType) // new
-  
+
 });

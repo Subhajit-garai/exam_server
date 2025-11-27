@@ -1,6 +1,6 @@
-import { event_Quiz_data_type } from "@/lib/types/EventTypes";
-import { BaseEvent } from "../bace-event";
-import { QuizeSetupFunction } from "@/lib/helper/TelegramQuiz";
+import { event_Quiz_data_type } from "@/lib/types/EventTypes.js";
+import { BaseEvent } from "../bace-event.js";
+import { QuizeSetupFunction } from "@/lib/helper/TelegramQuiz.js";
 
 export class run_quiz_event extends BaseEvent {
   async push(): Promise<void> {
@@ -9,10 +9,10 @@ export class run_quiz_event extends BaseEvent {
     try {
       // here i push task in task queue
 
-      let {bot_user_id,} = this.event.payload as event_Quiz_data_type
+      let { bot_user_id, } = this.event.payload as event_Quiz_data_type
 
       let user = bot_user_id;
-      let notification = await QuizeSetupFunction(user, this.event.payload  as event_Quiz_data_type);
+      let notification = await QuizeSetupFunction(user, this.event.payload as event_Quiz_data_type);
       if (notification) {
         console.log("Quiz created successfully");
       }

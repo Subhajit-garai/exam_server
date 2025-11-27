@@ -30,12 +30,27 @@ model User {
   Comment      Comment[]
   Topic        Topic[]
 
-  botQuizConfig botQuizConfig[]
-  CouponUsages  CouponUsage[] // Relation: which users used it
-  Coupon        Coupon[]
+  botQuizConfig  botQuizConfig[]
+  CouponUsages   CouponUsage[] // Relation: which users used it
+  Coupon         Coupon[]
   botInfo        botInfo[]
+  RecentActivity RecentActivity[]
 
   @@index([role])
+}
+
+model RecentActivity {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  activityType String // e.g., 'test', 'quiz', 'chapter'
+  score        String? // e.g., '82/100', 'Pending'
+  status       String // e.g., 'Completed', 'In Progress'
+  completedAt  DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
 }
 
 model prime {

@@ -11,7 +11,7 @@ import {
   purchaseType,
   UserRole,
   Visibility,
-} from "../prisma/generated/prisma/enums";
+} from "./generated/prisma/enums";
 import fs from "fs";
 import path from "path";
 
@@ -21,8 +21,13 @@ import {
   event_exam_data_type,
   event_Quiz_data_type,
 } from "../src/lib/types/EventTypes";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
+const prisma = new PrismaClient({ adapter });
+
 
 /* ---------- SUBSCRIPTIONS & OFFERS CONFIG ---------- */
 const subcriptions = [

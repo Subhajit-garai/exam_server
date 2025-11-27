@@ -1,8 +1,7 @@
-import prisma from "@repo/db/index";
-import { bot_singupZodSchema } from "../zod/bot.zod";
-import { appConfigSetting_zodSchema } from "../zod/settings.zod";
-import { asyncHandler } from "@/lib/helper/asyncHandler";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker";
+import prisma from "@repo/db/index.js";
+import { appConfigSetting_zodSchema } from "../zod/settings.zod.js";
+import { asyncHandler } from "@/lib/helper/asyncHandler.js";
+import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 
 export const test = asyncHandler(async (req: any, res: any) => {
   res.json({ success: true, message: "message", data: "data" });

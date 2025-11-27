@@ -1,5 +1,5 @@
-import { ExamType, primeStatus, purchaseType } from "@repo/prisma/client";
-import prisma from "@repo/db/index";
+import { ExamType, primeStatus, purchaseType } from "@repo/prisma/client.js";
+import prisma from "@repo/db/index.js";
 import dayjs from "dayjs";
 
 // price is merketpricce

@@ -1,22 +1,22 @@
 import {
   Visibility,
-} from "@repo/prisma/client";
-import prisma from "@repo/db/index";
+} from "@repo/prisma/client.js";
+import prisma from "@repo/db/index.js";
 
-import { examManager } from "@repo/lib/manager/examManager";
-import { ExamMetaData } from "@repo/lib/types";
-import { SubmitedQuestionAnsZodSchema } from "../zod/question.zod";
+import { examManager } from "@repo/lib/manager/examManager.js";
+import { ExamMetaData } from "@repo/lib/types.js";
+import { SubmitedQuestionAnsZodSchema } from "../zod/question.zod.js";
 
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import { getServiceCharge, TokenDeduction } from "@repo/lib/helper/payment";
-import { asyncHandler } from "@repo/lib/helper/asyncHandler";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
+import customParseFormat from "dayjs/plugin/customParseFormat.js";
+import { getServiceCharge, TokenDeduction } from "@repo/lib/helper/payment.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 import {
   updare_targated_exam_year_zodSchemea,
-} from "../zod/exam.zod";
-import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker";
+} from "../zod/exam.zod.js";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -770,9 +770,8 @@ export const getExams = asyncHandler(async (req: any, res: any) => {
 
   res.json({
     success: true,
-    message: `${
-      response.length < 1 ? " No Exams found" : `${response.length} All  Exams `
-    } `,
+    message: `${response.length < 1 ? " No Exams found" : `${response.length} All  Exams `
+      } `,
     data: { exams: response, total: total, currentPage: pageNumber },
   });
 });

@@ -8,7 +8,7 @@ import {
   telegramgroupType,
   UserRole,
   Visibility,
-} from "@repo/prisma/client";
+} from "@repo/prisma/client.js";
 import { z } from "zod";
 
 const baseEventSchema = z.object({

@@ -3,9 +3,9 @@
 import {
   exam_create_event_data_schema,
   quiz_create_event_data_schema,
-} from "@/zod/event.zod";
-import { JsonValue } from "@prisma/client/runtime/library";
-import { eventRuns, UserRole, eventType } from "@repo/prisma/client";
+} from "@/zod/event.zod.js";
+import { JsonValue } from "@prisma/client/runtime/client";
+import { eventRuns, UserRole, eventType } from "@repo/prisma/client.js";
 
 import * as z from "zod";
 

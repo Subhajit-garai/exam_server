@@ -1,6 +1,6 @@
 import Redis from "ioredis";
 
-import { Task } from "./types";
+import { Task } from "./types.js";
 
 export class RedisProvider {
   private static instance: RedisProvider;
@@ -15,7 +15,7 @@ export class RedisProvider {
   }
 
   private constructor() {
-    
+
     this.redisClient = new Redis(process.env.REDIS_URL as string);
 
     this.redisClient.on("error", (err) =>
@@ -48,12 +48,12 @@ export class RedisProvider {
   set(id: string, data: any) {
     let taskdata: string;
     taskdata = JSON.stringify(data);
-    this.redisClient.set(`question:${id}`, taskdata, "EX", 86400, "XX" ,(err,success)=>{
-      if(err){
+    this.redisClient.set(`question:${id}`, taskdata, "EX", 86400, "XX", (err, success) => {
+      if (err) {
         console.error("Redis SETXX Error:", err);
       }
 
-      if(!success){
+      if (!success) {
         this.redisClient.set(`question:${id}`, taskdata, "EX", 86400, "NX")
       }
     })

@@ -1,20 +1,21 @@
-import { razerpayinstance } from "../server";
+import { razerpayinstance } from "../server.js";
 import crypto, { randomUUID } from "crypto";
 // import { Payment } from "../models/paymentModel.js";
-import prisma from "@repo/db/index";
+import prisma from "@repo/db/index.js";
 import dayjs from "dayjs";
-import { ExamType, primeStatus, purchaseType } from "@repo/prisma/client";
+import { ExamType, primeStatus, purchaseType } from "@repo/prisma/client.js";
 import {
   subcriptionPurchase_zod_schema,
   tokenPurchase_zod_schema,
-} from "../zod/payment.zob";
+} from "../zod/payment.zod.js"
+
 import {
   isUserHavePrime,
   ProvideSubcriptionTouser,
   TokenDeduction,
-} from "@repo/lib/helper/payment";
-import { asyncHandler } from "@/lib/helper/asyncHandler";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker";
+} from "@repo/lib/helper/payment.js";
+import { asyncHandler } from "@/lib/helper/asyncHandler.js";
+import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 
 async function isPaymentProcessed(paymentId: string) {
   const payment = await prisma.payment.findUnique({

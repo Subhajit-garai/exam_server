@@ -1,8 +1,8 @@
-import prisma from  "@repo/db/index";
+import prisma from "@repo/db/index.js";
 import zod from "zod";
-import { IssueInpute_zod_type } from "../zod/issue.zod";
+import { IssueInpute_zod_type } from "../zod/issue.zod.js";
 // import { Status } from  "@repo/prisma/client"
-import { Status } from  "@repo/prisma/client";
+import { Status } from "@repo/prisma/client.js";
 
 export const test = async (req: any, res: any) => {
   try {
@@ -47,7 +47,7 @@ export const GetquestionIssuecount = async (req: any, res: any) => {
 };
 export const RemoveIssue = async (req: any, res: any) => {
   try {
-    
+
     let data = zod.string().safeParse(req.query.id);
     if (!data.success) {
       return res.status(404).json({
@@ -58,20 +58,20 @@ export const RemoveIssue = async (req: any, res: any) => {
     let id = data.data;
 
     let isIssuePresent = await prisma.issue.findFirst({
-      where:{
-        id:id
+      where: {
+        id: id
       }
     })
 
-    if(!isIssuePresent) return new Error ("This issue does not exist.")
-    
-      
+    if (!isIssuePresent) return new Error("This issue does not exist.")
+
+
 
     let responce = await prisma.issue.delete({
       where: {
         id: id,
       },
-    });    
+    });
     if (!responce) {
       return res.status(404).json({
         success: false,

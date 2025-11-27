@@ -1,15 +1,15 @@
 import { CronJob } from "cron";
-import prisma from "../../db/index";
+import prisma from "../../db/index.js";
 import dayjs from "dayjs";
 
 import { Client } from "pg";
-import { MockSetProcessingStatus, ProcessMockSet } from "./Mockset.processing";
-import { isFeatureAvailable } from "src/controllers/tier.controller";
-import { webhook_type } from "../types/botTypes";
+import { MockSetProcessingStatus, ProcessMockSet } from "./Mockset.processing.js";
+import { isFeatureAvailable } from "../../controllers/tier.controller.js";
+import { webhook_type } from "../types/botTypes.js";
 import axios from "axios";
-import { timeToCron } from "./cronHelper";
-import { events } from "../types/EventTypes";
-import { eventRunner } from "./event/event-runner";
+import { timeToCron } from "./cronHelper.js";
+import { events } from "../types/EventTypes.js";
+import { eventRunner } from "./event/event-runner.js";
 
 const pgClient = new Client({ connectionString: process.env.DATABASE_URL });
 

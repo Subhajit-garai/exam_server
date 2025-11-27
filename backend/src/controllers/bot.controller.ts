@@ -17,7 +17,7 @@ export class BotController {
    */
   public examQuestionAddedCompletionStatusCheck = asyncHandler(async (req: Request, res: Response) => {
     const { examid } = req.params;
-    const result = await botService.checkExamCompletionStatus(examid);
+    const result = await botService.exam.checkExamCompletionStatus(examid);
 
     res.json({
       success: true,
@@ -92,7 +92,7 @@ export class BotController {
       throw new Error("Missing required fields: userid, lastExamid, or examType");
     }
 
-    await botService.updateUserProgress(userid as string, lastExamid, examType);
+    await botService.score.updateUserProgress(userid as string, lastExamid, examType);
 
     res.json({ success: true, message: "Progress updated", data: userid });
   });
@@ -121,7 +121,7 @@ export class BotController {
       const data = req.body;
       const botUserId = req.bot_user; // Assuming this comes from middleware
 
-      const result = await botService.processNotification(type, data, botUserId);
+      const result = await botService.telegram.processNotification(type, data, botUserId);
 
       res.json({ success: true, ...result });
     } catch (error: any) {

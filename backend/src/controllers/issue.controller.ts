@@ -1,8 +1,9 @@
-import prisma from "@repo/db/index.js";
 import zod from "zod";
 import { IssueInpute_zod_type } from "../zod/issue.zod.js";
-// import { Status } from  "@repo/prisma/client"
 import { Status } from "@repo/prisma/client.js";
+import { IssueService } from "../services/issue.service.js";
+
+const issueService = new IssueService();
 
 export const test = async (req: any, res: any) => {
   try {
@@ -23,21 +24,18 @@ export const GetquestionIssuecount = async (req: any, res: any) => {
     }
     let id = data.data;
 
-    let responce = await prisma.issue.count({
-      where: {
-        IssueDetails: {
-          equals: {
-            id: id, // id should be a number or string based on your JSON
-          },
-        },
-      },
-    });
+    let responce = await issueService.getQuestionIssueCount(id);
 
     if (!responce) {
-      return res.status(404).json({
-        success: false,
-        message: "error in GetquestionIssuecount  ",
-      });
+      // Note: count returns 0 if no matches, which is falsy in JS if we treat it as boolean, but here it's a number. 
+      // However, the original code checked !responce. 0 is falsy. 
+      // But count usually returns a number >= 0. 
+      // If it returns 0, it means no issues found. 
+      // I will keep the logic as close to original as possible, but count returning 0 is valid.
+      // Original code: if (!responce) ...
+      // If count is 0, it enters the block. 
+      // I'll assume the original intent was to check if the query failed, but prisma count doesn't return null/undefined on success.
+      // I will return the response directly.
     }
 
     res.json({ success: true, message: " total questionIssuecount", data: responce });
@@ -45,9 +43,9 @@ export const GetquestionIssuecount = async (req: any, res: any) => {
     console.log("Error in GetquestionIssuecount in issue --->", error);
   }
 };
+
 export const RemoveIssue = async (req: any, res: any) => {
   try {
-
     let data = zod.string().safeParse(req.query.id);
     if (!data.success) {
       return res.status(404).json({
@@ -57,32 +55,13 @@ export const RemoveIssue = async (req: any, res: any) => {
     }
     let id = data.data;
 
-    let isIssuePresent = await prisma.issue.findFirst({
-      where: {
-        id: id
-      }
-    })
-
-    if (!isIssuePresent) return new Error("This issue does not exist.")
-
-
-
-    let responce = await prisma.issue.delete({
-      where: {
-        id: id,
-      },
-    });
-    if (!responce) {
-      return res.status(404).json({
-        success: false,
-        message: "error in priority voting ",
-      });
-    }
+    let responce = await issueService.deleteIssue(id);
 
     res.json({ success: true, message: "issue deleted", data: responce });
 
   } catch (error) {
     console.log("Error in RemoveIssue in issue --->", error);
+    res.status(500).json({ success: false, message: "Error deleting issue" });
   }
 };
 
@@ -103,26 +82,14 @@ export const updateStatus = async (req: any, res: any) => {
     }
     let { id, status } = data.data;
 
-    let responce = await prisma.issue.update({
-      where: {
-        id: id,
-      },
-      data: {
-        status: status,
-      },
-    });
-    if (!responce) {
-      return res.status(404).json({
-        success: false,
-        message: "error in priority voting ",
-      });
-    }
+    let responce = await issueService.updateStatus(id, status);
 
     res.json({ success: true, message: "message", data: responce });
   } catch (error) {
     console.log("Error in updateStatus in issue --->", error);
   }
 };
+
 export const CloseIssue = async (req: any, res: any) => {
   try {
     let data = zod.string().safeParse(req.query.id);
@@ -134,20 +101,7 @@ export const CloseIssue = async (req: any, res: any) => {
     }
     let id = data.data;
 
-    let responce = await prisma.issue.update({
-      where: {
-        id: id,
-      },
-      data: {
-        status: Status.Close,
-      },
-    });
-    if (!responce) {
-      return res.status(404).json({
-        success: false,
-        message: "error in priority voting ",
-      });
-    }
+    let responce = await issueService.closeIssue(id);
 
     res.json({ success: true, message: "message", data: responce });
   } catch (error) {
@@ -166,28 +120,14 @@ export const setDownVote = async (req: any, res: any) => {
     }
     let id = data.data;
 
-    let responce = await prisma.issue.update({
-      where: {
-        id: id,
-      },
-      data: {
-        downVote: {
-          increment: 1,
-        },
-      },
-    });
-    if (!responce) {
-      return res.status(404).json({
-        success: false,
-        message: "error in priority voting ",
-      });
-    }
+    let responce = await issueService.voteIssue(id, "down");
 
     res.json({ success: true, message: "voted ", data: responce });
   } catch (error) {
     console.log("Error in SetDownVote in issue  --->", error);
   }
 };
+
 export const setupVote = async (req: any, res: any) => {
   try {
     let data = zod.string().safeParse(req.query.id);
@@ -199,28 +139,14 @@ export const setupVote = async (req: any, res: any) => {
     }
     let id = data.data;
 
-    let responce = await prisma.issue.update({
-      where: {
-        id: id,
-      },
-      data: {
-        upVote: {
-          increment: 1,
-        },
-      },
-    });
-    if (!responce) {
-      return res.status(404).json({
-        success: false,
-        message: "error in priority voting ",
-      });
-    }
+    let responce = await issueService.voteIssue(id, "up");
 
     res.json({ success: true, message: "voted ", data: responce });
   } catch (error) {
     console.log("Error in setUpVote in issue  --->", error);
   }
 };
+
 export const setPriorityVote = async (req: any, res: any) => {
   try {
     let data = zod.string().safeParse(req.query.id);
@@ -232,22 +158,7 @@ export const setPriorityVote = async (req: any, res: any) => {
     }
     let id = data.data;
 
-    let responce = await prisma.issue.update({
-      where: {
-        id: id,
-      },
-      data: {
-        priorityVote: {
-          increment: 1,
-        },
-      },
-    });
-    if (!responce) {
-      return res.status(404).json({
-        success: false,
-        message: "error in priority voting ",
-      });
-    }
+    let responce = await issueService.voteIssue(id, "priority");
 
     res.json({ success: true, message: "voted ", data: responce });
   } catch (error) {
@@ -267,20 +178,12 @@ export const Isprocessed_issue = async (req: any, res: any) => {
     let id = data.data;
 
     console.log("update_issue's id is ", id);
-    let responce = await prisma.issue.findFirst({
-      where: { id: id },
-    });
-
-    if (!responce) {
-      return res.status(404).json({
-        success: false,
-        message: "issue not found ",
-      });
-    }
+    let responce = await issueService.getIssueById(id);
 
     res.json({ success: true, message: "message", data: responce });
   } catch (error) {
     console.log("Error in Isprocessed_issue in issue  --->", error);
+    res.status(404).json({ success: false, message: "issue not found" });
   }
 };
 
@@ -306,30 +209,12 @@ export const update_issue = async (req: any, res: any) => {
       });
     }
 
-    let { type, note, IssueDetails } = newData.data;
-
-    let responce = await prisma.issue.update({
-      where: {
-        id: id,
-      },
-      data: {
-        type,
-        note,
-        IssueDetails,
-        created_by: req.user,
-        creator_role: req.userRole,
-      },
-    });
-    if (!responce) {
-      return res.status(404).json({
-        success: false,
-        message: "issue not found ",
-      });
-    }
+    let responce = await issueService.updateIssue(id, newData.data, req.user, req.userRole);
 
     res.json({ success: true, message: "message", data: responce });
   } catch (error) {
     console.log("Error in update_issue in issue  --->", error);
+    res.status(404).json({ success: false, message: "issue not found" });
   }
 };
 
@@ -344,29 +229,12 @@ export const createNewIssue = async (req: any, res: any) => {
       });
     }
 
-    let { type, note, IssueDetails, sub_type } = data.data;
-
-    let responce = await prisma.issue.create({
-      data: {
-        type,
-        note,
-        sub_type,
-        IssueDetails,
-        created_by: req.user,
-        creator_role: req.userRole,
-      },
-    });
-
-    if (!responce) {
-      return res.status(404).json({
-        success: false,
-        message: "issue not created ",
-      });
-    }
+    let responce = await issueService.createIssue(data.data, req.user, req.userRole);
 
     res.json({ success: true, message: "message", data: responce });
   } catch (error) {
     console.log("Error in createNewIssue in issue  --->", error);
+    res.status(404).json({ success: false, message: "issue not created" });
   }
 };
 
@@ -384,31 +252,20 @@ export const getIssueByid = async (req: any, res: any) => {
 
     console.log("getIssueByid's is ", id);
 
-    let responce = await prisma.issue.findFirst({
-      where: {
-        id: id,
-      },
-    });
-    if (!responce) {
-      return res.status(404).json({
-        success: false,
-        message: "issue not found ",
-      });
-    }
+    let responce = await issueService.getIssueById(id);
     res.json({ success: true, message: "issue found", data: responce });
   } catch (error) {
     console.log("Error in getIssueByid in issue  --->", error);
+    res.status(404).json({ success: false, message: "issue not found" });
   }
 };
 
 export const getAllIssue = async (req: any, res: any) => {
   try {
-    let getAllIssues = await prisma.issue.findMany({});
-    if (!getAllIssue) {
-      return res.status(404).json({ success: false, message: "server error " });
-    }
+    let getAllIssues = await issueService.getAllIssues();
     res.json({ success: true, message: "message", data: getAllIssues });
   } catch (error) {
     console.log("Error in getAllIssue in issue  --->", error);
+    res.status(404).json({ success: false, message: "server error" });
   }
 };

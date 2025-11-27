@@ -1,10 +1,11 @@
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 import { botPlatform } from "@repo/prisma/client.js";
-import { QuizeSetupFunction } from "@/lib/helper/TelegramQuiz.js";
 import { bot_create_quiz_data_ZodSchema } from "@/zod/bot.zod.js";
-import { BotService } from "../../services/bot.service.js";
+import { QuizService } from "../../services/quiz.service.js";
 
-const botService = new BotService();
+
+const quizService = new QuizService();
+
 
 export const sentQuizData = async (req: any, res: any) => {
   try {
@@ -13,8 +14,8 @@ export const sentQuizData = async (req: any, res: any) => {
     if (!data.success) {
       return res.status(403).json({ success: false, message: "invalid data" });
     }
-    // Keeping this external call here as it's a specific helper function
-    const Notifystatus = await QuizeSetupFunction(req.bot_user, data.data);
+
+    const Notifystatus = await quizService.setupQuiz(req.bot_user, data.data);
 
     if (Notifystatus) {
       res.json({
@@ -47,7 +48,7 @@ export const getQuizConfigdData = asyncHandler(async (req: any, res: any) => {
 
   let config;
   if (platform === botPlatform.TELEGRAM) {
-    config = await botService.telegram.getQuizConfig(chatid);
+    config = await quizService.getQuizConfig(chatid);
   }
 
   return res.json({ success: true, message: "quiz config ", data: config });

@@ -138,7 +138,7 @@ export class PaymentService {
 
                             let user = await tx.order.update({
                                 where: {
-                                    order_id: razorpay_order_id,
+                                    razorpay_order_id: razorpay_order_id,
                                 },
                                 data: {
                                     status: status,
@@ -173,7 +173,7 @@ export class PaymentService {
 
                             let user = await tx.order.update({
                                 where: {
-                                    order_id: razorpay_order_id,
+                                    razorpay_order_id: razorpay_order_id,
                                 },
                                 data: {
                                     status: status,

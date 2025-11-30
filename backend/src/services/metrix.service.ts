@@ -17,6 +17,7 @@ import {
 } from "@repo/prisma/sql.js";
 
 export class MetrixService {
+
     async examQuestionAttemp(userId: string, examId: string) {
         let data = await prisma.score.findFirst({
             where: {
@@ -25,7 +26,7 @@ export class MetrixService {
             },
             select: {
                 not_attempt: true,
-                // add total question
+                total_questions: true,
             },
         });
         return data;

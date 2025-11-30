@@ -1,9 +1,9 @@
 import prisma from "@repo/db/index.js";
-import { EventStatus } from "@repo/prisma/enums";
+import { ExamStatus } from "@repo/prisma/enums.js";
 
-export class ExamEventsService {
-    async getAllEvents(examyearid: string) {
-        return await prisma.examEvent.findMany({
+export class ExamTimelineService {
+    async getAllTimelines(examyearid: string) {
+        return await prisma.examTimeline.findMany({
             where: {
                 exam_year: examyearid,
             },
@@ -12,16 +12,24 @@ export class ExamEventsService {
             },
         });
     }
+    async getAllDistinctTimelines() {
+        return await prisma.examTimeline.findMany({
+            distinct: ["exam_year"],
+            orderBy: {
+                date: "asc",
+            },
+        });
+    }
 
-    async createEvent(data: {
+    async createTimeline(data: {
         title: string;
-        date: Date;
+        date: Date | string;
         description?: string;
-        status: EventStatus;
+        status: ExamStatus;
         notification?: string;
         exam_year: string;
     }) {
-        return await prisma.examEvent.create({
+        return await prisma.examTimeline.create({
             data: {
                 title: data.title,
                 date: new Date(data.date),
@@ -33,15 +41,16 @@ export class ExamEventsService {
         });
     }
 
-    async updateEvent(id: string, data: {
+
+    async updateTimeline(id: string, data: {
         title?: string;
-        date?: Date;
+        date?: Date | string;
         description?: string;
-        status?: EventStatus;
+        status?: ExamStatus;
         notification?: string;
         exam_year?: string;
     }) {
-        return await prisma.examEvent.update({
+        return await prisma.examTimeline.update({
             where: { id },
             data: {
                 ...data,
@@ -50,8 +59,8 @@ export class ExamEventsService {
         });
     }
 
-    async deleteEvent(id: string) {
-        return await prisma.examEvent.delete({
+    async deleteTimeline(id: string) {
+        return await prisma.examTimeline.delete({
             where: { id },
         });
     }

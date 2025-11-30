@@ -1,4 +1,4 @@
-import { primeStatus, purchaseType } from "@repo/prisma/enums.js";
+import { OfferPlan, primeStatus, purchaseType } from "@repo/prisma/enums.js";
 import z from "zod";
 
 export const subcriptionPurchase_zod_schema = z.object({
@@ -8,7 +8,7 @@ export const subcriptionPurchase_zod_schema = z.object({
 });
 
 export const tokenPurchase_zod_schema = z.object({
-  plan: z.nativeEnum(primeStatus),
+  plan: z.nativeEnum(OfferPlan),
   amount: z.string(),
   type: z.nativeEnum(purchaseType),
 });

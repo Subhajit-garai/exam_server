@@ -104,19 +104,15 @@ export const gettokenSystem = async (req: any, res: any) => {
 
 // checked 2.0
 export const getCategory = asyncHandler(async (req: any, res: any) => {
-  try {
-    let Category = await examService.getCategory();
 
-    res.json({
-      success: true,
-      message: ` available Categorys `,
-      data: Category,
-    });
-  } catch (error) {
-    return res
-      .status(400)
-      .json({ success: false, message: `Can not find any Category` });
-  }
+  let Category = await examService.getCategory();
+
+  res.json({
+    success: true,
+    message: ` available Categorys `,
+    data: Category,
+  });
+
 });
 
 export const fetch_targeted_exam_by_id = asyncHandler(

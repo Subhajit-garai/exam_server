@@ -193,8 +193,7 @@ export const sendBulkQuestionData = async (
     for (let index = 0; index < length; index += chunkSize) {
       const chunk = data.slice(index, index + chunkSize);
       console.log(
-        `Inserting chunk ${index / chunkSize + 1} — records ${index}..${
-          index + chunk.length - 1
+        `Inserting chunk ${index / chunkSize + 1} — records ${index}..${index + chunk.length - 1
         }`
       );
       await bulkQuestionCreate(chunk);
@@ -453,9 +452,9 @@ async function main() {
           status: primeStatus.None,
         },
       },
-      telegram: {
+      social: {
         create: {
-          telegramid: "7057093987",
+          telegram: "7057093987",
           last_update: new Date(),
         },
       },
@@ -465,9 +464,6 @@ async function main() {
           ticket: 100,
           last_update: new Date(),
         },
-      },
-      verification: {
-        create: {},
       },
       password: await hashPasswordFn("admin@exambuddys"),
     },
@@ -483,9 +479,9 @@ async function main() {
           status: primeStatus.None,
         },
       },
-      telegram: {
+      social: {
         create: {
-          telegramid: "92837878822",
+          telegram: "92837878822",
           last_update: new Date(),
         },
       },
@@ -495,9 +491,6 @@ async function main() {
           ticket: 1,
           last_update: new Date(),
         },
-      },
-      verification: {
-        create: {},
       },
       password: await hashPasswordFn("razerpay@exambuddys"),
     },
@@ -513,9 +506,9 @@ async function main() {
           status: primeStatus.None,
         },
       },
-      telegram: {
+      social: {
         create: {
-          telegramid: "123456",
+          telegram: "123456",
           last_update: new Date(),
         },
       },
@@ -525,9 +518,6 @@ async function main() {
           ticket: 1,
           last_update: new Date(),
         },
-      },
-      verification: {
-        create: {},
       },
       password: await hashPasswordFn("bot@exambuddys"),
     },
@@ -554,9 +544,9 @@ async function main() {
           status: primeStatus.None,
         },
       },
-      telegram: {
+      social: {
         create: {
-          telegramid: "#8177562050",
+          telegram: "#8177562050",
           last_update: new Date(),
         },
       },
@@ -566,9 +556,6 @@ async function main() {
           ticket: 1,
           last_update: new Date(),
         },
-      },
-      verification: {
-        create: {},
       },
       password: await hashPasswordFn("bot@exambuddys"),
     },

@@ -1,26 +1,18 @@
-model telegram {
-  id          String   @id @unique @default(cuid())
-  userid      String?
-  telegramid  String?  @default("0000000000") // change it to teleid --> telegramid
-  last_update DateTime @updatedAt
-  User        User?
-}
-
 model telegramGroupInfo {
-  id           String    @id @unique @default(cuid())
-  groupid      String    @unique
+  id           String            @id @unique @default(cuid())
+  groupid      String            @unique
   groupname    String
   groupType    telegramgroupType @default(group)
   grouplink    String?
-  isTopic      Boolean   @default(false)
-  isPremium    Boolean   @default(false)
+  isTopic      Boolean           @default(false)
+  isPremium    Boolean           @default(false)
   // topics       Json? // { "quiz": 109392 , "discussion": 109392 }
   adminIds     String[] // List of Telegram user IDs who can manage the bot in the group
-  isBanned     Boolean   @default(false) // If true, bot won't respond in this group
+  isBanned     Boolean           @default(false) // If true, bot won't respond in this group
   lastActiveAt DateTime? // When the bot last interacted in the group
-  messageCount Int       @default(0)
-  quizCount    Int       @default(0)
-  language     String    @default("en")
+  messageCount Int               @default(0)
+  quizCount    Int               @default(0)
+  language     String            @default("en")
   timezone     String? // e.g. "Asia/Kolkata"
   features     Json? // Example: { "quiz": true, "dailyTips": false }
 
@@ -48,7 +40,6 @@ model telegram_ban_user {
 
   @@unique([user_telegram_id, ban_from_id])
 }
-
 
 enum telegramgroupType {
   group

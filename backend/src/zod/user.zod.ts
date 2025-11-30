@@ -6,6 +6,44 @@ export const singupZodSchema = z.object({
   email: z.string().email(),
   telegramid: z.string(),
   password: z.string(),
+  targeted_exam: z.string().optional(),
+  exam_year: z.string().optional(),
+});
+
+export const updateUserZodSchema = z.object({
+  name: z.string().optional(),
+  targeted_exam: z.string().optional(),
+  exam_year: z.string().optional(),
+  academicProfile: z.array(z.object({
+    category: z.string(),
+    exam: z.string(),
+    year: z.string()
+  })).optional(),
+  school: z.string().optional(),
+  standard: z.string().optional(),
+  stream: z.string().optional(),
+});
+
+export const updateAcademicProfileZodSchema = z.object({
+  academicProfile: z.object({
+    category: z.string(),
+    exam: z.string(),
+    year: z.string()
+  }).optional(),
+  school: z.string().optional(),
+  standard: z.string().optional(),
+  stream: z.string().optional(),
+});
+
+export const updateSocialLinksZodSchema = z.object({
+  telegram: z.string().optional(), // Required in logic if not present, but optional in update payload if only updating others? User said "marked telegram to reuired". Let's make it optional here but enforce in service or frontend if it's an update. Actually, "marked telegram to reuired" likely means it cannot be null in DB.
+  whatsapp: z.string().optional(),
+  linkedin: z.string().optional(),
+  github: z.string().optional(),
+  twitter: z.string().optional(),
+  instagram: z.string().optional(),
+  facebook: z.string().optional(),
+  website: z.string().optional(),
 });
 
 export const singinZodSchema = z.object({

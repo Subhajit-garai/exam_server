@@ -7,8 +7,10 @@ import {
   useremailValidationZodSchema,
   usertelegramidValidationZodSchema,
   validateTokenZodSchema,
+  updateUserZodSchema,
 } from "../zod/user.zod.js";
 import { UserService } from "../services/user.service.js";
+import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 
 const userService = new UserService();
 
@@ -413,4 +415,70 @@ export const userSignin = async (req: any, res: any) => {
       message: "token not send , plz try again  ",
     });
   }
+}
+
+
+export const updateUser = async (req: any, res: any) => {
+  try {
+    let data = updateUserZodSchema.safeParse(req.body);
+
+    if (!data.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid data format",
+      });
+    }
+
+    try {
+      const updatedUser = await userService.updateUser(req.user, data.data);
+
+      res.status(200).json({
+        success: true,
+        message: "User updated successfully",
+        data: updatedUser,
+      });
+    } catch (error: any) {
+      console.log("Error in updateUser", error);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+      });
+    }
+  } catch (error) {
+    console.log("Error in updateUser", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };
+
+export const getUserTimeline = asyncHandler(async (req: any, res: any) => {
+
+  const timeline = await userService.getUserTimeline(req.user);
+  res.status(200).json({
+    success: true,
+    data: timeline,
+    message: "User timeline fetched successfully",
+  });
+
+
+
+})
+export const getSubscriptionTiers = asyncHandler(async (req: any, res: any) => {
+  const tiers = await userService.getSubscriptionTiers();
+  res.status(200).json({
+    success: true,
+    data: tiers,
+    message: "Subscription tiers fetched successfully",
+  });
+});
+
+export const getUserSubscriptionDetails = asyncHandler(async (req: any, res: any) => {
+  const details = await userService.getUserSubscriptionDetails(req.user);
+  res.status(200).json({
+    success: true,
+    data: details,
+    message: "User subscription details fetched successfully",
+  });
+});

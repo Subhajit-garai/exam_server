@@ -1,14 +1,16 @@
 model User {
-  id            String  @id @unique @default(cuid())
-  name          String
-  email         String  @unique
-  contactno     String? @default("0000000000") // only india
-  password      String
-  targeted_exam String? @default("not set")
-  exam_year     String? @default("not set")
-
-  telegramid          String?  @unique
-  verificationid      String?  @unique
+  id                  String   @id @unique @default(cuid())
+  name                String
+  email               String   @unique
+  contactno           String?  @default("0000000000") // only india
+  password            String
+  targeted_exam_id    String?  @default("not set")
+  exam_year_id        String?  @default("not set")
+  academicProfile     Json?
+  school              String?
+  standard            String?
+  stream              String?
+  socialId            String?  @unique
   progressid          String?  @unique
   role                UserRole @default(User)
   join_at             DateTime @default(now())
@@ -22,8 +24,7 @@ model User {
   Exam         Exam[]
   Exam_pattern Exam_pattern[]
   Questions    Questions[]
-  telegram     telegram?      @relation(fields: [telegramid], references: [id])
-  verification verification?  @relation(fields: [verificationid], references: [id])
+  social       Social?        @relation(fields: [socialId], references: [id])
   blance       blance?
   Order        Order[]
   payment      payment[]
@@ -33,27 +34,43 @@ model User {
   Comment      Comment[]
   Topic        Topic[]
 
-  botQuizConfig  botQuizConfig[]
-  CouponUsages   CouponUsage[] // Relation: which users used it
-  Coupon         Coupon[]
-  botInfo        botInfo[]
-  RecentActivity RecentActivity[]
+  botQuizConfig botQuizConfig[]
+  CouponUsages  CouponUsage[] // Relation: which users used it
+  Coupon        Coupon[]
+  botInfo       botInfo[]
+
+  userActivities       UserActivity[]
+  userStreaks          UserStreak[]
+  userBadges           UserBadge[]
+  activityLeaderboards ActivityLeaderboard[]
 
   @@index([role])
 }
 
-model RecentActivity {
-  id           String   @id @default(uuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title        String
-  activityType String // e.g., 'test', 'quiz', 'chapter'
-  score        String? // e.g., '82/100', 'Pending'
-  status       String // e.g., 'Completed', 'In Progress'
-  completedAt  DateTime @default(now())
-  createdAt    DateTime @default(now())
+model Social {
+  id                  String  @id @unique @default(cuid())
+  userid              String?
+  telegram            String? @default("0000000000") // Required field
+  whatsapp            String?
+  linkedin            String?
+  github              String?
+  twitter             String?
+  instagram           String?
+  facebook            String?
+  website             String?
+  // Verification status
+  isContactVerified   Boolean @default(false)
+  isEmailVerified     Boolean @default(false)
+  isTelegramVerified  Boolean @default(false)
+  isWhatsappVerified  Boolean @default(false)
+  isGithubVerified    Boolean @default(false)
+  isLinkedinVerified  Boolean @default(false)
+  isInstagramVerified Boolean @default(false)
+  isFacebookVerified  Boolean @default(false)
+  isTwitterVerified   Boolean @default(false)
 
-  @@index([userId])
+  last_update DateTime @updatedAt
+  User        User?
 }
 
 model prime {
@@ -64,16 +81,6 @@ model prime {
   expiry      DateTime    @default(now())
   User        User        @relation(fields: [userid], references: [id])
   updatedAt   DateTime    @default(now()) @updatedAt
-}
-
-model verification {
-  id        String   @id @unique @default(cuid())
-  contactno Boolean  @default(false)
-  email     Boolean  @default(false)
-  telegram  Boolean  @default(false)
-  whatsapp  Boolean  @default(false)
-  User      User?
-  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model progress {

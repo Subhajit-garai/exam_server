@@ -1,4 +1,4 @@
-import { Visibility } from "@repo/prisma/client.js";
+import { ExamType, Visibility } from "@repo/prisma/client.js";
 import prisma from "@repo/db/index.js";
 import { examManager } from "@repo/lib/manager/examManager.js";
 import { ExamMetaData } from "@repo/lib/types.js";
@@ -239,11 +239,10 @@ export class ExamService {
         let isUserVerified = await prisma.user.findFirst({
             where: { id: userId },
             select: {
-                verification: {
+                social: {
                     select: {
-                        telegram: true,
-                        email: true,
-                        whatsapp: true,
+                        isEmailVerified: true,
+                        isTelegramVerified: true,
                     },
                 },
             },
@@ -251,8 +250,8 @@ export class ExamService {
 
         if (
             !(
-                isUserVerified?.verification?.email &&
-                isUserVerified.verification.telegram
+                isUserVerified?.social?.isEmailVerified &&
+                isUserVerified.social.isTelegramVerified
             )
         ) {
             throw new Error(
@@ -431,7 +430,7 @@ export class ExamService {
 
     async getExams(
         userId: string,
-        type: any,
+        type: ExamType,
         page: number = 1,
         limit: number = 10,
         order: "desc" | "asc" = "desc",

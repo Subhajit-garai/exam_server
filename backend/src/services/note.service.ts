@@ -267,7 +267,46 @@ export class NoteService {
         return topicdatas;
     }
 
-    async getAllNoteSubject() {
+    async getAllNoteSubject(exam?: string) {
+        if (exam) {
+            const targetExam = await prisma.targetExam.findFirst({
+                where: {
+                    OR: [
+                        { name: { equals: exam, mode: "insensitive" } },
+                        { shortCode: { equals: exam, mode: "insensitive" } },
+                    ],
+                },
+            });
+
+            if (!targetExam) {
+                return [];
+            }
+
+            const examYears = await prisma.examYear.findMany({
+                where: { targetExamId: targetExam.id },
+                select: { id: true },
+            });
+            const examYearIds = examYears.map((ey) => ey.id);
+
+            const syllabi = await prisma.syllabus.findMany({
+                where: { exam_year_id: { in: examYearIds } },
+                select: { id: true },
+            });
+            const syllabusIds = syllabi.map((s) => s.id);
+
+            const subjectMaps = await prisma.subjectSyllabusMap.findMany({
+                where: { syllabusId: { in: syllabusIds } },
+                include: { subject: true },
+            });
+
+            const subjects = subjectMaps.map((sm) => sm.subject);
+            const uniqueSubjects = Array.from(
+                new Map(subjects.map((s) => [s.id, s])).values()
+            );
+
+            return uniqueSubjects;
+        }
+
         let subjectdatas = await prisma.subject.findMany({});
         return subjectdatas;
     }

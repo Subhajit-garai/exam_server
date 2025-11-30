@@ -60,9 +60,8 @@ export class BotAdminService {
                 email,
                 role: UserRole.Bot,
                 prime: { create: { status: "None" } }, // Assuming 'None' is string or enum
-                telegram: { create: { telegramid, last_update: new Date() } },
+                social: { create: { telegram: telegramid } },
                 blance: { create: { amount: 1, ticket: 1, last_update: new Date() } },
-                verification: { create: {} },
                 password: hashedPassword,
             },
         });

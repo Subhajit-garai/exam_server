@@ -70,7 +70,7 @@ export class BotTelegramService {
     async getAllUsersForTelegram() {
         const users = await prisma.user.findMany({
             select: {
-                telegram: { select: { telegramid: true } },
+                social: { select: { telegram: true } },
                 prime: { select: { status: true } },
             },
         });
@@ -122,7 +122,7 @@ export class BotTelegramService {
         const users = await prisma.user.findMany({
             where: { role: role ?? "User" },
             select: {
-                telegram: { select: { telegramid: true } },
+                social: { select: { telegram: true } },
                 prime: { select: { status: true, expiry: true } },
             },
         });
@@ -132,7 +132,7 @@ export class BotTelegramService {
 
     async isPrimeUser(telegramid: string) {
         const user = await prisma.user.findFirst({
-            where: { telegram: { telegramid } },
+            where: { social: { telegram: telegramid } },
             select: { prime: { select: { status: true } } },
         });
         if (!user) throw new Error("User not found");

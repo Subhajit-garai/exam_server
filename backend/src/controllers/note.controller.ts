@@ -198,7 +198,8 @@ export const getAllNoteTopic = async (req: any, res: any) => {
 
 export const getAllNoteSubject = async (req: any, res: any) => {
   try {
-    let subjectdatas = await noteService.getAllNoteSubject();
+    const { exam } = req.query;
+    let subjectdatas = await noteService.getAllNoteSubject(exam as string);
 
     if (!subjectdatas) {
       return res.status(400).json({

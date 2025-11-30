@@ -9,6 +9,11 @@ import {
 import Mailer from "@repo/lib/messageService/nodemail.js";
 import dayjs from "dayjs";
 import { sendMessage_HtmlParse } from "@repo/lib/messageService/telgramMessenger.js";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
+import { ProfileService } from "./profile.service.js";
+
+
+const profileService = new ProfileService();
 
 export class UserService {
     async userPurchases(userId: string) {
@@ -31,38 +36,7 @@ export class UserService {
     }
 
     async auth(userId: string) {
-        let User = await prisma.user.findFirst({
-            where: {
-                id: userId,
-            },
-            select: {
-                name: true,
-                email: true,
-                blance: {
-                    select: {
-                        amount: true,
-                        ticket: true,
-                    },
-                },
-                prime: {
-                    select: {
-                        status: true,
-                    },
-                },
-                verification: {
-                    select: {
-                        email: true,
-                        telegram: true,
-                        whatsapp: true,
-                    },
-                },
-                telegram: {
-                    select: {
-                        telegramid: true,
-                    },
-                },
-            },
-        });
+        let User = await profileService.getProfile(userId);
 
         if (!User) {
             throw new Error("user not exist");
@@ -72,7 +46,7 @@ export class UserService {
     }
 
     async userSignup(data: any) {
-        let { name, email, password, telegramid } = data;
+        let { name, email, password, telegramid, targeted_exam, exam_year } = data;
 
         let isUserExist = await prisma.user.findUnique({
             where: {
@@ -95,10 +69,9 @@ export class UserService {
                         status: primeStatus.None,
                     },
                 },
-                telegram: {
+                social: {
                     create: {
-                        telegramid: telegramid || "123456790",
-                        last_update: new Date(),
+                        telegram: telegramid,
                     },
                 },
                 blance: {
@@ -107,9 +80,6 @@ export class UserService {
                         ticket: 1,
                         last_update: new Date(),
                     },
-                },
-                verification: {
-                    create: {},
                 },
                 password: hasspaword,
             },
@@ -191,12 +161,12 @@ export class UserService {
                 throw new Error("user not exist");
             }
 
-            await tx.verification.update({
+            await tx.social.update({
                 where: {
-                    id: User?.verificationid as string,
+                    id: User?.socialId as string,
                 },
                 data: {
-                    email: true,
+                    isEmailVerified: true,
                 },
             });
 
@@ -211,9 +181,9 @@ export class UserService {
             },
             select: {
                 id: true,
-                telegram: {
+                social: {
                     select: {
-                        telegramid: true,
+                        telegram: true,
                     },
                 },
             },
@@ -223,7 +193,7 @@ export class UserService {
             throw new Error("user not exist");
         }
 
-        if (User?.telegram?.telegramid !== telegramid) {
+        if (User?.social?.telegram !== telegramid) {
             throw new Error("user telegram id not match");
         }
 
@@ -288,12 +258,12 @@ export class UserService {
                 },
             });
 
-            await tx.verification.update({
+            await tx.social.update({
                 where: {
-                    id: User.verificationid as string,
+                    id: User.socialId as string,
                 },
                 data: {
-                    telegram: true,
+                    isTelegramVerified: true,
                 },
             });
 
@@ -387,5 +357,125 @@ export class UserService {
         }
 
         return User;
+    }
+
+    async updateUser(userId: string, data: any) {
+        let { name, targeted_exam, exam_year } = data;
+
+        let updateData: any = {};
+        if (name) updateData.name = name;
+        if (targeted_exam) updateData.targeted_exam = targeted_exam;
+        if (exam_year) updateData.exam_year = exam_year;
+        if (data.academicProfile) updateData.academicProfile = data.academicProfile;
+        if (data.school) updateData.school = data.school;
+        if (data.standard) updateData.standard = data.standard;
+        if (data.stream) updateData.stream = data.stream;
+
+        let updatedUser = await prisma.user.update({
+            where: {
+                id: userId,
+            },
+            data: updateData,
+        });
+
+        return updatedUser;
+    }
+
+    async getUserTimeline(userId: string) {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { exam_year_id: true }
+        });
+
+        if (!user) {
+            throw new CustomError("User not found", 404);
+        }
+
+        if (!user.exam_year_id || user.exam_year_id === "not set") {
+            throw new CustomError("User need to update there Targect exam and Year first for exam timeline", 400)
+        }
+
+        const timelineEvents = await prisma.examTimeline.findMany({
+            where: {
+                exam_year: user.exam_year_id
+            },
+            orderBy: {
+                date: 'asc'
+            }
+        });
+
+        return timelineEvents;
+    }
+
+    async getSubscriptionTiers() {
+        const tiers = await prisma.tier.findMany({
+            include: {
+                benefits: true,
+                subcriptionOffers: {
+                    where: {
+                        // Assuming we want to show offers that are generally available or active
+                        // For now, let's fetch all linked offers
+                    }
+                }
+            },
+            orderBy: {
+                // You might want a specific order, e.g., by price or name
+                // For now, let's just order by creation or name
+                name: 'asc'
+            }
+        });
+        return tiers;
+    }
+
+    async getUserSubscriptionDetails(userId: string) {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                prime: {
+                    select: {
+                        status: true,
+                        expiry: true,
+                        expiryInday: true
+                    }
+                }
+            }
+        });
+
+        if (!user) throw new Error("User not found");
+
+        const currentStatus = user.prime?.status || "None";
+
+        // Fetch Tier details
+        const tier = await prisma.tier.findUnique({
+            where: { name: currentStatus },
+            include: {
+                benefits: true
+            }
+        });
+
+        // Fetch latest subscription payment
+        const lastPayment = await prisma.order.findFirst({
+            where: {
+                userId: userId,
+                type: "SUBSCRIPTION",
+                status: "success",
+                subcription: currentStatus
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        return {
+            currentPlan: currentStatus,
+            expiry: user.prime?.expiry,
+            expiryInday: user.prime?.expiryInday,
+            tierDetails: tier,
+            lastPayment: lastPayment ? {
+                amount: lastPayment.amount,
+                date: lastPayment.createdAt,
+                orderId: lastPayment.id
+            } : null
+        };
     }
 }

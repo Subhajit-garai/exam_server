@@ -25,7 +25,8 @@ import { noteRouter } from "./routes/noteRoute.js";
 import { errorHandler } from "./middleware/globalErrorHandler.js";
 import { syllabusRouter } from "./routes/syllabusRouter.js";
 import { userRouter } from "./routes/userRouter.js";
-import { examEventsRouter } from "./routes/examEvents.routes.js";
+
+
 
 
 export const razerpayinstance = new Razorpay({
@@ -102,7 +103,6 @@ app.use("/api/v1/notes", noteRouter);
 app.use("/api/v1/metrix", metrixRoute);
 app.use("/api/v1/exam", examRouter);
 app.use("/api/v1/question", questionRouter);
-app.use("/api/v1/events", examEventsRouter);
 
 
 app.use(errorHandler);

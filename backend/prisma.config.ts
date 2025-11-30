@@ -3,12 +3,12 @@ import "dotenv/config";
 
 
 export default defineConfig({
-  schema: "./prisma/schema", 
+  schema: "./prisma/schema",
   migrations: {
     path: "prisma/migrations",
   },
   datasource: {
     url: env("DATABASE_URL"),
-    shadowDatabaseUrl: env('SHADOW_DATABASE_URL')
+    // shadowDatabaseUrl: env('SHADOW_DATABASE_URL')
   },
 });

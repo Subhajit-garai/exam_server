@@ -1,11 +1,11 @@
-import { eventRuns, eventType, UserRole } from  "@repo/prisma/client"
-import prisma from  "@repo/db/index";
+import { eventRuns, eventType, UserRole } from "@repo/prisma/client.js"
+import prisma from "@repo/db/index.js";
 
 import { z } from "zod";
-import { events } from "../types/EventTypes";
-import { isAdmin } from "./auth";
-import { setCookie } from "../token";
-import { debuglog } from "../helper/debugLog";
+import { events } from "../types/EventTypes.js";
+import { isAdmin } from "./auth.js";
+import { setCookie } from "../token.js";
+import { debuglog } from "../helper/debugLog.js";
 
 const settingsSchema = z.object({
   status: z.string(),

@@ -1,11 +1,11 @@
 // src/workers/base-task.ts
 
-import { events } from "@/lib/types/EventTypes";
+import { events } from "@/lib/types/EventTypes.js";
 
 export abstract class BaseEvent {
   protected maxRetries = 3;
 
-  constructor(protected event:events) {}
+  constructor(protected event: events) { }
 
   // Each subclass must implement this 
   // push -> push as a task in task queue with priority

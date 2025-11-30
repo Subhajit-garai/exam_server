@@ -1,12 +1,13 @@
-import { error } from "console";
-import prisma from "@repo/db/index";
-import { asyncHandler } from "@repo/lib/helper/asyncHandler";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 import {
   createSubject_schema,
   createTopic_schema,
   noteUpdate_schema,
-} from "../zod/note.zod";
-import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker";
+} from "../zod/note.zod.js";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
+import { NoteService } from "../services/note.service.js";
+
+const noteService = new NoteService();
 
 export const test = async (req: any, res: any) => {
   try {
@@ -20,42 +21,11 @@ export const like = async (req: any, res: any) => {
   try {
     const { subject, topic } = req.params;
     if (!subject || !topic) throw new Error("subject or topic missing");
-    let topicid = "";
 
-    let transaction = await prisma.$transaction(async (tx) => {
-      let topicData = await tx.topic.findFirst({
-        where: {
-          id: topicid,
-        },
-      });
+    // Assuming 'topic' param is the slug, passing it to service
+    const updatedContent = await noteService.like(topic);
 
-      if (!topicData) throw new Error("Topic data not found in database");
-      let createAnotherVersion = await tx.topicNoteVersion.create({
-        data: {
-          topicId: topicData?.id,
-          content: topicData?.content,
-          version: topicData?.version,
-          attachments: topicData?.attachments,
-        },
-      });
-      if (!createAnotherVersion)
-        throw new Error("error while create a version backup");
-
-      let updatedContent = await tx.topic.update({
-        where: {
-          id: topicid,
-        },
-        data: {
-          like: {
-            increment: 1,
-          },
-        },
-      });
-
-      return updatedContent;
-    });
-
-    if (!transaction) {
+    if (!updatedContent) {
       return res.status(400).json({
         success: false,
         message: "error while updateing like , plz try again",
@@ -65,48 +35,18 @@ export const like = async (req: any, res: any) => {
     res.json({ success: true, message: "like added" });
   } catch (error) {
     console.log("Error in note controller --->", error);
+    res.status(500).json({ success: false, message: "Error adding like" });
   }
 };
+
 export const dislike = async (req: any, res: any) => {
   try {
     const { subject, topic } = req.params;
     if (!subject || !topic) throw new Error("subject or topic missing");
-    let topicid = "";
 
-    let transaction = await prisma.$transaction(async (tx) => {
-      let topicData = await tx.topic.findFirst({
-        where: {
-          id: topicid,
-        },
-      });
+    const updatedContent = await noteService.dislike(topic);
 
-      if (!topicData) throw new Error("Topic data not found in database");
-      let createAnotherVersion = await tx.topicNoteVersion.create({
-        data: {
-          topicId: topicData?.id,
-          content: topicData?.content,
-          version: topicData?.version,
-          attachments: topicData?.attachments,
-        },
-      });
-      if (!createAnotherVersion)
-        throw new Error("error while create a version backup");
-
-      let updatedContent = await tx.topic.update({
-        where: {
-          id: topicid,
-        },
-        data: {
-          dislike: {
-            increment: 1,
-          },
-        },
-      });
-
-      return updatedContent;
-    });
-
-    if (!transaction) {
+    if (!updatedContent) {
       return res.status(400).json({
         success: false,
         message: "error while updateing dislike , plz try again",
@@ -116,8 +56,10 @@ export const dislike = async (req: any, res: any) => {
     res.json({ success: true, message: "dislike added" });
   } catch (error) {
     console.log("Error in note controller --->", error);
+    res.status(500).json({ success: false, message: "Error adding dislike" });
   }
 };
+
 export const UpdateContentOfTopic = async (req: any, res: any) => {
   try {
     let data = req.body;
@@ -136,41 +78,9 @@ export const UpdateContentOfTopic = async (req: any, res: any) => {
     let newContent = processedData.data.content;
     let topicid = processedData.data.topicid;
 
-    let transaction = await prisma.$transaction(async (tx) => {
-      let topicData = await tx.topic.findFirst({
-        where: {
-          id: topicid,
-        },
-      });
+    const updatedContent = await noteService.updateContentOfTopic(topicid, newContent);
 
-      if (!topicData) throw new Error("Topic data not found in database");
-      let createAnotherVersion = await tx.topicNoteVersion.create({
-        data: {
-          topicId: topicData?.id,
-          content: topicData?.content,
-          version: topicData?.version,
-          attachments: topicData?.attachments,
-        },
-      });
-      if (!createAnotherVersion)
-        throw new Error("error while create a version backup");
-
-      let updatedContent = await tx.topic.update({
-        where: {
-          id: topicid,
-        },
-        data: {
-          content: newContent,
-          version: {
-            increment: 1,
-          },
-        },
-      });
-
-      return updatedContent;
-    });
-
-    if (!transaction) {
+    if (!updatedContent) {
       return res.status(400).json({
         success: false,
         message: "error while updateing Content , plz try again",
@@ -197,11 +107,7 @@ export const CreateTopic = async (req: any, res: any) => {
       });
     }
 
-    let subject = await prisma.topic.create({
-      data: {
-        ...processedData.data,
-      },
-    });
+    let subject = await noteService.createTopic(processedData.data);
 
     if (!subject) {
       return res.status(400).json({
@@ -225,19 +131,8 @@ export const DeleteSubject = asyncHandler(async (req: any, res: any) => {
     });
   }
 
-  let isExist = await prisma.subject.findFirst({
-    where: {
-      id: id,
-    },
-  });
+  let subject = await noteService.deleteSubject(id);
 
-  if (!isExist) throw new Error("Subject is not present ");
-
-  let subject = await prisma.subject.delete({
-    where: {
-      id: id,
-    },
-  });
   if (!subject) {
     return res.status(400).json({
       success: false,
@@ -254,11 +149,7 @@ export const CreateSubject = asyncHandler(async (req: any, res: any) => {
     throw ZodDataSafeParse(processedData, true);
   }
 
-  let subject = await prisma.subject.create({
-    data: {
-      ...processedData.data,
-    },
-  });
+  let subject = await noteService.createSubject(processedData.data);
 
   if (!subject) {
     throw new Error("subject creation faild");
@@ -272,17 +163,7 @@ export const getAllVersionOfNote = async (req: any, res: any) => {
 
     if (!topic) throw new Error("topic is missing");
 
-    let topicdata = await prisma.topic.findFirst({
-      where: {
-        slug: topic,
-      },
-    });
-
-    let versions = await prisma.topicNoteVersion.findMany({
-      where: {
-        id: topicdata?.id,
-      },
-    });
+    let versions = await noteService.getAllVersionOfNote(topic);
 
     res.json({
       success: true,
@@ -300,51 +181,8 @@ export const getAllNoteTopic = async (req: any, res: any) => {
 
     if (!slug) throw new Error("subject is missing");
 
-    let subjectdata = await prisma.subject.findFirst({
-      where: {
-        slug: slug,
-      },
-    });
+    let topicdatas = await noteService.getAllNoteTopic(slug);
 
-    let topicdatas = await prisma.topic.findMany({
-      where: {
-        subjectId: subjectdata?.id,
-      },
-      select: {
-        id: true,
-        order: true,
-        name: true,
-        shortName: true,
-        description: true,
-        created_at: true,
-        updated_at: true,
-        slug: true,
-        iconUrl: true,
-        color: true,
-        isPublic: true,
-        status: true,
-        subjectId: true,
-        isparentTopic: true,
-        parentTopicId: true,
-        tags: true,
-        // content:true,
-        like: true,
-        dislike: true,
-        readCount: true,
-        comments: true,
-        commentEnabled: true,
-        verified: true,
-        estimatedReadTime: true,
-        version: true,
-        attachments: true,
-        publishedAt: true,
-        language: true,
-        createdBy: true,
-        updatedBy: true,
-      },
-    });
-
-    
     if (!topicdatas) {
       return res.status(400).json({
         success: false,
@@ -357,11 +195,11 @@ export const getAllNoteTopic = async (req: any, res: any) => {
     console.log("Error in note controller --->", error);
   }
 };
+
 export const getAllNoteSubject = async (req: any, res: any) => {
   try {
-    // const { subject, topic } = req.params;
-
-    let subjectdatas = await prisma.subject.findMany({});
+    const { exam } = req.query;
+    let subjectdatas = await noteService.getAllNoteSubject(exam as string);
 
     if (!subjectdatas) {
       return res.status(400).json({
@@ -380,27 +218,7 @@ export const getTopic = async (req: any, res: any) => {
   try {
     const topicid = req.query.topicid;
 
-    let note = await prisma.topic.findFirst({
-      where: {
-        id: topicid,
-      },
-      select: {
-        content: true,
-        name: true,
-        order: true,
-        description: true,
-        slug: true,
-        tags: true,
-        like: true,
-        dislike: true,
-        readCount: true,
-        isPublic: true,
-        estimatedReadTime: true,
-        version: true,
-        attachments: true,
-        status: true,
-      },
-    });
+    let note = await noteService.getTopic(topicid);
 
     if (!note) {
       return res.status(400).json({
@@ -414,35 +232,13 @@ export const getTopic = async (req: any, res: any) => {
     console.log("Error in note controller --->", error);
   }
 };
+
 export const getNote = async (req: any, res: any) => {
   try {
     const { subject, topic } = req.params;
     if (!subject || !topic) throw new Error("subject or topic missing");
 
-    let note = await prisma.topic.findFirst({
-      where: {
-        slug: topic,
-        subject: {
-          slug: subject,
-        },
-      },
-      select: {
-        content: true,
-        name: true,
-        order: true,
-        description: true,
-        slug: true,
-        tags: true,
-        like: true,
-        dislike: true,
-        readCount: true,
-        isPublic: true,
-        estimatedReadTime: true,
-        version: true,
-        attachments: true,
-        status: true,
-      },
-    });
+    let note = await noteService.getNote(subject, topic);
 
     if (!note) {
       return res.status(400).json({

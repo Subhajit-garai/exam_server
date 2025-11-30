@@ -6,8 +6,8 @@ import {
   getQuestionalldatabyID,
   GetQuestionExplanation,
   updateQuestion,
-} from "../controllers/question.controller";
-import { isAdmin } from "@repo/lib/security/auth";
+} from "../controllers/question.controller.js";
+import { isAdmin } from "@repo/lib/security/auth.js";
 
 
 export const questionRouter = Router();

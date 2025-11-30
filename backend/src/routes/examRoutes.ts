@@ -19,9 +19,9 @@ import {
   getAvalibletargetExamAll,
   getExamYearInfo,
   fetch_targeted_exam_by_id,
-} from "../controllers/exam.controller";
-import { isAdmin } from "@repo/lib/security/auth";
-import { create_targeted_exam, create_targeted_exam_year, CreateExam, CreateNewExamPattern } from "@/controllers/exam/exam.create.controller";
+} from "../controllers/exam.controller.js";
+import { isAdmin } from "@repo/lib/security/auth.js";
+import { create_targeted_exam, create_targeted_exam_year, CreateExam, CreateNewExamPattern } from "@/controllers/exam/exam.create.controller.js";
 
 export const examRouter = Router();
 
@@ -53,7 +53,7 @@ examRouter.post("/create", isAdmin, CreateExam);
 examRouter.post("/get/target/exam/id", isAdmin, fetch_targeted_exam_by_id);
 examRouter.post("/create/target/exam", isAdmin, create_targeted_exam);
 examRouter.post("/create/target/examyear", isAdmin, create_targeted_exam_year);
-examRouter.put("/update/target/examyear/info", isAdmin,update_targeted_exam_year);
+examRouter.put("/update/target/examyear/info", isAdmin, update_targeted_exam_year);
 
 
 

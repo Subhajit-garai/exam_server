@@ -1,7 +1,9 @@
-import prisma from "@repo/db/index";
-import { eventSchema } from "../zod/event.zod";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker";
-import { asyncHandler } from "@/lib/helper/asyncHandler";
+import { eventSchema } from "../zod/event.zod.js";
+import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
+import { asyncHandler } from "@/lib/helper/asyncHandler.js";
+import { EventService } from "../services/event.service.js";
+
+const eventService = new EventService();
 
 export const test = async (req: any, res: any) => {
   try {
@@ -14,43 +16,23 @@ export const test = async (req: any, res: any) => {
 export const createEvent = asyncHandler(async (req: any, res: any) => {
   let eventdata = eventSchema.safeParse(req.body);
 
-  eventdata.error && console.log("[logging error]",eventdata.error);
+  eventdata.error && console.log("[logging error]", eventdata.error);
 
   if (!eventdata.success) {
     throw ZodDataSafeParse(eventdata);
   }
 
-  let { type, description, conditions, payload, created_by, runs, run_at } =
-    eventdata.data;
+  let responce = await eventService.createEvent(eventdata.data);
 
-  let responce = await prisma.events.create({
-    data: {
-      type,
-      description,
-      conditions,
-      payload,
-      created_by,
-      runs,
-      run_at,
-    },
-  });
-
-  if (!responce) {
-    return res
-      .status(404)
-      .json({ success: false, message: "server error, event not created  " });
-  }
   res.json({ success: true, message: "event ", data: "data" });
 });
 
 export const getAllEvents = async (req: any, res: any) => {
   try {
-    let allEvents = await prisma.events.findMany({});
-    if (!allEvents) {
-      return res.status(404).json({ success: false, message: "server error " });
-    }
+    let allEvents = await eventService.getAllEvents();
     res.json({ success: true, message: "message", data: allEvents });
   } catch (error) {
     console.log("Error in metrix --->", error);
+    res.status(404).json({ success: false, message: "server error" });
   }
 };

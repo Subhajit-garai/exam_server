@@ -1,13 +1,13 @@
 import "dotenv/config";
 import express from "express";
 import cookieParser from "cookie-parser";
-import { userauthenticate } from "@repo/lib/security/auth";
 import cors from "cors";
 // import WebSocket, { WebSocketServer } from "ws";
 import http from "http";
-import { userRouter } from "./routes/userRouter.js";
 import Razorpay from "razorpay";
-import "@repo/lib/cronJobs/index";
+import "@repo/lib/cronJobs/index.js";
+import { userauthenticate } from "@repo/lib/security/auth.js";
+
 
 // routers
 import { adminRouter } from "./routes/adminRouter.js";
@@ -24,6 +24,10 @@ import { CommonuserRoutes } from "./routes/CommonuserRoutes.js";
 import { noteRouter } from "./routes/noteRoute.js";
 import { errorHandler } from "./middleware/globalErrorHandler.js";
 import { syllabusRouter } from "./routes/syllabusRouter.js";
+import { userRouter } from "./routes/userRouter.js";
+
+
+
 
 export const razerpayinstance = new Razorpay({
   key_id: process.env.RAZERPAY_API_KEY as string,
@@ -76,7 +80,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.get("/health", (req, res) => {
-  res.json({ message: "i'm healthy now,after you ask" });
+  res.send({ message: "i'm healthy now,after you ask" });
 });
 
 app.use("/api/v1/bulk", DataManageRouter); // bulk insert
@@ -96,37 +100,10 @@ app.use("/api/v1/issue", IssueRouter);
 app.use("/api/v1/event", eventRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/notes", noteRouter);
-
 app.use("/api/v1/metrix", metrixRoute);
 app.use("/api/v1/exam", examRouter);
 app.use("/api/v1/question", questionRouter);
 
-// webscocket server
-// wss.on("connection", (ws:AuthenticatedWebSocket,req) => {
-//  // ws auth
-//   const url = req?.url || "";
-//   const queryString = url.includes("?") ? url.split("?")[1] : "";
-//   const urlParams = new URLSearchParams(queryString);
-
-//   const token = urlParams.get("token");
-
-//   if (!token) {
-//     ws.send(JSON.stringify({ error: "No token provided" }));
-//     ws.close();
-//     return;
-//   }
-
-//   let decoded = verifyToken(token)
-//   if (!decoded) {
-//     ws.send(JSON.stringify({ error: "Invalid token" }));
-//     ws.close();
-//     return;
-//   }
-//   ws.user = decoded
-
-//    // message handling
-//   handleWebSocketConnection(ws);
-// });
 
 app.use(errorHandler);
 

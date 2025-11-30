@@ -1,6 +1,7 @@
-import { ExamType, primeStatus } from  "@repo/prisma/client"
-import prisma from  "@repo/db/index";
-import { debuglog } from "@repo/lib/helper/debugLog";
+import { ExamType, primeStatus } from "@repo/prisma/client.js"
+import { TierService } from "../services/tier.service.js";
+
+const tierService = new TierService();
 
 type BenefitInput = {
   feature: ExamType;
@@ -29,76 +30,14 @@ export async function createOrUpdateTier(
   tierName: primeStatus,
   benefits: BenefitInput[]
 ) {
-  // Check if tier exists
-  const existing = await prisma.tier.findUnique({
-    where: { name: tierName },
-  });
-
-  if (!existing) {
-    // Create Tier
-    const newTier = await prisma.tier.create({
-      data: {
-        name: tierName,
-        benefits: {
-          create: benefits.map((b) => ({
-            feature: b.feature,
-            access: b.access,
-            limit: b.limit,
-            used: b.used ?? 0,
-          })),
-        },
-      },
-      include: { benefits: true },
-    });
-    console.log(`Created tier ${tierName}`, newTier);
-    return newTier;
-  } else {
-    // Update/Add/Upsert each benefit
-    const updates = await Promise.all(
-      benefits.map((b) =>
-        prisma.tierBenefit.upsert({
-          where: {
-            tierId_feature: {
-              tierId: existing.id,
-              feature: b.feature,
-            },
-          },
-          update: {
-            access: b.access,
-            limit: b.limit,
-            used: b.used ?? 0,
-          },
-          create: {
-            tierId: existing.id,
-            feature: b.feature,
-            access: b.access,
-            limit: b.limit,
-            used: b.used ?? 0,
-          },
-        })
-      )
-    );
-    return updates;
-  }
+  return await tierService.createOrUpdateTier(tierName, benefits);
 }
 
 export async function removeBenefitFromTier(
   tierName: primeStatus,
   feature: ExamType
 ) {
-  const tier = await prisma.tier.findUnique({
-    where: { name: tierName },
-  });
-  if (!tier) throw new Error("Tier not found");
-
-  return await prisma.tierBenefit.deleteMany({
-    where: {
-      tierId: tier.id,
-      feature,
-    },
-  });
-
-  console.log(`Removed ${feature} from tier ${tierName}`);
+  return await tierService.removeBenefitFromTier(tierName, feature);
 }
 
 export async function isFeatureAvailable(
@@ -108,38 +47,5 @@ export async function isFeatureAvailable(
   access: boolean;
   remaining: number | "unlimited";
 }> {
-  const tier = await prisma.tier.findUnique({
-    where: { name: tierName },
-    select:{
-      benefits:{
-        where: { feature: feature },
-        select: {
-          access: true,
-          limit: true,
-          used: true,
-        },
-      }
-    }
-   
-  });
-
-  if (!tier || tier.benefits.length === 0) {
-    return { access: false, remaining: 0 };
-  }
-
-  const benefit = tier.benefits[0];
-
-  if (!benefit.access) {
-    return { access: false, remaining: 0 };
-  }
-
-  const remaining =
-    benefit.limit === null
-      ? "unlimited"
-      : Math.max((benefit.limit ?? 0) - (benefit.used ?? 0), 0);
-
-  return {
-    access: true,
-    remaining,
-  };
+  return await tierService.isFeatureAvailable(tierName, feature);
 }

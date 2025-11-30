@@ -1,17 +1,15 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  provider        = "prisma-client"
+  output          = "../generated/prisma"
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
   previewFeatures = ["typedsql"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // subject models
-
 
 enum TopicStatus {
   draft
@@ -29,17 +27,12 @@ model Comment {
   author    User     @relation(fields: [authorId], references: [id])
 }
 
-
 model AppConfig {
   id         String   @id @default(cuid())
   feature    String   @unique
   settings   Json
   updated_at DateTime @updatedAt
 }
-
-
-
-
 
 model EntryChargeList {
   id         String   @id @unique @default(cuid())
@@ -49,7 +42,6 @@ model EntryChargeList {
   created_by String?
 }
 
-
 model ContestRegister {
   id     String   @id @unique @default(cuid())
   examId String?  @default("new_value_not_seted")
@@ -58,14 +50,11 @@ model ContestRegister {
   Exam   Exam[]
 }
 
-
 enum ExamStage {
   Registration
   Started
   Ended
 }
-
-
 
 enum diffcultlevel {
   Easy
@@ -95,7 +84,7 @@ enum CreationTypes {
   Suspended
 }
 
-enum Visibility  {
+enum Visibility {
   Public
   Private
 }
@@ -110,10 +99,3 @@ enum examformat {
   Image
   Code
 }
-
-
-
-
-
-
-

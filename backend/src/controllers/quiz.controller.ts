@@ -1,10 +1,11 @@
 import { Response, Request } from "express";
-import prisma from  "@repo/db/index";
-import { asyncHandler } from "@repo/lib/helper/asyncHandler";
-import { examManager } from "@repo/lib/manager/examManager";
-import { create_quiz_data_ZodSchema, createQuizType } from "../zod/quiz.zod";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
+import { examManager } from "@repo/lib/manager/examManager.js";
+import { create_quiz_data_ZodSchema, createQuizType } from "../zod/quiz.zod.js";
+import { QuizService } from "../services/quiz.service.js";
 
 const em = examManager.getInstance();
+const quizService = new QuizService();
 
 export const test = async (req: any, res: any) => {
   try {
@@ -15,28 +16,7 @@ export const test = async (req: any, res: any) => {
 };
 
 export const createQuizfn = async (userid: string, data: createQuizType) => {
-  // try {
-  let isUserExist = await prisma.user.findFirst({
-    where: {
-      id: userid,
-    },
-  });
-
-  let quiz = await prisma.quiz.create({
-    data: {
-      ...data,
-      created_by: userid,
-    },
-  });
-
-  if (quiz) {
-    return quiz;
-  } else {
-    return null;
-  }
-  // } catch (error) {
-  //   console.log("Error in createQuiz --->", error);
-  // }
+  return await quizService.createQuiz(userid, data);
 };
 
 export const createQuiz = asyncHandler(

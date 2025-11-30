@@ -1,8 +1,8 @@
-import { webhook_type } from "../types/botTypes";
+import { webhook_type } from "../types/botTypes.js";
 import { z } from "zod";
-import prisma, { Prisma } from "@repo/db/index";
-import { examManager } from "../manager/examManager";
-import { bot_create_quiz_data_ZodSchema } from "../../zod/bot.zod";
+import prisma, { Prisma } from "@repo/db/index.js";
+import { examManager } from "../manager/examManager.js";
+import { bot_create_quiz_data_ZodSchema } from "../../zod/bot.zod.js";
 const em = examManager.getInstance();
 
 type BotCreateQuizData = z.infer<typeof bot_create_quiz_data_ZodSchema>;
@@ -26,7 +26,7 @@ export const QuizeSetupFunction = async (
   let bot_webhook = await prisma.botInfo.findFirst({
     where: {
       botuser_id: bot_user,
-  },
+    },
   });
   if (!bot_webhook) {
     console.log("No bot webhook found");
@@ -45,8 +45,8 @@ export const QuizeSetupFunction = async (
       platfrom: platform,
       chat_type: chat_type,
     },
-    variant:"Quiz",
-    category:"JECA"
+    variant: "Quiz",
+    category: "JECA"
   });
 
   return Notifystatus;

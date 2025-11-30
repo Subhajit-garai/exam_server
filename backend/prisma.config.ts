@@ -7,8 +7,8 @@ export default defineConfig({
   migrations: {
     path: "prisma/migrations",
   },
-  engine:"classic",
   datasource: {
     url: env("DATABASE_URL"),
+    shadowDatabaseUrl: env('SHADOW_DATABASE_URL')
   },
 });

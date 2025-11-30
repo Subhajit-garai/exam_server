@@ -1,27 +1,14 @@
-import { diffcultlevel, Prisma } from  "@repo/prisma/client";
-import prisma from "@repo/db/index";
 import {
   QuestionFilterDataFetchZodSchema,
   questionInputZodSchema,
   questionUpdateZodSchema,
-} from "../zod/question.zod";
-import { asyncHandler } from "@repo/lib/helper/asyncHandler";
+} from "../zod/question.zod.js";
+import { QuestionService } from "../services/question.service.js";
+
+const questionService = new QuestionService();
 
 export const updateQuestion = async (req: any, res: any) => {
   try {
-    let user = await prisma.user.findUnique({
-      where: {
-        id: req.user,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
     console.log("req.body", req.body);
 
     let data = questionUpdateZodSchema.safeParse(req.body);
@@ -33,30 +20,8 @@ export const updateQuestion = async (req: any, res: any) => {
         message: "inpute format/value invalid ",
       });
     }
-    // let {
-    //   id,
-    //   title,
-    //   options,
-    //   ans,
-    //   formate,
-    //   category,
-    //   topic,
-    //   difficulty,
-    //   explanation,
-    // } = data.data;
 
-    let question = await prisma.questions.update({
-      where: {
-        id: data.data.id,
-      },
-      data: {
-        ...data.data,
-        ...(data.data.extra ? { extra: data.data.extra } : undefined),
-        ...(data.data.extra === null
-          ? { extra: Prisma.JsonNull }
-          : { extra: data.data.extra }),
-      },
-    });
+    let question = await questionService.updateQuestion(req.user, data.data);
 
     if (!question) {
       return res.status(400).json({
@@ -81,13 +46,7 @@ export const GetQuestionExplanation = async (req: any, res: any) => {
   try {
     let questionid = req.query.questionid;
 
-    let data = await prisma.questions.findFirst({
-      where: { id: questionid },
-      select: {
-        explanation: true,
-        links: true,
-      },
-    });
+    let data = await questionService.getQuestionExplanation(questionid);
     res.json({ success: true, message: "Question Explanation", data: data });
   } catch (error) {
     console.log("Error in metrix --->", error);
@@ -98,13 +57,7 @@ export const checkQuestion = async (req: any, res: any) => {
   try {
     let { title } = req.body;
 
-    let responce = await prisma.questions.findMany({
-      where: {
-        title: {
-          contains: title,
-        },
-      },
-    });
+    let responce = await questionService.checkQuestion(title);
 
     if (responce.length > 0) {
       return res.status(200).json({
@@ -124,19 +77,6 @@ export const checkQuestion = async (req: any, res: any) => {
 };
 export const createQuestion = async (req: any, res: any) => {
   try {
-    let user = await prisma.user.findUnique({
-      where: {
-        id: req.user,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!user) {
-      // console.log("passs", user);
-      throw new Error("User not found");
-    }
     let data = questionInputZodSchema.safeParse(req.body);
 
     if (!data.success) {
@@ -145,47 +85,8 @@ export const createQuestion = async (req: any, res: any) => {
         message: "inpute format/value invalid ",
       });
     }
-    let {
-      Title,
-      options,
-      ans,
-      format,
-      category,
-      topic_id,
-      difficulty,
-      isMultiple,
-      Explanation,
-      extra,
-      subject_id,
-      status,
-      history,
-      links,
-    } = data.data;
 
-    let question = await prisma.questions.create({
-      data: {
-        title: Title,
-        options: options,
-        extra: extra,
-        ans: ans,
-        format: format,
-        category: category,
-
-        // temp data
-        old_sub_topic:"",
-        old_topic:"",
-
-        topic_id: topic_id, // change to sub_topic
-        subject_id: subject_id,
-        ...(status ? { status: status } : { status: "Processing" }),
-        ...(history ? { history: history } : { history: [""] }),
-        ...(links ? { links: links } : { links: [""] }),
-        explanation: Explanation,
-        is_multiple_ans: isMultiple,
-        difficulty: difficulty as diffcultlevel,
-        created_by: user.id,
-      },
-    });
+    let question = await questionService.createQuestion(req.user, data.data);
 
     if (!question) {
       return res.status(400).json({
@@ -211,15 +112,7 @@ export const createQuestion = async (req: any, res: any) => {
 export const getQuestion = async (req: any, res: any) => {
   try {
     let QuestionId = req.params.id;
-    let responce = await prisma.questions.findUnique({
-      where: {
-        id: QuestionId,
-      },
-      select: {
-        title: true,
-        options: true,
-      },
-    });
+    let responce = await questionService.getQuestion(QuestionId);
 
     if (!responce) {
       return res.status(400).json({
@@ -241,11 +134,7 @@ export const getQuestion = async (req: any, res: any) => {
 export const getQuestionalldatabyID = async (req: any, res: any) => {
   try {
     let QuestionId = req.params.id;
-    let responce = await prisma.questions.findUnique({
-      where: {
-        id: QuestionId,
-      },
-    });
+    let responce = await questionService.getQuestionAllDataById(QuestionId);
 
     if (!responce) {
       return res.status(400).json({
@@ -273,82 +162,20 @@ export const getAllQuestions = async (req: any, res: any) => {
         message: "user credential format invalid ",
       });
     }
-    let {
-      category,
-      topic,
-      difficulty,
-      formate,
-      status,
-      id,
-      title,
-      page,
-      ismultipleans,
-      links,
-      history,
-    } = body.data;
 
-    const pageNumber = page ? parseInt(page) : 1;
-    const questionsPerPage = 16;
-    let responce;
+    const pageNumber = body.data.page ? parseInt(body.data.page) : 1;
 
-    let filtertitle: any;
-    if (title?.trim()) {
-      filtertitle = {
-        contains: title.trim(),
-        mode: "insensitive", // Case-insensitive search
-      };
-    }
-    let Formatedfilter: any = id
-      ? { id: id }
-      : {
-          ...(category && { category: category.toUpperCase() }),
-          ...(topic && { topic: topic.toUpperCase() }),
-          ...(difficulty && { difficulty: difficulty }),
-          ...(formate && { formate: formate }),
-          ...(status && { status: status }),
-          ...(filtertitle && { title: filtertitle }),
-          ...(ismultipleans && { is_multiple_ans: ismultipleans }),
-          ...(links && {
-            links: {
-              has: links,
-            },
-          }), // array
-          ...(history && {
-            history: {
-              has: history,
-            },
-          }), // array
-        };
+    const { questions, total, currentPage } = await questionService.getAllQuestions(body.data, pageNumber);
 
-    if (id) {
-      responce = await prisma.questions.findMany({
-        where: Formatedfilter,
-        // skip: (pageNumber - 1) * questionsPerPage,
-        // take: questionsPerPage,
-        // orderBy: { id: "asc" },
-      });
-    } else {
-      responce = await prisma.questions.findMany({
-        where: Formatedfilter,
-        skip: (pageNumber - 1) * questionsPerPage,
-        take: questionsPerPage,
-        orderBy: { id: "asc" },
-      });
-    }
-
-    if (!responce) {
+    if (!questions) {
       return res.status(400).json({
         message: "questions not found",
       });
     }
 
-    const total = await prisma.questions.count({
-      where: Formatedfilter,
-    });
-
     res.status(200).json({
       success: true,
-      data: { questions: responce, total: total, currentPage: pageNumber },
+      data: { questions: questions, total: total, currentPage: currentPage },
     });
   } catch (error) {
     console.log("error -> ", error);
@@ -361,12 +188,11 @@ export const getAllQuestions = async (req: any, res: any) => {
 
 export const backupQuestion = async (req: any, res: any) => {
   try {
-    let responce = await prisma.questions.findMany({});
-    const total = await prisma.questions.count({});
+    const { questions, total } = await questionService.backupQuestion();
 
     res.status(200).json({
       success: true,
-      data: { questions: responce, total: total },
+      data: { questions: questions, total: total },
     });
   } catch (error) {
     console.log("error in backupQuestion ", error);

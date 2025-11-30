@@ -1,5 +1,5 @@
-import { diffcultlevel, examformat, Status } from  "@repo/prisma/client"
-import z, { date, nullable } from "zod";
+import { diffcultlevel, examformat, Status } from "@repo/prisma/client.js"
+import z from "zod";
 
 export const questionInputZodSchema = z.object({
   Title: z.string(),

@@ -1,18 +1,18 @@
-import { syllabusType } from "@repo/prisma/client";
-import prisma from "@repo/db/index";
+import { syllabusType } from "@repo/prisma/client.js";
+import prisma from "@repo/db/index.js";
 import {
   ExamCreateInputeSchema,
   ExampatternInputZodSchema,
-} from "../../zod/user.zod";
-import { examManager } from "@repo/lib/manager/examManager";
+} from "../../zod/user.zod.js";
+import { examManager } from "@repo/lib/manager/examManager.js";
 
-import { asyncHandler } from "@repo/lib/helper/asyncHandler";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 import {
   create_targated_exam_year_zodSchemea,
   create_targated_exam_zodSchemea,
-} from "../../zod/exam.zod";
-import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker";
-import { ConvertInSlug } from "@/lib/slug";
+} from "../../zod/exam.zod.js";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
+import { ConvertInSlug } from "@/lib/slug.js";
 
 const em = examManager.getInstance();
 

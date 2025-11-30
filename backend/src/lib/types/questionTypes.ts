@@ -1,5 +1,4 @@
-import { examformat } from "@repo/prisma/client";
-import { JsonValue } from "@prisma/client/runtime/library";
+import { JsonValue } from "@prisma/client/runtime/client";
 
 export type exam_question_format_type = {
   number: number;

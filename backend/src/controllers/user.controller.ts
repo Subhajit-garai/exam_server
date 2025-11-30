@@ -1,12 +1,4 @@
-import { genToken, setCookie } from "@repo/lib/token";
-import { primeStatus } from  "@repo/prisma/client"
-import prisma from  "@repo/db/index";
-import {
-  Createhash,
-  generateResetToken,
-  hashPasswordFn,
-  veryfyhashPasswordFn,
-} from "@repo/lib/security/hash";
+import { setCookie } from "@repo/lib/token.js";
 import {
   forgotpasswordVerifyZodSchema,
   forgotpasswordZodSchema,
@@ -15,30 +7,16 @@ import {
   useremailValidationZodSchema,
   usertelegramidValidationZodSchema,
   validateTokenZodSchema,
-} from "../zod/user.zod";
-import Mailer from "@repo/lib/messageService/nodemail";
-import dayjs from "dayjs";
-import { sendMessage_HtmlParse } from "@repo/lib/messageService/telgramMessenger";
+  updateUserZodSchema,
+} from "../zod/user.zod.js";
+import { UserService } from "../services/user.service.js";
+import { asyncHandler } from "@/lib/helper/asyncHandler.js";
+
+const userService = new UserService();
 
 export const userPurchases = async (req: any, res: any) => {
   try {
-    let User = await prisma.user.findFirst({
-      where: {
-        id: req.user,
-      },
-    });
-    if (!User) {
-      return res.status(401).json({
-        success: false,
-        message: "user not exist , plz log in ",
-      });
-    }
-
-    let allPurchases = await prisma.payment.findMany({
-      where: {
-        userId: User.id,
-      },
-    });
+    let allPurchases = await userService.userPurchases(req.user);
 
     if (allPurchases) {
       console.log("allPurchases", allPurchases);
@@ -60,45 +38,7 @@ export const userPurchases = async (req: any, res: any) => {
 
 export const auth = async (req: any, res: any) => {
   try {
-    let User = await prisma.user.findFirst({
-      where: {
-        id: req.user,
-      },
-      select: {
-        name: true,
-        email: true,
-        blance: {
-          select: {
-            amount: true,
-            ticket: true,
-          },
-        },
-        prime: {
-          select: {
-            status: true,
-          },
-        },
-        verification: {
-          select: {
-            email: true,
-            telegram: true,
-            whatsapp: true,
-          },
-        },
-        telegram: {
-          select: {
-            telegramid: true,
-          },
-        },
-      },
-    });
-
-    if (!User) {
-      return res.status(401).json({
-        success: false,
-        message: "user not exist , plz log in ",
-      });
-    }
+    let User = await userService.auth(req.user);
 
     res.status(200).json({
       success: true,
@@ -142,73 +82,27 @@ export const userSignup = async (req: any, res: any) => {
       });
     }
 
-    let { name, email, password, telegramid } = data.data;
+    try {
+      const newUser = await userService.userSignup(data.data);
+      setCookie(res, newUser.id);
 
-    let isUserExist = await prisma.user.findUnique({
-      where: {
-        email: email,
-      },
-    });
-
-    if (isUserExist) {
-      return res.status(409).json({
-        success: false,
-        message: "user already exist , plz log in",
+      res.status(200).json({
+        success: true,
+        message: "user created sucessfully ",
+        data: {
+          name: newUser.name,
+          email: newUser.email,
+        },
       });
+    } catch (error: any) {
+      if (error.message === "user already exist") {
+        return res.status(409).json({
+          success: false,
+          message: "user already exist , plz log in",
+        });
+      }
+      throw error;
     }
-
-    const hasspaword = await hashPasswordFn(password);
-
-    const newUser = await prisma.user.create({
-      data: {
-        name,
-        email,
-        prime: {
-          create: {
-            status: primeStatus.None,
-          },
-        },
-        telegram: {
-          create: {
-            telegramid: telegramid || "123456790",
-            last_update: new Date(),
-          },
-        },
-        blance: {
-          create: {
-            amount: 10,
-            ticket: 1,
-            last_update: new Date(),
-          },
-        },
-        verification: {
-          create: {},
-        },
-        password: hasspaword,
-      },
-    });
-
-    await prisma.progress.create({
-      data: {
-        userid: newUser.id,
-      },
-    });
-
-    // validate user or remove user
-    const referer = req.get("Referer");
-
-    // send user an email for validation
-
-    setCookie(res, newUser.id);
-
-    res.status(200).json({
-      success: true,
-      message: "user created sucessfully ",
-      data: {
-        name: newUser.name,
-        email: newUser.email,
-      },
-    });
   } catch (error) {
     console.log("Error in userSignup", error);
 
@@ -232,64 +126,25 @@ export const useremailValidationTokengen = async (req: any, res: any) => {
 
     let { email } = data.data;
 
-    let User = await prisma.user.findUnique({
-      where: {
-        email: email,
-      },
-    });
-
-    if (!User) {
-      return res.status(404).json({
-        success: false,
-        message: "user not exist , plz signup",
+    try {
+      await userService.useremailValidationTokengen(email);
+      res.status(200).json({
+        success: true,
+        message: "validation  token send successfully on your email ",
       });
-    }
-    // generate token and send to user email
-
-    // generate token
-    let { token, hashedToken } = generateResetToken("email");
-    const expirationDate: Date = dayjs().add(10, "minute").toDate();
-    console.log("expirationDate", expirationDate);
-
-    let update = await prisma.user.update({
-      where: {
-        id: User.id,
-      },
-      data: {
-        forgotpasswordToken: hashedToken,
-        resetTokenExpires: expirationDate, // 10 min life  of token
-      },
-    });
-
-    if (!update) {
-      return res.status(401).json({
-        success: false,
-        message: "token not set , plz try again  ",
-      });
-    }
-
-    // send token to user email
-
-    let mailer = new Mailer();
-    await mailer
-      .sendMail(
-        email,
-        "User email validation",
-        `Your validation token is ${token}`
-      )
-      .then(() => {
-        res.status(200).json({
-          success: true,
-          message: "validation  token send successfully on your email ",
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-        res.status(401).json({
+    } catch (error: any) {
+      if (error.message === "user not exist") {
+        return res.status(404).json({
           success: false,
-          message: "token not send , plz try again  ",
+          message: "user not exist , plz signup",
         });
+      }
+      console.log("Error sending email", error);
+      res.status(401).json({
+        success: false,
+        message: "token not send , plz try again  ",
       });
+    }
   } catch (error) {
     console.log("Error in useremailValidationTokengen", error);
 
@@ -311,68 +166,32 @@ export const useremailValidationTokenVerify = async (req: any, res: any) => {
       });
     }
 
-    let transtion = await prisma.$transaction(async (tx: any) => {
+    try {
       let { token, email } = data.data;
-      let token_hash = Createhash(token);
+      if (!email) throw Error("email not found ")
+      const userId = await userService.useremailValidationTokenVerify(token, email, req.user);
 
-      let User: any;
-      if (req.user) {
-        User = await tx.user.findUnique({
-          where: {
-            id: req.user,
-            forgotpasswordToken: token_hash,
-          },
-        });
-      } else {
-        // console.log("email", email);
-        // console.log("token_hash", token_hash);
-
-        User = await tx.user.findUnique({
-          where: {
-            email: email,
-            forgotpasswordToken: token_hash,
-          },
-        });
-
-        // console.log("User", User);
-
-        req.user = User.id;
-      }
-
-      if (User) {
-        //  console.log("1 ------------> done");
-
-        if (User?.resetTokenExpires < new Date()) {
-          return res.status(404).json({
-            success: false,
-            message: "user not exist token expired , generate new one",
-          });
-        }
-      } else {
-        //  console.log("2 ------------> done");
-
-        return res.status(404).json({
-          success: false,
-          message: "user not exist , plz signup now ",
-        });
-      }
-
-      await tx.verification.update({
-        where: {
-          id: User?.verificationid as string,
-        },
-        data: {
-          email: true,
-        },
-      });
-
-      setCookie(res, req.user);
+      setCookie(res, userId);
 
       res.status(200).json({
         success: true,
         message: "user email validate  successfully ",
       });
-    });
+    } catch (error: any) {
+      if (error.message === "user not exist token expired") {
+        return res.status(404).json({
+          success: false,
+          message: "user not exist token expired , generate new one",
+        });
+      }
+      if (error.message === "user not exist") {
+        return res.status(404).json({
+          success: false,
+          message: "user not exist , plz signup now ",
+        });
+      }
+      throw error;
+    }
   } catch (error) {
     console.log("-------------> ", error);
 
@@ -395,84 +214,34 @@ export const usertelegramidValidationTokengen = async (req: any, res: any) => {
     }
 
     let { telegramid } = data.data;
-    let User = await prisma.user.findUnique({
-      where: {
-        id: req.user,
-      },
-      select: {
-        id: true,
-        telegram: {
-          select: {
-            telegramid: true,
-          },
-        },
-      },
-    });
 
-    if (!User) {
-      return res.status(404).json({
-        success: false,
-        message: "user not exist , plz signup",
-      });
-    }
-
-    if (User?.telegram?.telegramid !== telegramid) {
-      console.log("user ", User?.telegram?.telegramid);
-      console.log("telegramid ", telegramid);
-
-      return res.status(404).json({
-        success: false,
-        message:
-          "user telegram id not match, plz provide correct one Or plz signup  ",
-      });
-    }
-
-    // generate token
-    let { token, hashedToken } = generateResetToken("telegramid");
-    const expirationDate: Date = dayjs().add(10, "minute").toDate();
-
-    let update = await prisma.user.update({
-      where: {
-        id: User.id,
-      },
-      data: {
-        forgotpasswordToken: hashedToken,
-        resetTokenExpires: expirationDate, // 10 min life  of token
-      },
-    });
-
-    if (!update) {
-      return res.status(401).json({
-        success: false,
-        message: "token not set , plz try again 1 ",
-      });
-    }
-
-    // send token to user telegram
-    const MESSAGE = `
-<b>🔑 Your Access Token</b>
-
-<code>${token}</code>
-
-⚠️ <i>Do not share this token with anyone.</i>
-⚠️ <i>You can hold the token to copy it.</i>
-`;
-    let message_state = await sendMessage_HtmlParse(
-      parseInt(telegramid),
-      MESSAGE
-    );
-
-    if (message_state) {
+    try {
+      await userService.usertelegramidValidationTokengen(req.user, telegramid);
       return res.status(200).json({
         success: true,
         message: "validation  token send successfully on your email ",
       });
-    } else {
-      console.log("---->", message_state);
-      return res.status(401).json({
-        success: false,
-        message: "token not send , plz try again 2 ",
-      });
+    } catch (error: any) {
+      if (error.message === "user not exist") {
+        return res.status(404).json({
+          success: false,
+          message: "user not exist , plz signup",
+        });
+      }
+      if (error.message === "user telegram id not match") {
+        return res.status(404).json({
+          success: false,
+          message:
+            "user telegram id not match, plz provide correct one Or plz signup  ",
+        });
+      }
+      if (error.message === "token not send") {
+        return res.status(401).json({
+          success: false,
+          message: "token not send , plz try again 2 ",
+        });
+      }
+      throw error;
     }
   } catch (error) {
     console.log("Error sending token", error);
@@ -498,47 +267,23 @@ export const usertetegramidValidationTokenVerify = async (
       });
     }
 
-    let transtion = await prisma.$transaction(async (tx: any) => {
+    try {
       let { token } = data.data;
-      let token_hash = Createhash(token);
-
-      let User = await tx.user.findUnique({
-        where: {
-          id: req.user,
-          forgotpasswordToken: token_hash,
-        },
-      });
-
-      if (!User || User?.resetTokenExpires < new Date()) {
-        return res.status(404).json({
-          success: false,
-          message: "user not exist , plz signup now ",
-        });
-      }
-
-      await tx.user.update({
-        where: {
-          id: req.user,
-        },
-        data: {
-          forgotpasswordToken: "-1",
-        },
-      });
-
-      await tx.verification.update({
-        where: {
-          id: User.verificationid as string,
-        },
-        data: {
-          telegram: true,
-        },
-      });
+      await userService.usertetegramidValidationTokenVerify(req.user, token);
 
       res.status(200).json({
         success: true,
         message: "user password change successfully ",
       });
-    });
+    } catch (error: any) {
+      if (error.message === "user not exist or token expired") {
+        return res.status(404).json({
+          success: false,
+          message: "user not exist , plz signup now ",
+        });
+      }
+      throw error;
+    }
   } catch (error) {
     console.log("Error in usertetegramidValidation", error);
 
@@ -562,63 +307,25 @@ export const userForgotpasswordTokenGen = async (req: any, res: any) => {
 
     let { email } = data.data;
 
-    let User = await prisma.user.findUnique({
-      where: {
-        email: email,
-      },
-    });
-
-    if (!User) {
-      return res.status(404).json({
-        success: false,
-        message: "user not exist , plz signup  ",
+    try {
+      await userService.userForgotpasswordTokenGen(email);
+      res.status(200).json({
+        success: true,
+        message: "pasword reset token send successfully on your email ",
       });
-    }
-    // generate token and send to user email
-
-    // generate token
-    let { token, hashedToken } = generateResetToken();
-    const expirationDate: Date = dayjs().add(10, "minute").toDate();
-
-    let update = await prisma.user.update({
-      where: {
-        id: User.id,
-      },
-      data: {
-        forgotpasswordToken: hashedToken,
-        resetTokenExpires: expirationDate, // 10 min life  of token
-      },
-    });
-
-    if (!update) {
-      return res.status(401).json({
-        success: false,
-        message: "token not set , plz try again  ",
-      });
-    }
-
-    // send token to user email
-
-    let mailer = new Mailer();
-    await mailer
-      .sendMail(
-        email,
-        "Reset Password",
-        `Your reset password token is ${token}`
-      )
-      .then(() => {
-        res.status(200).json({
-          success: true,
-          message: "pasword reset token send successfully on your email ",
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-        res.status(401).json({
+    } catch (error: any) {
+      if (error.message === "user not exist") {
+        return res.status(404).json({
           success: false,
-          message: "token not send , plz try again  ",
+          message: "user not exist , plz signup  ",
         });
+      }
+      console.log(error);
+      res.status(401).json({
+        success: false,
+        message: "token not send , plz try again  ",
       });
+    }
   } catch (error) {
     console.log("Error in userForgotpasswordTokenGen", error);
 
@@ -640,37 +347,21 @@ export const userForgotpasswordTokenVerify = async (req: any, res: any) => {
       });
     }
 
-    let { email, ForgotpasswordToken, newpassword } = data.data;
-    let token_hash = Createhash(ForgotpasswordToken);
-
-    let User = await prisma.user.findUnique({
-      where: {
-        email: email,
-        forgotpasswordToken: token_hash,
-      },
-    });
-
-    if (!User || User?.resetTokenExpires < new Date()) {
-      return res.status(404).json({
-        success: false,
-        message: "user not exist , plz signup now ",
+    try {
+      await userService.userForgotpasswordTokenVerify(data.data);
+      res.status(200).json({
+        success: true,
+        message: "user password change successfully ",
       });
+    } catch (error: any) {
+      if (error.message === "user not exist or token expired") {
+        return res.status(404).json({
+          success: false,
+          message: "user not exist , plz signup now ",
+        });
+      }
+      throw error;
     }
-
-    await prisma.user.update({
-      where: {
-        email: email,
-      },
-      data: {
-        password: await hashPasswordFn(newpassword),
-        forgotpasswordToken: "-1",
-      },
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "user password change successfully ",
-    });
   } catch (error) {
     console.log("Error in userForgotpasswordTokenVerify", error);
 
@@ -692,41 +383,31 @@ export const userSignin = async (req: any, res: any) => {
       });
     }
 
-    let { email, password } = data.data;
+    try {
+      let User = await userService.userSignin(data.data);
 
-    let User = await prisma.user.findUnique({
-      where: {
-        email: email,
-      },
-    });
+      // setCookie(res, User.id); // remove this 
 
-    if (!User) {
-      return res.status(404).json({
-        success: false,
-        message: "user not exist , plz signup now ",
+      res.status(200).json({
+        success: true,
+        message: "User needs to verify their email. ",
+        email: User.email,
       });
+    } catch (error: any) {
+      if (error.message === "user not exist") {
+        return res.status(404).json({
+          success: false,
+          message: "user not exist , plz signup now ",
+        });
+      }
+      if (error.message === "credientile incurrect") {
+        return res.status(401).json({
+          success: false,
+          message: "credientile incurrect  , plz signup/sign in  ",
+        });
+      }
+      throw error;
     }
-
-    // password hash check ;
-    let veryfypassword = await veryfyhashPasswordFn(password, User.password);
-
-    if (!veryfypassword) {
-      return res.status(401).json({
-        success: false,
-        message: "credientile incurrect  , plz signup/sign in  ",
-      });
-    }
-
-    // send token
-    // if email token is veryfy then send token
-    // setCookie(res, User.id); // remove this 
-
-
-    res.status(200).json({
-      success: true,
-      message: "User needs to verify their email. ",
-      email: email,
-    });
   } catch (error) {
     console.log("Error in user sign in", error);
     res.status(401).json({
@@ -734,5 +415,70 @@ export const userSignin = async (req: any, res: any) => {
       message: "token not send , plz try again  ",
     });
   }
+}
+
+
+export const updateUser = async (req: any, res: any) => {
+  try {
+    let data = updateUserZodSchema.safeParse(req.body);
+
+    if (!data.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid data format",
+      });
+    }
+
+    try {
+      const updatedUser = await userService.updateUser(req.user, data.data);
+
+      res.status(200).json({
+        success: true,
+        message: "User updated successfully",
+        data: updatedUser,
+      });
+    } catch (error: any) {
+      console.log("Error in updateUser", error);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+      });
+    }
+  } catch (error) {
+    console.log("Error in updateUser", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };
 
+export const getUserTimeline = asyncHandler(async (req: any, res: any) => {
+
+  const timeline = await userService.getUserTimeline(req.user);
+  res.status(200).json({
+    success: true,
+    data: timeline,
+    message: "User timeline fetched successfully",
+  });
+
+
+
+})
+export const getSubscriptionTiers = asyncHandler(async (req: any, res: any) => {
+  const tiers = await userService.getSubscriptionTiers();
+  res.status(200).json({
+    success: true,
+    data: tiers,
+    message: "Subscription tiers fetched successfully",
+  });
+});
+
+export const getUserSubscriptionDetails = asyncHandler(async (req: any, res: any) => {
+  const details = await userService.getUserSubscriptionDetails(req.user);
+  res.status(200).json({
+    success: true,
+    data: details,
+    message: "User subscription details fetched successfully",
+  });
+});

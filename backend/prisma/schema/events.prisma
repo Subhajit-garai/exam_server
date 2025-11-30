@@ -22,6 +22,7 @@ enum eventType {
   CREATE_DPP
   CREATE_EXAM
   CLEAR_BOT_CACHE
+  ACTIVITY_LEADERBOARD_ARCHIVE
 }
 
 enum eventRuns {

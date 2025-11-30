@@ -3,5 +3,6 @@ node_modules
 dist
 /prisma/seed_prod.ts
 /prisma/seed_prod_test.ts
-/generated/prisma
+/prisma/generated/*
 dockercompose.copy
+docs

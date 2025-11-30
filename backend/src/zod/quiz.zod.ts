@@ -1,4 +1,4 @@
-import { CreationTypes, ExamStage, ExamStatus, quiz_type } from  "@repo/prisma/client"
+import { CreationTypes, ExamStage, ExamStatus, quiz_type } from "@repo/prisma/client.js"
 import z, { date } from "zod";
 
 
@@ -21,4 +21,4 @@ export const create_quiz_data_ZodSchema = z.object({
 
 });
 
-export type createQuizType = z.infer< typeof create_quiz_data_ZodSchema>
+export type createQuizType = z.infer<typeof create_quiz_data_ZodSchema>

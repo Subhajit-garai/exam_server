@@ -1,10 +1,10 @@
 import { Response, Request } from "express";
 import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
-import { examManager } from "@repo/lib/manager/examManager.js";
+import { ExamManager } from "@repo/lib/manager/examManager.js";
 import { create_quiz_data_ZodSchema, createQuizType } from "../zod/quiz.zod.js";
 import { QuizService } from "../services/quiz.service.js";
 
-const em = examManager.getInstance();
+const em = ExamManager.getInstance();
 const quizService = new QuizService();
 
 export const test = async (req: any, res: any) => {

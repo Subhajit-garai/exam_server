@@ -1,7 +1,10 @@
 import prisma from "@repo/db/index.js";
 import dayjs from "dayjs";
 
+import { ActivityLeaderboardService } from "./activity.leaderboard.service.js";
+
 export class ActivityStreakService {
+    private leaderboardService = new ActivityLeaderboardService();
 
     async updateStreak(userId: string) {
         const today = dayjs().startOf('day');
@@ -15,6 +18,7 @@ export class ActivityStreakService {
             streakRecord = await prisma.userStreak.create({
                 data: { userId, streak: 1, maxStreak: 1, lastActivity: new Date() },
             });
+            await this.leaderboardService.updateStreakLeaderboard(userId, 1);
             return;
         }
 
@@ -32,6 +36,7 @@ export class ActivityStreakService {
                     lastActivity: new Date(),
                 },
             });
+            await this.leaderboardService.updateStreakLeaderboard(userId, streakRecord.streak + 1);
         } else {
             // Streak broken (or first time after long break)
             await prisma.userStreak.update({
@@ -41,6 +46,7 @@ export class ActivityStreakService {
                     lastActivity: new Date(),
                 },
             });
+            await this.leaderboardService.updateStreakLeaderboard(userId, 1);
         }
     }
 

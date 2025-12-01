@@ -36,8 +36,6 @@ export const razerpayinstance = new Razorpay({
 
 export const app = express();
 const server = http.createServer(app);
-// const wss = new WebSocketServer({ server });
-
 interface AuthenticatedWebSocket extends WebSocket {
   user?: any; // Extend WebSocket to include 'user'
 }
@@ -59,7 +57,6 @@ console.log("allowedOrigins", allowedOrigins);
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like Postman or mobile apps)
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
@@ -109,4 +106,5 @@ app.use(errorHandler);
 
 server.listen(PORT, () => {
   console.log(`surver is listening on ${PORT}`);
+
 });

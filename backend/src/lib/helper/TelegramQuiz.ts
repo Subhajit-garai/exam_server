@@ -1,9 +1,9 @@
 import { webhook_type } from "../types/botTypes.js";
 import { z } from "zod";
 import prisma, { Prisma } from "@repo/db/index.js";
-import { examManager } from "../manager/examManager.js";
+import { ExamManager } from "../manager/examManager.js";
 import { bot_create_quiz_data_ZodSchema } from "../../zod/bot.zod.js";
-const em = examManager.getInstance();
+const em = ExamManager.getInstance();
 
 type BotCreateQuizData = z.infer<typeof bot_create_quiz_data_ZodSchema>;
 
@@ -35,7 +35,7 @@ export const QuizeSetupFunction = async (
   let webhook: webhook_type = bot_webhook?.webhook as webhook_type;
   let cbUrl = `${webhook.baseurl}${webhook.endpoint.survertask}`;
 
-  let Notifystatus = await em.getredisclient().push({
+  let Notifystatus = await em.getRedisClient().push({
     type: "SEND_QUIZ_DATA",
     id: String(chat_id),
     payload: {

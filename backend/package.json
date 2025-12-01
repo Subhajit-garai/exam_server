@@ -7,6 +7,7 @@
     "dev": " tsx src/server.ts",
     "build": "tsc && tsc-alias",
     "start": "node dist/src/server.js",
+    "start:worker": "node dist/src/WSworker/server.js",
     "start:dev": "tsc && tsc-alias && node dist/src/server.js",
     "db:deploy": "npx prisma migrate deploy && npx prisma generate",
     "migrate:create": "npx prisma migrate dev --create-only",

@@ -1,5 +1,5 @@
 import {
-  botPlatform,
+  Platform,
   diffcultlevel,
   eventRuns,
   eventType,
@@ -39,7 +39,7 @@ export const exam_create_event_data_schema = z.object({
 export const quiz_create_event_data_schema = z.object({
   type: z.enum(["quiz"]).default("quiz"),
   bot_user_id: z.string(),
-  platform: z.nativeEnum(botPlatform),
+  platform: z.nativeEnum(Platform),
   chat_type: z.nativeEnum(telegramgroupType),
   user_id: z.number(),
   chat_id: z.number(),

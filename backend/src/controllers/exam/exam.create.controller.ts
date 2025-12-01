@@ -4,7 +4,7 @@ import {
   ExamCreateInputeSchema,
   ExampatternInputZodSchema,
 } from "../../zod/user.zod.js";
-import { examManager } from "@repo/lib/manager/examManager.js";
+import { ExamManager } from "@repo/lib/manager/examManager.js";
 
 import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 import {
@@ -14,7 +14,7 @@ import {
 import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
 import { ConvertInSlug } from "@/lib/slug.js";
 
-const em = examManager.getInstance();
+const em = ExamManager.getInstance();
 
 export const CreateNewExamPattern = asyncHandler(async (req: any, res: any) => {
   let data = ExampatternInputZodSchema.safeParse(req.body);
@@ -221,7 +221,7 @@ export const CreateExam = asyncHandler(async (req: any, res: any) => {
   }
   // send it into queue to process question
   let { id } = response;
-  Notifystatus = await em.getredisclient().push({
+  Notifystatus = await em.getRedisClient().push({
     type: "CREATE_EXAM",
     id: id,
     payload: {

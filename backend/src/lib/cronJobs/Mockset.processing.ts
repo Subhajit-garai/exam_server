@@ -1,11 +1,9 @@
 import prisma from "../../db/index.js";
-import { Questions_type, Task } from "../types.js";
-import { waitForSomeThink } from "../helper/delay.js";
+import { Task } from "../types.js";
 import { CreationTypes } from "@repo/prisma/client.js"
 import _ from "lodash";
-import { debuglog } from "../helper/debugLog.js";
-import { examManager } from "../manager/examManager.js";
-const em = examManager.getInstance();
+import { ExamManager } from "../manager/examManager.js";
+const em = ExamManager.getInstance();
 
 export const MockSetProcessingStatus = async (
   id: string,
@@ -52,6 +50,6 @@ export const ProcessMockSet = async (id: string, action: string) => {
     variant: "Mock",
     category: "JECA"
   };
-  em.getredisclient().push(data);  // create a queue 
+  em.getRedisClient().push(data);  // create a queue 
 };
 

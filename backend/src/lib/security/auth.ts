@@ -11,7 +11,7 @@ export const userauthenticate = (req: any, res: any, next: () => any) => {
   }
   try {
     let user = verifyToken(token);
-    req.user = user;
+    req.user = user.id;
     req.userRole = "User";
     next();
   } catch (error) {

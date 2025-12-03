@@ -4,10 +4,7 @@ import z, { date } from "zod";
 export const singupZodSchema = z.object({
   name: z.string(),
   email: z.string().email(),
-  telegramid: z.string(),
   password: z.string(),
-  targeted_exam: z.string().optional(),
-  exam_year: z.string().optional(),
 });
 
 export const updateUserZodSchema = z.object({

@@ -1,8 +1,7 @@
 import http from "http";
-import dotenv from "dotenv";
+import "dotenv/config";
 import { SocketManager } from "./socket/socket.manager.js";
 
-dotenv.config();
 
 const PORT = process.env.WS_PORT || 8080;
 
@@ -13,7 +12,7 @@ const server = http.createServer((req, res) => {
 
 // Initialize SocketManager
 const socketManager = SocketManager.getInstance();
-socketManager.init(server);
+socketManager.init(server, "/quiz");
 
 server.listen(PORT, () => {
     console.log(`WebSocket Worker listening on port ${PORT}`);

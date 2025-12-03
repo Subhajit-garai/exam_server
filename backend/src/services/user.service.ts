@@ -46,7 +46,7 @@ export class UserService {
     }
 
     async userSignup(data: any) {
-        let { name, email, password, telegramid, targeted_exam, exam_year } = data;
+        let { name, email, password } = data;
 
         let isUserExist = await prisma.user.findUnique({
             where: {
@@ -71,7 +71,7 @@ export class UserService {
                 },
                 social: {
                     create: {
-                        telegram: telegramid,
+
                     },
                 },
                 blance: {
@@ -102,7 +102,7 @@ export class UserService {
         });
 
         if (!User) {
-            throw new Error("user not exist");
+            throw new CustomError("user not exist");
         }
 
         let { token, hashedToken } = generateResetToken("email");
@@ -119,7 +119,7 @@ export class UserService {
         });
 
         if (!update) {
-            throw new Error("token not set");
+            throw new CustomError("token not set");
         }
 
         let mailer = new Mailer();

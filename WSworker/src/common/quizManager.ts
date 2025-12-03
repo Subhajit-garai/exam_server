@@ -1,10 +1,8 @@
 import { RedisProvider } from "./redisProvider.js";
-import prisma from "@repo/db/index.js";
 import {
     exam_question_format_for_ui_type,
     exam_question_format_type,
 } from "./questionTypes.js";
-import { shuffleArraySeeded } from "./shuffle.js";
 
 interface QuizMetaData {
     id: string;
@@ -58,11 +56,9 @@ export class QuizManager {
             console.log(`User ${userId} added to quiz ${quizId}. Quiz full, starting...`);
             await this.startQuiz(quizId);
             return;
+        } else {
+            console.log(" user already in quiz ");
         }
-
-        await this.redis.sadd(`quiz:users:${quizId}`, userId);
-        console.log(`User ${userId} added to quiz ${quizId}`);
-
         // Check again if we hit the limit after adding
         const newCount = await this.redis.scard(`quiz:users:${quizId}`);
         if (newCount >= meta.limit) {
@@ -79,45 +75,14 @@ export class QuizManager {
         const exists = await this.redis.sismember(`quiz:users:${quizId}`, userId);
         return exists === 1;
     }
-
     // --- Quiz Metadata (Redis Hashes) ---
-
-    async setQuizMetaData(quizId: string) {
-        const quizData = await prisma.quiz.findUnique({
-            where: { id: quizId },
-            select: {
-                id: true,
-                question_count: true,
-                nextQuestionTime: true,
-                quizOpenFor: true,
-                topics: true,
-                subjects: true,
-            },
-        });
-
-        if (!quizData) throw new Error("Quiz not valid");
-
-        const metaData: QuizMetaData = {
-            id: quizData.id,
-            total_questions: quizData.question_count,
-            nextQuestionTime: quizData.nextQuestionTime,
-            quizOpenFor: quizData.quizOpenFor,
-            topics: quizData.topics,
-            subjects: quizData.subjects,
-            limit: 100, // Default limit
-        };
-
-        // Store as JSON string in Redis
-        await this.redis.set(`quiz:meta:${quizId}`, JSON.stringify(metaData));
-    }
-
     async getQuizMetaData(quizId: string): Promise<QuizMetaData | null> {
-        const data = await this.redis.get(`quiz:meta:${quizId}`);
+        const data = await this.redis.get(`quiz:data:${quizId}`);
         return data ? JSON.parse(data) : null;
     }
 
     async removeQuiz(quizId: string) {
-        await this.redis.del(`quiz:meta:${quizId}`);
+        await this.redis.del(`quiz:data:${quizId}`);
         await this.redis.del(`quiz:users:${quizId}`);
         console.log(`Quiz ${quizId} removed`);
     }
@@ -142,59 +107,7 @@ export class QuizManager {
 
         console.log(`Quiz ${quizId} started for ${users.length} users.`);
     }
-
     // --- Question Management ---
-
-    async addQuiz(quizId: string) {
-        const quizQuestions = await prisma.quiz_question_map.findMany({
-            where: { quizid: quizId },
-            select: {
-                number: true,
-                question: {
-                    select: {
-                        id: true,
-                        options: true,
-                        title: true,
-                        extra: true,
-                        format: true,
-                        is_multiple_ans: true,
-                    },
-                },
-            },
-        });
-
-        if (!quizQuestions || quizQuestions.length === 0) throw new Error("Quiz questions not found");
-
-        const formattedQuestions: exam_question_format_type[] = quizQuestions.map((question) => {
-            if (!question.question?.options) throw Error("Question does not have options");
-
-            const { shuffled, map } = shuffleArraySeeded(question.question.options, quizId);
-
-            return {
-                number: question.number,
-                part: "1",
-                question: {
-                    ...question.question,
-                    options: shuffled,
-                    map: map,
-                },
-            };
-        });
-
-        await this.setQuizMetaData(quizId);
-
-        // Pipeline for performance
-        const pipeline = this.redis.pipeline();
-        formattedQuestions.forEach((question) => {
-            pipeline.set(
-                `quizquestion:${quizId}:${question.number}`,
-                JSON.stringify(question),
-                "EX", 86400 // Expire in 24h
-            );
-        });
-        await pipeline.exec();
-        console.log("Quiz questions added to Redis");
-    }
 
     async getQuestion(
         type: "pre" | "next" | "current",
@@ -262,26 +175,50 @@ export class QuizManager {
         });
     }
 
+    async getQuestionAnswer(quizId: string, number: number) {
+        const questionStr = await this.redis.get(`quizquestionans:${quizId}:${number}`);
+        if (!questionStr) throw Error("Question data not found");
+        const question = JSON.parse(questionStr);
+        return question;
+    }
+
     async submitAnswer(
         quizId: string,
         userId: string,
         ans: string[],
-        number: string,
-        isMultiple: boolean
+        number: number,
+        isMultiple: boolean,
+        time: string
     ) {
-        const isValidUser = await this.isUserExist(quizId, userId);
-        if (!isValidUser) throw new Error("User is not in this quiz");
 
-        return await this.redisProvider.push({
-            id: quizId,
-            type: "ANS_PROCESSING", // Reusing existing type
-            payload: {
-                quizid: quizId,
-                userid: userId,
-                ans: ans,
-                ismultiple: isMultiple ?? false,
-                number: number,
-            },
-        });
+        let questionAnsData = await this.getQuestionAnswer(quizId, number); // not shuffle options
+        let questionData = await this.getQuestion("current", quizId, userId, number); // shuffle options
+
+        if (!questionData || !questionAnsData) throw Error("Question data not found");
+
+        let score = 0;
+        if (isMultiple) {
+            score = ans.filter((ans) => questionData.question.options.includes(ans)).length;
+        } else {
+            score = ans[0] === questionData.question.options[0] ? 1 : 0;
+        }
+
+        // add score to redis
+
+        await this.incrementScore(quizId, userId, score);
+        await this.CalculateTime(time);
+
+
+
+    }
+
+    async CalculateTime(time: string) {
+        // let quizdata = await this.getQuizMetaData(time);
+
+    }
+
+    async incrementScore(quizId: string, userId: string, score: number) {
+
+        return this.redis.hincrby(`quiz:users:${quizId}`, userId, score);
     }
 }

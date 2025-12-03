@@ -1,6 +1,10 @@
 import "dotenv/config";
 import jwt, { JwtPayload } from "jsonwebtoken"
-type verifyToken = string | JwtPayload
+
+export interface verifyToken extends JwtPayload {
+    id: string;
+    extra?: string;
+}
 
 let jwtSecret = process.env.Jwt_secret as string
 
@@ -14,14 +18,13 @@ export const genToken = (
 ): string => {
     const payload: any = { id };
     if (extra) payload.extra = extra;
-
     return jwt.sign(payload, jwtSecret, { expiresIn });
 };
 
 
 
 export const verifyToken = (token: string): verifyToken => {
-    return jwt.verify(token, jwtSecret)
+    return jwt.verify(token, jwtSecret) as verifyToken
 }
 
 

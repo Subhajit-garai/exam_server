@@ -16,6 +16,18 @@ export const getDailyChallenge = asyncHandler(async (req: Request, res: Response
 
 })
 
+export const getDailyChallengeHistory = asyncHandler(async (req: Request, res: Response) => {
+
+    const challenge = await activityService.getDailyChallengeHistory();
+    res.status(200).json({
+        success: true,
+        data: challenge,
+        message: "Daily challenge history fetched successfully",
+    });
+
+})
+
+
 export const completeDailyChallenge = asyncHandler(async (req: Request, res: Response) => {
 
     // Validate input
@@ -47,9 +59,9 @@ export const getLeaderboard = asyncHandler(async (req: Request, res: Response) =
     });
 });
 
-export const getUserStats = asyncHandler(async (req: Request, res: Response) => {
+export const getUserStats = asyncHandler(async (req: any, res: Response) => {
 
-    const userId = req.params.userId;
+    const userId = req.user;
     if (!userId) {
         res.status(400).json({ message: "User ID is required" });
         return;
@@ -65,9 +77,9 @@ export const getUserStats = asyncHandler(async (req: Request, res: Response) => 
 
 // New methods for Recent Activity replacement
 
-export const logActivity = asyncHandler(async (req: Request, res: Response) => {
+export const logActivity = asyncHandler(async (req: any, res: Response) => {
 
-    const userId = (req as any).user; // Assuming auth middleware sets this
+    const userId = req.user; // Assuming auth middleware sets this
     if (!userId) {
         res.status(401).json({ message: "Unauthorized" });
         return;
@@ -115,5 +127,20 @@ export const getRecentActivities = asyncHandler(async (req: Request, res: Respon
         success: true,
         data: formattedActivities,
         message: "Recent activities fetched successfully",
+    });
+});
+
+export const getUserRewards = asyncHandler(async (req: any, res: Response) => {
+    const userId = req.user;
+    if (!userId) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+    }
+
+    const rewards = await activityService.getUserRewards(userId);
+    res.status(200).json({
+        success: true,
+        data: rewards,
+        message: "User rewards fetched successfully",
     });
 });

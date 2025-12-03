@@ -2,7 +2,6 @@ import "dotenv/config";
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-// import WebSocket, { WebSocketServer } from "ws";
 import http from "http";
 import Razorpay from "razorpay";
 import "@repo/lib/cronJobs/index.js";
@@ -25,6 +24,7 @@ import { noteRouter } from "./routes/noteRoute.js";
 import { errorHandler } from "./middleware/globalErrorHandler.js";
 import { syllabusRouter } from "./routes/syllabusRouter.js";
 import { userRouter } from "./routes/userRouter.js";
+import { quizRouter } from "./routes/quiz.routes.js";
 
 
 
@@ -36,14 +36,8 @@ export const razerpayinstance = new Razorpay({
 
 export const app = express();
 const server = http.createServer(app);
-interface AuthenticatedWebSocket extends WebSocket {
-  user?: any; // Extend WebSocket to include 'user'
-}
-
 const trustProxy = process.env.TRUST_PROXY || 1;
-
 app.set("trust proxy", trustProxy);
-
 const PORT = process.env.PORT || 3000;
 
 let allowedOriginsstr = process.env.ALLOWED_ORIGINS;
@@ -100,11 +94,11 @@ app.use("/api/v1/notes", noteRouter);
 app.use("/api/v1/metrix", metrixRoute);
 app.use("/api/v1/exam", examRouter);
 app.use("/api/v1/question", questionRouter);
+app.use("/api/v1/quiz", quizRouter);
 
 
 app.use(errorHandler);
 
 server.listen(PORT, () => {
   console.log(`surver is listening on ${PORT}`);
-
 });

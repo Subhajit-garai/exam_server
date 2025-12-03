@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
     getDailyChallenge,
+    getDailyChallengeHistory,
     completeDailyChallenge,
     getLeaderboard,
     getUserStats,
@@ -12,6 +13,7 @@ import { leaderboardRouter } from "./activity/leaderboard.routes.js";
 export const activityRouter = Router();
 
 activityRouter.get("/challenge/daily", getDailyChallenge);
+activityRouter.get("/challenge/history", getDailyChallengeHistory);
 activityRouter.post("/challenge/daily/complete", completeDailyChallenge);
 activityRouter.get("/leaderboard", getLeaderboard);
 activityRouter.get("/stats", getUserStats);

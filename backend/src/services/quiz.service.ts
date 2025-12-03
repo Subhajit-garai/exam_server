@@ -1,5 +1,6 @@
 import prisma from "@repo/db/index.js";
 import { QuizeSetupFunction } from "@/lib/helper/TelegramQuiz.js";
+import { QuizManager } from "@/lib/manager/quizManager.js";
 
 export class QuizService {
 
@@ -25,13 +26,24 @@ export class QuizService {
         return notifyStatus;
     }
 
-    async createQuiz(userid: string, data: any) {
-        let quiz = await prisma.quiz.create({
-            data: {
-                ...data,
-                created_by: userid,
-            },
-        });
+    async createQuiz(userid: string, userRole: string, data: any) {
+
+        // user quiz creation
+        const qm = QuizManager.getInstance();
+        const quiz = await qm.CreateQuiz(userid, userRole, data);
         return quiz;
+
+
+        //admin
+
+
+
+
+    }
+
+    async getAvailableQuizzes() {
+        const qm = QuizManager.getInstance();
+        const cachedQuizzes = await qm.getAllActiveQuizzes();
+        return cachedQuizzes;
     }
 }

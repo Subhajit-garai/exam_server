@@ -27,6 +27,13 @@ export class ActivityService {
     }
 
     /**
+     * Get daily challenge history.
+     */
+    async getDailyChallengeHistory() {
+        return this.challenge.getDailyChallengeHistory();
+    }
+
+    /**
      * Calculate XP with multipliers based on user's premium status.
      */
     async calculateXP(userId: string, baseXP: number): Promise<number> {
@@ -139,5 +146,19 @@ export class ActivityService {
                 activityType: meta.originalType || activity.type.toLowerCase(),
             };
         });
+    }
+
+    /**
+     * Get all user rewards (badges, etc.)
+     */
+    async getUserRewards(userId: string) {
+        const badges = await this.badge.getUserBadges(userId);
+
+        // Future: Add other rewards here (coupons, etc.)
+
+        return {
+            badges,
+            // otherRewards: [] 
+        };
     }
 }

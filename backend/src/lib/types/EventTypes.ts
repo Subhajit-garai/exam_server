@@ -29,13 +29,14 @@ export type event_Quiz_data_type = z.infer<
 >;
 
 export interface events {
-  id?: string;
+  id: string;
   type: eventType;
   description: string;
   payload: JsonValue; // inpute data  , task type , description
   conditions: JsonValue; // inpute data  , task type , description
   isActive: boolean;
   created_by: UserRole;
+  created_at: Date;
   runs: eventRuns;
   run_at: string; //02:00 pm  // Exact time to run (if applicable) if "any" means it ran any time
 }

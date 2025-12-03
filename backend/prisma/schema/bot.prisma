@@ -3,7 +3,7 @@ model botQuizConfig {
   title String? @unique
 
   chatId   String? // Telegram chat ID / whats app location ID
-  platform botPlatform @default(NONE) // e.g., "Telegram", "WhatsApp"
+  platform Platform @default(NONE) // e.g., "Telegram", "WhatsApp"
 
   check      check?
   syllabusid String?
@@ -38,9 +38,10 @@ model botInfo {
   User       User   @relation(fields: [botuser_id], references: [id])
 }
 
-enum botPlatform {
+enum Platform {
   NONE
-  WEB
+  WEBAPP
+  ANDROIDAPP
   TELEGRAM
   WHATSAPP
 }

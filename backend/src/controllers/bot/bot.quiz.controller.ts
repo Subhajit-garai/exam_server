@@ -1,5 +1,5 @@
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
-import { botPlatform } from "@repo/prisma/client.js";
+import { Platform } from "@repo/prisma/client.js";
 import { bot_create_quiz_data_ZodSchema } from "@/zod/bot.zod.js";
 import { QuizService } from "../../services/quiz.service.js";
 
@@ -47,7 +47,7 @@ export const getQuizConfigdData = asyncHandler(async (req: any, res: any) => {
   const { chatid, platform } = req.query;
 
   let config;
-  if (platform === botPlatform.TELEGRAM) {
+  if (platform === Platform.TELEGRAM) {
     config = await quizService.getQuizConfig(chatid);
   }
 

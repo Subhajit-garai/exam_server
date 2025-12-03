@@ -1,10 +1,10 @@
 import { Response, Request } from "express";
 import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
-import { examManager } from "@repo/lib/manager/examManager.js";
+import { ExamManager } from "@repo/lib/manager/examManager.js";
 import { create_quiz_data_ZodSchema, createQuizType } from "../zod/quiz.zod.js";
 import { QuizService } from "../services/quiz.service.js";
 
-const em = examManager.getInstance();
+const em = ExamManager.getInstance();
 const quizService = new QuizService();
 
 export const test = async (req: any, res: any) => {
@@ -15,16 +15,17 @@ export const test = async (req: any, res: any) => {
   }
 };
 
-export const createQuizfn = async (userid: string, data: createQuizType) => {
-  return await quizService.createQuiz(userid, data);
-};
 
-export const createQuiz = asyncHandler(
+export const createUserQuiz = asyncHandler(
   async (req: Request | any, res: Response) => {
-    let processedData = create_quiz_data_ZodSchema.safeParse(req.body);
+    let quiz = await quizService.createQuiz(req?.user, req?.userRole, req.body);
+    res.json({ success: true, data: quiz });
+  }
+);
 
-    if (!processedData.success)
-      throw new Error("Quiz creation Data format invalid");
-    let quiz = await createQuizfn(req?.user, processedData.data);
+export const getAvailableQuizzes = asyncHandler(
+  async (req: Request, res: Response) => {
+    const quizzes = await quizService.getAvailableQuizzes();
+    res.json({ success: true, data: quizzes });
   }
 );

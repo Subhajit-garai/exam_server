@@ -1,5 +1,5 @@
 import {
-  botPlatform,
+  Platform,
   ExamType,
   telegramgroupType,
 } from "@repo/prisma/client.js";
@@ -78,7 +78,7 @@ export interface Task {
 //   | {
 //       type: "createQuiz";
 //       cburl: string;
-//       platfrom: botPlatform;
+//       platfrom: Platform;
 //       chat_type: telegramgroupType;
 //       chatid: number;
 //       userid: number;

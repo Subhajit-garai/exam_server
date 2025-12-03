@@ -42,4 +42,13 @@ export class ActivityChallengeService {
 
         return challenge;
     }
+
+    /**
+     * Get daily challenge history.
+     */
+    async getDailyChallengeHistory() {
+        return prisma.dailyChallenge.findMany({
+            orderBy: { date: "desc" },
+        });
+    }
 }

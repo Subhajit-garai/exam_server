@@ -2,7 +2,7 @@ import { events } from "@/lib/types/EventTypes.js";
 
 import { logger } from "@/lib/helper/logger.js";
 import { BaseEvent } from "./bace-event.js";
-import { EventFactory } from "./event-factory.js";
+import { EventFactory } from "./event-factory/event-factory.js";
 
 export async function eventRunner(event: events) {
   let name: string = "NoEvent";

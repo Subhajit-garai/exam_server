@@ -1,4 +1,3 @@
-import { userManager } from "./userManger.js";
 import { RedisProvider } from "../radisProvider.js";
 import { ExamQuestionsids } from "../types.js";
 import prisma from "@repo/db/index.js";
@@ -8,8 +7,7 @@ import {
 } from "../types/questionTypes.js";
 import { shuffleArraySeeded } from "../helper/shuffle.js";
 
-let count = 0;
-interface exam_info {
+interface ExamMetaData {
   id: string;
   total_question: {
     [key: string]: number;
@@ -17,132 +15,98 @@ interface exam_info {
   parts: number;
 }
 
-export class examManager {
-  private static instance: examManager;
-  private redisclient: RedisProvider;
-  // private redisQuestion: RedisQuestionProvider;
-  user: userManager;
-  exam2: string[];
-  exam: { [examid: string]: exam_info };
+interface User {
+  id: string;
+}
 
-  questionsids: ExamQuestionsids;
+export class ExamManager {
+  private static instance: ExamManager;
+  private redisProvider: RedisProvider;
+  private redis: any; // Direct ioredis client
 
   public static getInstance() {
     if (!this.instance) {
-      this.instance = new examManager();
+      this.instance = new ExamManager();
     }
     return this.instance;
   }
 
   private constructor() {
-    this.redisclient = RedisProvider.getInstance();
-    this.questionsids = {};
-    this.exam2 = [];
-    this.user = userManager.getInstance();
-    this.exam = {};
+    this.redisProvider = RedisProvider.getInstance();
+    this.redis = this.redisProvider.getclient();
   }
 
-  getredisclient() {
-    return this.redisclient;
+  getRedisClient() {
+    return this.redisProvider;
   }
 
-  async getquestion(
-    type: string,
-    examid: string,
-    userid: string,
-    part: string | number,
-    num: number
-  ) {
-    let isValidUser = this.user.isuserexist(examid, userid);
-    let number: number = num;
+  // --- User Management (Redis Sets) ---
 
-    if (isValidUser) {
-      let total_questions = this.exam[examid].total_question[part];
-      switch (type) {
-        case "pre":
-          if (number <= 1) {
-            number = total_questions + 1;
-          }
-          --number;
-          break;
-        case "next":
-          if (number == total_questions) {
-            number = 0;
-          }
-          ++number;
-          break;
-        default:
-          break;
-      }
-      if (number) {
-        let question: exam_question_format_type = await this.redisclient.get(
-          `examquestion:${examid}:${part}:${number}`
-        );
-
-        if (!question || !question.question)
-          throw Error("question data not found");
-
-        let data: exam_question_format_for_ui_type = {
-          number: question.number,
-          part: question.part,
-          question: {
-            questionid: question.question?.id,
-            title: question.question?.title,
-            options: question.question?.options,
-            extra: question.question?.extra,
-            format: question.question?.format,
-            is_multiple_ans: question.question?.is_multiple_ans,
-          },
-        };
-        return data;
-      }
-    } else {
-      return null;
-    }
+  async addUser(examId: string, userId: string) {
+    await this.redis.sadd(`exam:users:${examId}`, userId);
+    console.log(`User ${userId} added to exam ${examId}`);
   }
 
-  async submitExam(examid: string, userid: string) {
-    // delete this.exam[examid];
-    this.user.removeuser(examid, userid);
-    return await this.getredisclient().push({
-      type: "CREATE_SCORE",
-      id: examid,
-      payload: {
-        examid: examid,
-        userid: userid,
-      },
+  async removeUser(examId: string, userId: string) {
+    await this.redis.srem(`exam:users:${examId}`, userId);
+    console.log(`User ${userId} removed from exam ${examId}`);
+  }
+
+  async isUserExist(examId: string, userId: string): Promise<boolean> {
+    const exists = await this.redis.sismember(`exam:users:${examId}`, userId);
+    return exists === 1;
+  }
+
+  // --- Exam Metadata (Redis Hashes) ---
+
+  async setExamMetaData(examId: string) {
+    const examData = await prisma.exam.findFirst({
+      where: { id: examId },
+      select: { exam_pattern_id: true },
     });
-  }
 
-  async submitAnswer(
-    examid: string,
-    userid: string,
-    part: string,
-    ans: string[],
-    number: string,
-    ismultiple: boolean
-  ) {
-    let isValidUser = this.user.isuserexist(examid, userid);
-    if (!isValidUser) throw new Error("user is not given this exam ");
-    return await this.getredisclient().push({
-      id: examid,
-      type: "ANS_PROCESSING",
-      payload: {
-        examid: examid,
-        userid: userid,
-        part: part,
-        ans: ans,
-        ismultiple: ismultiple ?? false,
-        number: number,
-      },
+    if (!examData) throw new Error("Exam not valid");
+
+    const examPatternInfo = await prisma.exam_pattern.findFirst({
+      where: { id: examData.exam_pattern_id },
     });
+
+    if (!examPatternInfo) throw new Error("Exam pattern not valid");
+
+    const { total_questions, part_Count } = examPatternInfo;
+
+    const metaData: ExamMetaData = {
+      id: examId,
+      total_question: {},
+      parts: part_Count,
+    };
+
+    total_questions.forEach((num, idx) => {
+      metaData.total_question[`part${idx + 1}`] = num;
+    });
+
+    // Store as JSON string in Redis for simplicity, or hash fields
+    await this.redis.set(`exam:meta:${examId}`, JSON.stringify(metaData));
   }
 
-  async addexam(examid: string) {
-    let examQuestions = await prisma.question_map.findMany({
-      where: {
-        examid: examid,
-      },
+  async getExamMetaData(examId: string): Promise<ExamMetaData | null> {
+    const data = await this.redis.get(`exam:meta:${examId}`);
+    return data ? JSON.parse(data) : null;
+  }
+
+  async removeExam(examId: string) {
+    await this.redis.del(`exam:meta:${examId}`);
+    await this.redis.del(`exam:users:${examId}`);
+    // Also clean up questions if needed, but that might be expensive to find all keys
+    // Assuming questions expire or are managed elsewhere
+    console.log(`Exam ${examId} removed`);
+  }
+
+  // --- Question Management ---
+
+  async addExam(examId: string) {
+    const examQuestions = await prisma.question_map.findMany({
+      where: { examid: examId },
       select: {
         number: true,
         part: true,
@@ -159,106 +123,133 @@ export class examManager {
       },
     });
 
-    if (!examQuestions) throw new Error("exam's question not found");
+    if (!examQuestions || examQuestions.length === 0) throw new Error("Exam questions not found");
 
-    // shuffling process here
+    const formattedQuestions: exam_question_format_type[] = examQuestions.map((question) => {
+      if (!question.question?.options) throw Error("Question does not have options");
 
-    // every exam have shuffled question
+      const { shuffled, map } = shuffleArraySeeded(question.question.options, examId);
 
-    // if exam have shulled question , then shuffleed with exam id
-    // if exam have all user question shulled , like 2 user doesnot have same order then shuffled with examid+useris or user id
+      return {
+        ...question,
+        question: {
+          ...question.question,
+          options: shuffled,
+          map: map,
+        },
+      };
+    });
 
-    let formatedQuestions: exam_question_format_type[] = examQuestions.map(
-      (question, idx) => {
-        if (!question.question?.options)
-          throw Error("question doesnot have options");
+    await this.setExamMetaData(examId);
 
-        let { shuffled, map } = shuffleArraySeeded(
-          question.question?.options,
-          examid
-        );
-        question.question.options = shuffled;
-
-        return {
-          ...question,
-          question: {
-            ...question.question,
-            options: shuffled,
-            map: map,
-          },
-        };
-      }
-    );
-
-    // question data which are send / cache in redis
-
-    this.setExamMetaData(examid);
-
-    formatedQuestions.forEach((question) => {
-      this.redisclient.set(
-        `examquestion:${examid}:${question?.part}:${question.number}`,
-        question
+    // Pipeline for performance
+    const pipeline = this.redis.pipeline();
+    formattedQuestions.forEach((question) => {
+      pipeline.set(
+        `examquestion:${examId}:${question.part}:${question.number}`,
+        JSON.stringify(question),
+        "EX", 86400 // Expire in 24h
       );
     });
-    console.log("questions added to redis");
-  } //end
-
-  async setExamMetaData(examid: string) {
-    let examData = await prisma.exam.findFirst({
-      where: {
-        id: examid,
-      },
-      select: {
-        exam_pattern_id: true,
-      },
-    });
-
-    if (!examData) throw new Error("exam is not valid ");
-    let examPatternInfo = await prisma.exam_pattern.findFirst({
-      where: {
-        id: examData.exam_pattern_id,
-      },
-    });
-    if (!examPatternInfo) throw new Error("exam pattern  is not valid ");
-
-    let temp: exam_info = {
-      id: "",
-      total_question: {},
-      parts: 0,
-    };
-    let { total_questions, part_Count } = examPatternInfo;
-    total_questions.map((number, idx) => {
-      temp.total_question[`part${idx + 1}`] = number;
-    });
-    temp.id = examid;
-    temp.parts = part_Count;
-    this.exam[examid] = temp;
+    await pipeline.exec();
+    console.log("Questions added to Redis");
   }
 
-  removeexam(examid: string, isnewMethod: boolean = false) {
-    if (isnewMethod) {
-    } else {
-      if (this.exam2.includes(examid)) {
-        this.exam2 = this.exam2.filter((id) => id !== examid);
-        delete this.questionsids[examid];
-        console.log("id removed ,", examid);
-      } else {
-        console.log("id not found,", examid);
-      }
+  async getQuestion(
+    type: "pre" | "next" | "current", // Enforce type
+    examId: string,
+    userId: string,
+    part: string | number,
+    currentNumber: number
+  ) {
+    const isValidUser = await this.isUserExist(examId, userId);
+    if (!isValidUser) return null;
+
+    const meta = await this.getExamMetaData(examId);
+    if (!meta) throw new Error("Exam metadata not found");
+
+    let number = currentNumber;
+    const totalQuestions = meta.total_question[part.toString()];
+
+    switch (type) {
+      case "pre":
+        if (number <= 1) number = totalQuestions + 1;
+        --number;
+        break;
+      case "next":
+        if (number >= totalQuestions) number = 0;
+        ++number;
+        break;
+      default:
+        break;
     }
-  }
 
-  ClearCache_exmaManager() {
-    this.exam2 = [];
-    this.questionsids = {};
-  }
+    if (number > 0) {
+      const questionStr = await this.redis.get(`examquestion:${examId}:${part}:${number}`);
+      if (!questionStr) throw Error("Question data not found");
 
-  async getQuizdata(key: string) {
-    let data = await this.redisclient.get(key);
-    if (data) {
+      const question: exam_question_format_type = JSON.parse(questionStr);
+
+      if (!question.question) throw Error("Question content missing");
+
+      const data: exam_question_format_for_ui_type = {
+        number: question.number,
+        part: question.part,
+        question: {
+          questionid: question.question.id,
+          title: question.question.title,
+          options: question.question.options,
+          extra: question.question.extra,
+          format: question.question.format,
+          is_multiple_ans: question.question.is_multiple_ans,
+        },
+      };
       return data;
-    } else {
-      return null;
     }
+    return null;
+  }
+
+  // --- Submission ---
+
+  async submitExam(examId: string, userId: string) {
+    await this.removeUser(examId, userId);
+    return await this.redisProvider.push({
+      type: "CREATE_SCORE",
+      id: examId,
+      payload: {
+        examid: examId,
+        userid: userId,
+      },
+    });
+  }
+
+  async submitAnswer(
+    examId: string,
+    userId: string,
+    part: string,
+    ans: string[],
+    number: string,
+    isMultiple: boolean
+  ) {
+    const isValidUser = await this.isUserExist(examId, userId);
+    if (!isValidUser) throw new Error("User is not in this exam");
+
+    return await this.redisProvider.push({
+      id: examId,
+      type: "ANS_PROCESSING",
+      payload: {
+        examid: examId,
+        userid: userId,
+        part: part,
+        ans: ans,
+        ismultiple: isMultiple ?? false,
+        number: number,
+      },
+    });
+  }
+
+  async getQuizData(key: string) {
+    const data = await this.redis.get(key);
+    return data ? data : null;
   }
 }

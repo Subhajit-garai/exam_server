@@ -1,6 +1,6 @@
 import { ExamType, Visibility } from "@repo/prisma/client.js";
 import prisma from "@repo/db/index.js";
-import { examManager } from "@repo/lib/manager/examManager.js";
+import { ExamManager } from "@repo/lib/manager/examManager.js";
 import { ExamMetaData } from "@repo/lib/types.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
@@ -12,7 +12,7 @@ dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const em = examManager.getInstance();
+const em = ExamManager.getInstance();
 
 export class ExamService {
     async deletexams() {
@@ -231,7 +231,7 @@ export class ExamService {
         number: number,
         part: string
     ) {
-        let question = await em.getquestion(type, examId, userId, part, number);
+        let question = await em.getQuestion("current", examId, userId, part, number);
         return question;
     }
 
@@ -357,9 +357,9 @@ export class ExamService {
                 );
 
                 if (transaction) {
-                    em.addexam(exam.id);
+                    await em.addExam(exam.id);
                     console.log("date added into exam manager");
-                    em.user.adduser(examId, userId);
+                    await em.addUser(examId, userId);
                     console.log("user added into exam manager");
                 }
             });

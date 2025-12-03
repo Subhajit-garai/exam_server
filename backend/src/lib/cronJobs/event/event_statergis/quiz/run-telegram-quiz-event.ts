@@ -1,10 +1,10 @@
 import { event_Quiz_data_type } from "@/lib/types/EventTypes.js";
-import { BaseEvent } from "../bace-event.js";
+import { BaseEvent } from "../../bace-event.js";
 import { QuizeSetupFunction } from "@/lib/helper/TelegramQuiz.js";
 
-export class run_quiz_event extends BaseEvent {
+export class run_telegram_quiz_event extends BaseEvent {
   async push(): Promise<void> {
-    console.log("Running run_quiz_event with data:", this.event.payload);
+    console.log("Running run_telegram_quiz_event with data:", this.event.payload);
 
     try {
       // here i push task in task queue

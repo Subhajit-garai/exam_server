@@ -8,4 +8,5 @@ jest.config.js
 seeds
 tests
 prisma/generated
-# .env
+.env
+scripts

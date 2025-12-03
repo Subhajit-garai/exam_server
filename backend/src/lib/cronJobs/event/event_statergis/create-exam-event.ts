@@ -1,8 +1,11 @@
-import { examManager } from "@/lib/manager/examManager.js";
+import { ExamManager } from "@/lib/manager/examManager.js";
 import { BaseEvent } from "../bace-event.js";
 import prisma from "@/db/index.js";
 import { event_exam_data_type } from "@/lib/types/EventTypes.js";
 import dayjs from "dayjs";
+
+
+
 
 export class create_exam_event extends BaseEvent {
   async push(): Promise<void> {
@@ -29,7 +32,7 @@ export class create_exam_event extends BaseEvent {
       let new_exam_number;
       let create_exam_count_for_date: number[] = [];
       let dates: Date[] = [];
-      const em = examManager.getInstance();
+      const em = ExamManager.getInstance();
 
       console.log("---> creating new exam");
 
@@ -200,7 +203,7 @@ export class create_exam_event extends BaseEvent {
 
           //   // send it into queue to process question
           let { id } = response;
-          let Notifystatus = await em.getredisclient().push({
+          let Notifystatus = await em.getRedisClient().push({
             type: "CREATE_EXAM",
             id: id,
             payload: {

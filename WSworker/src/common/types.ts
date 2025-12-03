@@ -1,8 +1,4 @@
-import {
-    botPlatform,
-    ExamType,
-    telegramgroupType,
-} from "@repo/prisma/client.js";
+
 import dayjs from "dayjs";
 export type ExamMetaData = {
     examid: string;
@@ -12,9 +8,14 @@ export type ExamMetaData = {
     inTop10: number; // number or boolean ??
     rignt: number;
     wrong: number;
-    // topper: string;
     topperScore: number;
 };
+
+export type JsonValue = string | number | boolean | null | { [key: string]: JsonValue } | JsonValue[];
+
+export type botPlatform = "TELEGRAM" | "WHATSAPP" | "DISCORD";
+export type ExamType = "TEXT" | "MOCK" | "DPP" | "QUIZ";
+export type telegramgroupType = "OFFICIAL" | "DOUBT" | "DISCUSSION";
 
 export type Questions_type = { [part: string]: string[] };
 export type ExamQuestionsids = { [examid: string]: Questions_type };

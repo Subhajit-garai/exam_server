@@ -11,6 +11,7 @@ import {
 } from "../zod/user.zod.js";
 import { UserService } from "../services/user.service.js";
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
+import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 
 const userService = new UserService();
 
@@ -55,403 +56,177 @@ export const auth = async (req: any, res: any) => {
   }
 };
 
-export const Logout = async (req: any, res: any) => {
-  try {
-    res.cookie("token", null, {
-      expires: new Date(Date.now()),
-      httpOnly: true,
-    });
+export const Logout = asyncHandler(async (req: any, res: any) => {
+  res.cookie("token", null, {
+    expires: new Date(Date.now()),
+    httpOnly: true,
+  });
 
-    res.status(200).json({
-      success: true,
-      message: "Logged out",
-    });
-  } catch (error) {
-    console.log(error);
+  console.log("user log out ", req.user);
+
+
+  res.status(200).json({
+    success: true,
+    message: "Logged out",
+  });
+})
+
+export const userSignup = asyncHandler(async (req: any, res: any) => {
+
+  let processedData = singupZodSchema.safeParse(req.body);
+  if (!processedData.success) {
+    throw ZodDataSafeParse(processedData)
   }
-};
 
-export const userSignup = async (req: any, res: any) => {
-  try {
-    let data = singupZodSchema.safeParse(req.body);
 
-    if (!data.success) {
-      return res.status(401).json({
-        success: false,
-        message: "user credential format invalid ",
-      });
-    }
+  const newUser = await userService.userSignup(processedData.data);
+  setCookie(res, newUser.id);
 
-    try {
-      const newUser = await userService.userSignup(data.data);
-      setCookie(res, newUser.id);
+  res.status(200).json({
+    success: true,
+    message: "user created sucessfully ",
+    data: {
+      name: newUser.name,
+      email: newUser.email,
+    },
+  });
+})
 
-      res.status(200).json({
-        success: true,
-        message: "user created sucessfully ",
-        data: {
-          name: newUser.name,
-          email: newUser.email,
-        },
-      });
-    } catch (error: any) {
-      if (error.message === "user already exist") {
-        return res.status(409).json({
-          success: false,
-          message: "user already exist , plz log in",
-        });
-      }
-      throw error;
-    }
-  } catch (error) {
-    console.log("Error in userSignup", error);
+export const useremailValidationTokengen = asyncHandler(async (req: any, res: any) => {
+  let processedData = useremailValidationZodSchema.safeParse(req.body);
 
-    res.status(401).json({
-      success: false,
-      message: "token not send , plz try again  ",
-    });
+  if (!processedData.success) {
+    throw ZodDataSafeParse(processedData)
   }
-};
+  let { email } = processedData.data;
+  await userService.useremailValidationTokengen(email);
+  res.status(200).json({
+    success: true,
+    message: "validation  token send successfully on your email ",
+  });
 
-export const useremailValidationTokengen = async (req: any, res: any) => {
-  try {
-    let data = useremailValidationZodSchema.safeParse(req.body);
 
-    if (!data.success) {
-      return res.status(401).json({
-        success: false,
-        message: "user credential format invalid ",
-      });
-    }
+})
 
-    let { email } = data.data;
+export const useremailValidationTokenVerify = asyncHandler(async (req: any, res: any) => {
 
-    try {
-      await userService.useremailValidationTokengen(email);
-      res.status(200).json({
-        success: true,
-        message: "validation  token send successfully on your email ",
-      });
-    } catch (error: any) {
-      if (error.message === "user not exist") {
-        return res.status(404).json({
-          success: false,
-          message: "user not exist , plz signup",
-        });
-      }
-      console.log("Error sending email", error);
-      res.status(401).json({
-        success: false,
-        message: "token not send , plz try again  ",
-      });
-    }
-  } catch (error) {
-    console.log("Error in useremailValidationTokengen", error);
+  let processedData = validateTokenZodSchema.safeParse(req.body);
 
-    res.status(401).json({
-      success: false,
-      message: "token not send , plz try again  ",
-    });
+  if (!processedData.success) {
+    throw ZodDataSafeParse(processedData)
   }
-};
 
-export const useremailValidationTokenVerify = async (req: any, res: any) => {
-  try {
-    let data = validateTokenZodSchema.safeParse(req.body);
 
-    if (!data.success) {
-      return res.status(401).json({
-        success: false,
-        message: "user credential format invalid ",
-      });
-    }
+  let { token, email } = processedData.data;
+  if (!email) throw Error("email not found ")
+  const userId = await userService.useremailValidationTokenVerify(token, email, req.user);
 
-    try {
-      let { token, email } = data.data;
-      if (!email) throw Error("email not found ")
-      const userId = await userService.useremailValidationTokenVerify(token, email, req.user);
+  setCookie(res, userId);
 
-      setCookie(res, userId);
+  res.status(200).json({
+    success: true,
+    message: "user email validate  successfully ",
+  });
+})
 
-      res.status(200).json({
-        success: true,
-        message: "user email validate  successfully ",
-      });
-    } catch (error: any) {
-      if (error.message === "user not exist token expired") {
-        return res.status(404).json({
-          success: false,
-          message: "user not exist token expired , generate new one",
-        });
-      }
-      if (error.message === "user not exist") {
-        return res.status(404).json({
-          success: false,
-          message: "user not exist , plz signup now ",
-        });
-      }
-      throw error;
-    }
-  } catch (error) {
-    console.log("-------------> ", error);
+export const usertelegramidValidationTokengen = asyncHandler(async (req: any, res: any) => {
 
-    return res.status(404).json({
-      success: false,
-      message: "Server Error , Try again later ",
-    });
+  let processedData = usertelegramidValidationZodSchema.safeParse(req.body);
+
+  if (!processedData.success) {
+    throw ZodDataSafeParse(processedData)
   }
-};
 
-export const usertelegramidValidationTokengen = async (req: any, res: any) => {
-  try {
-    let data = usertelegramidValidationZodSchema.safeParse(req.body);
+  let { telegramid } = processedData.data;
+  await userService.usertelegramidValidationTokengen(req.user, telegramid);
+  return res.status(200).json({
+    success: true,
+    message: "validation  token send successfully on your email ",
+  });
 
-    if (!data.success) {
-      return res.status(401).json({
-        success: false,
-        message: "user credential format invalid ",
-      });
-    }
+})
 
-    let { telegramid } = data.data;
-
-    try {
-      await userService.usertelegramidValidationTokengen(req.user, telegramid);
-      return res.status(200).json({
-        success: true,
-        message: "validation  token send successfully on your email ",
-      });
-    } catch (error: any) {
-      if (error.message === "user not exist") {
-        return res.status(404).json({
-          success: false,
-          message: "user not exist , plz signup",
-        });
-      }
-      if (error.message === "user telegram id not match") {
-        return res.status(404).json({
-          success: false,
-          message:
-            "user telegram id not match, plz provide correct one Or plz signup  ",
-        });
-      }
-      if (error.message === "token not send") {
-        return res.status(401).json({
-          success: false,
-          message: "token not send , plz try again 2 ",
-        });
-      }
-      throw error;
-    }
-  } catch (error) {
-    console.log("Error sending token", error);
-
-    res.status(401).json({
-      success: false,
-      message: "token not send , plz try again  ",
-    });
-  }
-};
-
-export const usertetegramidValidationTokenVerify = async (
+export const usertetegramidValidationTokenVerify = asyncHandler(async (
   req: any,
   res: any
 ) => {
-  try {
-    let data = validateTokenZodSchema.safeParse(req.body);
 
-    if (!data.success) {
-      return res.status(401).json({
-        success: false,
-        message: "user credential format invalid ",
-      });
-    }
+  let processedData = validateTokenZodSchema.safeParse(req.body);
 
-    try {
-      let { token } = data.data;
-      await userService.usertetegramidValidationTokenVerify(req.user, token);
-
-      res.status(200).json({
-        success: true,
-        message: "user password change successfully ",
-      });
-    } catch (error: any) {
-      if (error.message === "user not exist or token expired") {
-        return res.status(404).json({
-          success: false,
-          message: "user not exist , plz signup now ",
-        });
-      }
-      throw error;
-    }
-  } catch (error) {
-    console.log("Error in usertetegramidValidation", error);
-
-    return res.status(404).json({
-      success: false,
-      message: "Server Error , Try again later ",
-    });
+  if (!processedData.success) {
+    throw ZodDataSafeParse(processedData)
   }
-};
+  let { token } = processedData.data;
+  await userService.usertetegramidValidationTokenVerify(req.user, token);
 
-export const userForgotpasswordTokenGen = async (req: any, res: any) => {
-  try {
-    let data = forgotpasswordZodSchema.safeParse(req.body);
+  res.status(200).json({
+    success: true,
+    message: "user password change successfully ",
+  });
+})
 
-    if (!data.success) {
-      return res.status(401).json({
-        success: false,
-        message: "user credential format invalid ",
-      });
-    }
+export const userForgotpasswordTokenGen = asyncHandler(async (req: any, res: any) => {
+  let processedData = forgotpasswordZodSchema.safeParse(req.body);
 
-    let { email } = data.data;
-
-    try {
-      await userService.userForgotpasswordTokenGen(email);
-      res.status(200).json({
-        success: true,
-        message: "pasword reset token send successfully on your email ",
-      });
-    } catch (error: any) {
-      if (error.message === "user not exist") {
-        return res.status(404).json({
-          success: false,
-          message: "user not exist , plz signup  ",
-        });
-      }
-      console.log(error);
-      res.status(401).json({
-        success: false,
-        message: "token not send , plz try again  ",
-      });
-    }
-  } catch (error) {
-    console.log("Error in userForgotpasswordTokenGen", error);
-
-    res.status(401).json({
-      success: false,
-      message: "token not send , plz try again  ",
-    });
+  if (!processedData.success) {
+    throw ZodDataSafeParse(processedData)
   }
-};
+  let { email } = processedData.data;
+  await userService.userForgotpasswordTokenGen(email);
+  res.status(200).json({
+    success: true,
+    message: "pasword reset token send successfully on your email ",
+  });
+})
 
-export const userForgotpasswordTokenVerify = async (req: any, res: any) => {
-  try {
-    let data = forgotpasswordVerifyZodSchema.safeParse(req.body);
 
-    if (!data.success) {
-      return res.status(401).json({
-        success: false,
-        message: "user credential format invalid ",
-      });
-    }
 
-    try {
-      await userService.userForgotpasswordTokenVerify(data.data);
-      res.status(200).json({
-        success: true,
-        message: "user password change successfully ",
-      });
-    } catch (error: any) {
-      if (error.message === "user not exist or token expired") {
-        return res.status(404).json({
-          success: false,
-          message: "user not exist , plz signup now ",
-        });
-      }
-      throw error;
-    }
-  } catch (error) {
-    console.log("Error in userForgotpasswordTokenVerify", error);
 
-    res.status(401).json({
-      success: false,
-      message: "token not send , plz try again  ",
-    });
+export const userForgotpasswordTokenVerify = asyncHandler(async (req: any, res: any) => {
+  let processedData = forgotpasswordVerifyZodSchema.safeParse(req.body);
+
+  if (!processedData.success) {
+    throw ZodDataSafeParse(processedData)
   }
-};
+  await userService.userForgotpasswordTokenVerify(processedData.data);
+  res.status(200).json({
+    success: true,
+    message: "user password change successfully ",
+  });
+});
 
-export const userSignin = async (req: any, res: any) => {
-  try {
-    let data = singinZodSchema.safeParse(req.body);
+export const userSignin = asyncHandler(async (req: any, res: any) => {
 
-    if (!data.success) {
-      return res.status(401).json({
-        success: false,
-        message: "user credential format invalid ",
-      });
-    }
+  let processedData = singinZodSchema.safeParse(req.body);
 
-    try {
-      let User = await userService.userSignin(data.data);
-
-      // setCookie(res, User.id); // remove this 
-
-      res.status(200).json({
-        success: true,
-        message: "User needs to verify their email. ",
-        email: User.email,
-      });
-    } catch (error: any) {
-      if (error.message === "user not exist") {
-        return res.status(404).json({
-          success: false,
-          message: "user not exist , plz signup now ",
-        });
-      }
-      if (error.message === "credientile incurrect") {
-        return res.status(401).json({
-          success: false,
-          message: "credientile incurrect  , plz signup/sign in  ",
-        });
-      }
-      throw error;
-    }
-  } catch (error) {
-    console.log("Error in user sign in", error);
-    res.status(401).json({
-      success: false,
-      message: "token not send , plz try again  ",
-    });
+  if (!processedData.success) {
+    throw ZodDataSafeParse(processedData)
   }
-}
+  let User = await userService.userSignin(processedData.data);
+
+  // setCookie(res, User.id); // remove this 
+  res.status(200).json({
+    success: true,
+    message: "User needs to verify their email. ",
+    email: User.email,
+  });
+});
 
 
-export const updateUser = async (req: any, res: any) => {
-  try {
-    let data = updateUserZodSchema.safeParse(req.body);
+export const updateUser = asyncHandler(async (req: any, res: any) => {
+  let processedData = updateUserZodSchema.safeParse(req.body);
 
-    if (!data.success) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid data format",
-      });
-    }
-
-    try {
-      const updatedUser = await userService.updateUser(req.user, data.data);
-
-      res.status(200).json({
-        success: true,
-        message: "User updated successfully",
-        data: updatedUser,
-      });
-    } catch (error: any) {
-      console.log("Error in updateUser", error);
-      res.status(500).json({
-        success: false,
-        message: "Server error",
-      });
-    }
-  } catch (error) {
-    console.log("Error in updateUser", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+  if (!processedData.success) {
+    throw ZodDataSafeParse(processedData)
   }
-};
+  const updatedUser = await userService.updateUser(req.user, processedData.data);
+
+  res.status(200).json({
+    success: true,
+    message: "User updated successfully",
+    data: updatedUser,
+  });
+});
 
 export const getUserTimeline = asyncHandler(async (req: any, res: any) => {
 

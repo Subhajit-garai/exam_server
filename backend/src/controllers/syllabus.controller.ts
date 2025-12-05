@@ -77,6 +77,16 @@ export const fetchAllsyllabus = asyncHandler(async (req: any, res: any) => {
     data: response,
   });
 });
+export const DeleteSyllabus = asyncHandler(async (req: any, res: any) => {
+  let id = req.query.id
+  const response = await syllabusService.deleteSyllabus(id);
+
+  res.json({
+    success: true,
+    message: "all syllabus",
+    data: response,
+  });
+});
 
 export const fetchSyllabusName = asyncHandler(async (req: any, res: any) => {
   const response = await syllabusService.getSyllabusName();
@@ -101,8 +111,10 @@ export const addSubject = asyncHandler(async (req: any, res: any) => {
 
 export const removeSubject = asyncHandler(async (req: any, res: any) => {
   let { syllabusid, subjectid } = req.query;
-  const Subject_removed = await syllabusService.removeSubject(syllabusid, subjectid);
 
+  console.log("--->", req.query);
+
+  const Subject_removed = await syllabusService.removeSubject(syllabusid, subjectid);
   return res.json({
     success: true,
     message: " Subject removed  ",

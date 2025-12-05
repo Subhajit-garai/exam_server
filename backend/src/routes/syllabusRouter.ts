@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { isAdmin } from "@repo/lib/security/auth.js";
-import { CreateSyllabus, fetchAllsyllabus, getSyllabusByid, addSubject, formatedSyllabus, removeSubject, addTopic, removeTopic, fetchAllsyllabus_id, fetchAllsyllabusExamYearid } from "@/controllers/syllabus.controller.js";
+import {
+    CreateSyllabus, fetchAllsyllabus, getSyllabusByid, addSubject,
+    formatedSyllabus, removeSubject, addTopic, removeTopic, fetchAllsyllabus_id,
+    fetchAllsyllabusExamYearid, DeleteSyllabus
+} from "@/controllers/syllabus.controller.js";
 
 
 
@@ -16,8 +20,7 @@ syllabusRouter.get("/get/examyearid", isAdmin, fetchAllsyllabusExamYearid);
 syllabusRouter.get("/name/get/all", isAdmin, fetchAllsyllabus);
 
 syllabusRouter.post("/admin/create", isAdmin, CreateSyllabus);
-syllabusRouter.put("/admin/update", isAdmin, fetchAllsyllabus);
-syllabusRouter.delete("/admin/delete", isAdmin, fetchAllsyllabus);
+syllabusRouter.delete("/admin/delete", isAdmin, DeleteSyllabus);
 
 syllabusRouter.post("/admin/add/subject", isAdmin, addSubject);
 syllabusRouter.delete("/admin/remove/subject", isAdmin, removeSubject);

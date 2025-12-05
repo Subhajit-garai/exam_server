@@ -61,6 +61,16 @@ export class SyllabusService {
         if (!response) throw Error("error while fetching all syllabus");
         return response;
     }
+    async deleteSyllabus(id: string) {
+        const response = await prisma.syllabus.delete({
+            where: {
+                id: id,
+            },
+        });
+
+        if (!response) throw Error("error while deleting syllabus");
+        return response;
+    }
 
     async getSyllabusByExamYearId(id: string) {
         const response = await prisma.syllabus.findMany({
@@ -297,16 +307,16 @@ export class SyllabusService {
 
         syllabus.SubjectSyllabusMap.forEach((subjectData) => {
             let data: fomatedSubject_type = {
-                subject: subjectData.subject?.shortName || "",
+                subject: subjectData.subject?.name || "",
                 weightage: subjectData.weightage,
                 topics: [],
             };
 
-            if (!subjectData.subject?.shortName) throw Error("subject short name invalid");
+            if (!subjectData.subject?.name) throw Error("subject short name invalid");
 
             data.topics = subjectData.TopicsSubjectMap.map((topics) => {
-                if (!topics.Topic.shortName) throw Error("topic short name invalid");
-                return topics.Topic.shortName;
+                if (!topics.Topic.name) throw Error("topic short name invalid");
+                return topics.Topic.name;
             });
 
             formated_syllabus.subjects.push(data);

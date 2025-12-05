@@ -48,6 +48,26 @@ export class BotController {
       data: questionData,
     });
   });
+  public getQuestionViaIdsforProcessing = asyncHandler(async (req: Request, res: Response) => {
+    const ids = req.body; // Array of IDs
+    const questionData = await botService.exam.getQuestionDetailsforProcessing(ids);
+
+    res.json({
+      success: true,
+      message: "Question info",
+      data: questionData,
+    });
+  });
+  public AddProcessingQuestions = asyncHandler(async (req: Request, res: Response) => {
+    const data = req.body;
+    const questionData = await botService.exam.AddProcessingQuestions(data);
+
+    res.json({
+      success: true,
+      message: "Questions added for processing",
+      data: questionData,
+    });
+  });
 
   /**
    * Updates user progress (last exam/quiz/etc taken).
@@ -114,6 +134,8 @@ export const test = controller.test;
 export const examQuestionAddedCompletionStatusCheck = controller.examQuestionAddedCompletionStatusCheck;
 export const getSyllabusDataForExamCreattion = controller.getSyllabusDataForExamCreattion;
 export const getQuestionViaIds = controller.getQuestionViaIds;
+export const getQuestionViaIdsforProcessing = controller.getQuestionViaIdsforProcessing;
+export const AddProcessingQuestions = controller.AddProcessingQuestions;
 export const setUserProgress = controller.setUserProgress;
 export const getExamDetails = controller.getExamDetails;
 export const processNotification = controller.processNotification;

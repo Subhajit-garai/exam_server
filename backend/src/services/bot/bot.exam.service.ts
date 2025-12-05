@@ -62,6 +62,112 @@ export class BotExamService {
         return syllabus;
     }
 
+    async getQuestionDetailsforProcessing(data: any) {
+        const where: any = {};
+
+        // Handle array input (legacy/simple ids)
+        if (Array.isArray(data)) {
+            where.id = { in: data };
+        } else {
+            // Handle object input
+            if (data.id) where.id = data.id;
+            if (data.ids) where.id = { in: data.ids };
+
+            // if (data.subject_id) {
+            //     where.subject_id = data.subject_id;
+            //     where.status = "Processing";
+            // }
+            // if (data.topic_id) {
+            //     where.topic_id = data.topic_id;
+            //     where.status = "Processing";
+            // }
+            if (data.old_topic) {
+                where.old_topic = data.old_topic;
+                // where.status = "Done";
+            }
+            if (data.old_sub_topic) {
+                where.old_sub_topic = data.old_sub_topic;
+                where.status = "Done";
+            }
+        }
+
+        if (Object.keys(where).length === 0) {
+            throw new Error("No valid filters provided");
+        }
+
+        let take = data?.limit ? data?.limit : 1
+        let skip = data?.skip ? data?.skip : 0
+
+        console.log(" log filer where state --> ", where, take, skip);
+
+        let questionData = await prisma.questions.findMany({
+            where: {
+                old_topic: where.old_topic
+            }
+            ,
+            take: take,
+            skip: skip
+        });
+
+        let isAlreadyInProcessing = await prisma.questionProcessing.findMany({
+            where: where
+        })
+
+        let finalSelectedQuestion: any[] = []
+
+        if (isAlreadyInProcessing && isAlreadyInProcessing.length !== 0) {
+
+            // remove  which are in questionProcessing tabel 
+            questionData.map((question) => {
+                isAlreadyInProcessing.map((item) => {
+                    if (question.id !== item.question_id) {
+                        finalSelectedQuestion.push(question)
+                    }
+                })
+
+            })
+        } else {
+            console.log("empty isAlreadyInProcessing data ");
+            finalSelectedQuestion = questionData
+        }
+
+        console.log("    finalSelectedQuestion data ----> ", finalSelectedQuestion);
+
+        if (!finalSelectedQuestion || finalSelectedQuestion.length === 0) throw new Error("Questions not found");
+        return finalSelectedQuestion;
+    }
+
+
+    async AddProcessingQuestions(data: any[]) {
+        if (!data || data.length === 0) return [];
+
+        const result = await prisma.questionProcessing.createMany({
+            data: data.map((item) => ({
+                title: item.title,
+                options: item.options,
+                ans: item.ans,
+                format: item.format || "Text",
+                category: item.category,
+                topic_id: item.topic_id,
+                subject_id: item.subject_id,
+                difficulty: item.difficulty,
+                is_multiple_ans: item.is_multiple_ans || false,
+                explanation: item.explanation,
+                links: item.links || [],
+                extra: item.extra || undefined,
+                status: item.status,
+                old_topic: item.old_topic,
+                old_sub_topic: item.old_sub_topic,
+                created_at: item.created_at,
+                created_by: item.created_by, // Ensure this is passed in data
+                processing_status: "Pending",
+            })),
+            skipDuplicates: true,
+        });
+
+        return result;
+    }
+
     async getQuestionDetailsForBot(ids: string[]) {
         const questionData = await prisma.questions.findMany({
             where: { id: { in: ids } },

@@ -196,10 +196,11 @@ export const getAllNoteTopic = async (req: any, res: any) => {
   }
 };
 
-export const getAllNoteSubject = async (req: any, res: any) => {
+export const getAllNoteSubjectByExam = async (req: any, res: any) => {
   try {
     const { exam } = req.query;
-    let subjectdatas = await noteService.getAllNoteSubject(exam as string);
+
+    let subjectdatas = await noteService.getAllNoteSubjectByExam(exam as string);
 
     if (!subjectdatas) {
       return res.status(400).json({
@@ -213,6 +214,32 @@ export const getAllNoteSubject = async (req: any, res: any) => {
     console.log("Error in note controller --->", error);
   }
 };
+
+export const getAllNoteSubjectForUser = asyncHandler(async (req: any, res: any) => {
+
+  let { user_exam_year_id, user_targeted_exam_id } = req
+
+  if (!user_exam_year_id || !user_targeted_exam_id) {
+
+    return res.status(200).json({
+      success: false,
+      message: "user need to select target exam and exam year",
+    });
+
+  }
+
+  let subjectdatas = await noteService.getAllNoteSubjectForUser(user_targeted_exam_id, user_exam_year_id);
+
+  if (!subjectdatas) {
+    return res.status(400).json({
+      success: false,
+      message: "error while getting Subject , plz try again",
+    });
+  }
+
+  res.json({ success: true, message: "Subjects", data: subjectdatas });
+})
+
 
 export const getTopic = async (req: any, res: any) => {
   try {

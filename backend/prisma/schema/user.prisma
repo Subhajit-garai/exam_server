@@ -21,18 +21,20 @@ model User {
   isOnline Boolean  @default(false)
   lastSeen DateTime @default(now())
 
-  Exam         Exam[]
-  Exam_pattern Exam_pattern[]
-  Questions    Questions[]
-  social       Social?        @relation(fields: [socialId], references: [id])
-  blance       blance?
-  Order        Order[]
-  payment      payment[]
-  leaderboard  leaderboard[]
-  quiz         quiz[]
-  prime        prime?
-  Comment      Comment[]
-  Topic        Topic[]
+  Exam                        Exam[]
+  Exam_pattern                Exam_pattern[]
+  Questions                   Questions[]
+  QuestionProcessingCreated   QuestionProcessing[] @relation("CreatedBy")
+  QuestionProcessingProcessed QuestionProcessing[] @relation("ProcessedBy")
+  social                      Social?              @relation(fields: [socialId], references: [id])
+  blance                      blance?
+  Order                       Order[]
+  payment                     payment[]
+  leaderboard                 leaderboard[]
+  quiz                        quiz[]
+  prime                       prime?
+  Comment                     Comment[]
+  Topic                       Topic[]
 
   botQuizConfig botQuizConfig[]
   CouponUsages  CouponUsage[] // Relation: which users used it

@@ -1,7 +1,7 @@
 import { Router } from "express";
 // import { SelectQuestion } from "../controllers/question.controller";
 import { botauthenticate } from "../middleware/botauth.js";
-import { examQuestionAddedCompletionStatusCheck, getExamDetails, getQuestionViaIds, getSyllabusDataForExamCreattion, processNotification, setUserProgress } from "@/controllers/bot.controller.js";
+import { AddProcessingQuestions, examQuestionAddedCompletionStatusCheck, getExamDetails, getQuestionViaIds, getQuestionViaIdsforProcessing, getSyllabusDataForExamCreattion, processNotification, setUserProgress } from "@/controllers/bot.controller.js";
 import { getUserScore, setUserScore } from "@/controllers/bot/bot.score.controller.js";
 import { getExamAns, getUserans, SetUserans } from "@/controllers/bot/bot.ans.controller.js";
 import { getExamPattern, getExamPatternId, getMockSetExamPattern, updatExamCrationStatus } from "@/controllers/bot/bot.exampattern.controller.js";
@@ -39,6 +39,9 @@ botRouter.get("/syllabus/exam/get", botauthenticate, getSyllabusDataForExamCreat
 
 
 //questions
+botRouter.post("/question/processing/get", botauthenticate, getQuestionViaIdsforProcessing);
+botRouter.post("/question/processed/add", botauthenticate, AddProcessingQuestions);
+
 botRouter.get("/questions/info/get", botauthenticate, getQuestionViaIds);
 botRouter.get("/questions/ans/get/:examid", botauthenticate, getExamAns);
 botRouter.get("/questions/ids", botauthenticate, getQuestionsIds);

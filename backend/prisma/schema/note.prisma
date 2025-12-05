@@ -1,22 +1,38 @@
 model Subject {
-  id          String   @id @unique @default(cuid())
-  order       Int      @unique
-  name        String   @unique
-  shortName   String?  @unique
-  description String?  @default("No description provided")
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  slug        String   @unique
+  id          String    @id @unique @default(cuid())
+  order       Int       @unique
+  name        String    @unique
+  shortName   String?   @unique
+  description String?   @default("No description provided")
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  slug        String    @unique
   iconUrl     String? // URL to an icon/image
   color       String? // hex color or Tailwind class
-  isPublic    Boolean  @default(true)
+  isPublic    Boolean   @default(true)
   category    String // e.g. "Computer Science"
+  categoryId  String?
+  categoryRel Category? @relation(fields: [categoryId], references: [id])
   level       String? // e.g. "Beginner", "Advanced"
   difficulty  Int? // e.g. 1-5 scale
 
   topics             Topic[]
   Questions          Questions[]
+  QuestionProcessing QuestionProcessing[]
   SubjectSyllabusMap SubjectSyllabusMap[]
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  iconUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  subjects    Subject[]
+  targetExams TargetExam[]
 }
 
 model TopicNoteVersion {
@@ -79,9 +95,9 @@ model Topic {
   relatedByTopics Topic[] @relation("RelatedTopics")
   User            User?   @relation(fields: [createdBy], references: [id])
 
-
-  Questions        Questions[]
-  TopicsSubjectMap TopicsSubjectMap[]
+  Questions          Questions[]
+  QuestionProcessing QuestionProcessing[]
+  TopicsSubjectMap   TopicsSubjectMap[]
 
   @@unique([subjectId, order])
   @@index([subjectId])

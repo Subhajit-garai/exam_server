@@ -110,7 +110,6 @@ export const IsUserLoginOpen = async (req: any, res: any, next: () => any) => {
       next();
     } else {
       console.log("checking admin log in .....");
-
       await isAdmin(req, res, next, "User login service is closed for now");
     }
   } catch (error) {

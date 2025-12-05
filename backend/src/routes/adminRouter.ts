@@ -5,6 +5,7 @@ import { addbotToken, createNewBot, setQuizTopic, updateBotWebhook } from "@/con
 import { examTimelineRouter } from "./examTimeline.routes.js";
 
 
+
 export const adminRouter = Router();
 
 adminRouter.put("/settings/update/appconfig", isAdmin, updateAppConfig)

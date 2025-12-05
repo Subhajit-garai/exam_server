@@ -16,6 +16,7 @@
     "gen:sql": "npx prisma generate --sql",
     "studio": "npx prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:temp": "tsx prisma/seed_temp.ts",
     "db:seed:prod": "tsx prisma/seed_prod.ts"
   },
   "prisma": {

@@ -1,6 +1,8 @@
 import prisma from "@repo/db/index.js";
 
 export class NoteService {
+
+
     async like(topicId: string) {
         // Note: The original controller logic had a bug where `topicid` was hardcoded to "".
         // I am assuming the intention was to use the topicId passed to the function.
@@ -267,7 +269,32 @@ export class NoteService {
         return topicdatas;
     }
 
-    async getAllNoteSubject(exam?: string) {
+    async getAllNoteSubjectForUser(exam_id?: string, exam_year_id?: string) {
+        if (exam_id && exam_year_id) {
+
+            const syllabi = await prisma.syllabus.findMany({
+                where: { exam_year_id: exam_year_id },
+                select: { id: true },
+            });
+            const syllabusIds = syllabi.map((s) => s.id);
+
+            const subjectMaps = await prisma.subjectSyllabusMap.findMany({
+                where: { syllabusId: { in: syllabusIds } },
+                include: { subject: true },
+            });
+
+            const subjects = subjectMaps.map((sm) => sm.subject);
+            const uniqueSubjects = Array.from(
+                new Map(subjects.map((s) => [s.id, s])).values()
+            );
+
+            return uniqueSubjects;
+        }
+
+        let subjectdatas = await prisma.subject.findMany({});
+        return subjectdatas;
+    }
+    async getAllNoteSubjectByExam(exam?: string) {
         if (exam) {
             const targetExam = await prisma.targetExam.findFirst({
                 where: {
@@ -310,6 +337,8 @@ export class NoteService {
         let subjectdatas = await prisma.subject.findMany({});
         return subjectdatas;
     }
+
+
 
     async getTopic(topicId: string) {
         let note = await prisma.topic.findFirst({

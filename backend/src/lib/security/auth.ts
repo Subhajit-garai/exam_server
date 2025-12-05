@@ -1,72 +1,82 @@
+import { asyncHandler } from "../helper/asyncHandler.js";
 import { verifyToken } from "../token.js";
 // import prisma from  "@repo/db/index";
 import prisma from "@repo/db/index.js";
 
-export const userauthenticate = (req: any, res: any, next: () => any) => {
+export const userauthenticate = asyncHandler(async (req: any, res: any, next: () => any) => {
   let token = req.cookies.token;
   if (!token) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Authentication required" });
+    throw new Error("Authentication required");
   }
-  try {
-    let user = verifyToken(token);
-    req.user = user.id;
-    req.userRole = "User";
-    next();
-  } catch (error) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Invalid or expired token" });
+
+  let user = verifyToken(token);
+
+  let userInfo = await prisma.user.findFirst({
+    where: {
+      id: user.id,
+    },
+    select: {
+      id: true,
+      role: true,
+      exam_year_id: true,
+      targeted_exam_id: true,
+    },
+  })
+  if (!userInfo) {
+    throw new Error("Authentication required");
   }
-};
+
+
+  req.user = user.id;
+  req.userRole = userInfo.role;
+  req.user_exam_year_id = userInfo.exam_year_id;
+  req.user_targeted_exam_id = userInfo.targeted_exam_id;
+  next();
+})
 
 export const isAdmin = async (
   req: any,
   res: any,
   next: () => any,
-  message = "Admin can access it!"
+  message: string = "Admin can access it!"
 ) => {
+  // with token
+  // let user: any
+
+  // if (req.user) {
+  //   user = await prisma.user.findFirst({
+  //     where: {
+  //       id: req.user,
+  //     },
+  //     select: {
+  //       id: true,
+  //       role: true,
+  //     },
+  //   });
+
+  // } else {
+  //   user = await prisma.user.findFirst({
+  //     where: {
+  //       email: req.body.email,
+  //     },
+  //     select: {
+  //       id: true,
+  //       role: true,
+  //     },
+  //   });
+
+  // }
   try {
-    // with token
-    let user: any
-
-    if (req.user) {
-      user = await prisma.user.findFirst({
-        where: {
-          id: req.user,
-        },
-        select: {
-          id: true,
-          role: true,
-        },
-      });
-
+    if (req.userRole == "Admin") {
+      next();
     } else {
-      user = await prisma.user.findFirst({
-        where: {
-          email: req.body.email,
-        },
-        select: {
-          id: true,
-          role: true,
-        },
-      });
-
+      throw new Error(message);
     }
-    if (user) {
-      if (user.role == "Admin") {
-        req.userRole = "Admin";
-        next();
-      } else {
-        throw new Error(message);
-      }
-    } else {
-      return res
-        .status(401)
-        .json({ success: false, message: "Authentication required" });
-    }
-  } catch (error) {
-    return res.status(401).json({ success: false, message: message ?? "Authentication required" });
   }
-};
+  catch {
+
+    throw new Error(message);
+
+  }
+
+}

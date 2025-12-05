@@ -111,11 +111,48 @@ DataManageRouter.post(
   Updater_authenticate,
   insertBulkData
 );
-DataManageRouter.get(
-  "/admin/allquestions",
+
+DataManageRouter.post(
+  "/admin/backup/importent/tables",
   Updater_authenticate,
-  backupQuestion
+  backupImportantTables
 );
+
+async function backupImportantTables(req: any, res: any) {
+  try {
+    const categories = await prisma.category.findMany({
+      include: { subjects: true, targetExams: true },
+    });
+    const subjects = await prisma.subject.findMany({
+      include: { topics: true },
+    });
+    const targetExams = await prisma.targetExam.findMany({
+      include: { examYears: true },
+    });
+    const questions = await prisma.questions.findMany();
+
+    res.status(200).json({
+      success: true,
+      message: "Backup of important tables",
+      data: {
+        categories,
+        subjects,
+        targetExams,
+        questions,
+      },
+    });
+  } catch (error) {
+    console.error("Backup error:", error);
+    res.status(500).json({ success: false, message: "Backup failed" });
+  }
+}
+
+
+
+
+
+
+
 DataManageRouter.get(
   "/admin/mockandpyq/test/all",
   Updater_authenticate,

@@ -1,5 +1,4 @@
 import rateLimit from "express-rate-limit";
-import { Request, Response } from "express";
 import { RedisProvider } from "../radisProvider.js";
 import { RedisReply, RedisStore, SendCommandFn } from 'rate-limit-redis'
 
@@ -41,7 +40,10 @@ const sendCommand: SendCommandFn = (command: string, ...args: (string | number)[
 export const otpLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
   max: otpLimiter_count, // Limit each IP to 3 OTP requests per windowMs
-  message: "Too many requests, please try again after 5 minutes",
+  message: {
+    success: false,
+    message: "Too many requests, please try again after 5 minutes",
+  },
 
   // for storing data into redis catch
   store: new RedisStore({
@@ -56,16 +58,32 @@ export const otpLimiter = rateLimit({
 export const signinLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
   max: signinLimiter_count, // Limit each IP to 3 OTP requests per windowMs
-  message: "Too many requests, please try again after 5 minutes",
+  message: {
+    success: false,
+    message: "Too many requests, please try again after 5 minutes",
+  },
+  store: new RedisStore({
+    prefix: "signin_limit:",
+    sendCommand: sendCommand,
+  }),
+  keyGenerator: getClientIp,
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
 export const passwordResetLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 5 * 60 * 1000, // 15 minutes
   max: passwordResetLimiter_count, // Limit each IP to 5 password reset requests per windowMs
-  message:
-    "Too many password reset attempts, please try again after 15 minutes",
+  message: {
+    success: false,
+    message:
+      "Too many password reset attempts, please try again after 5 minutes",
+  },
+  store: new RedisStore({
+    prefix: "pwd_reset_limit:",
+    sendCommand: sendCommand,
+  }),
+  keyGenerator: getClientIp,
   standardHeaders: true,
   legacyHeaders: false,
 });

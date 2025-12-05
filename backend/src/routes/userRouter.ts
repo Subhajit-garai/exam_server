@@ -6,6 +6,7 @@ import { IsUserLoginOpen } from "@repo/lib/security/Security.js";
 import { activityRouter } from "./activity.routes.js";
 import { profileRouter } from "./profileRouter.js";
 import { genToken } from "@/lib/token.js";
+import { getAllNoteSubjectForUser } from "@/controllers/note.controller.js";
 
 
 export const userRouter = Router();
@@ -16,6 +17,11 @@ userRouter.get("/ws-token", IsUserLoginOpen, (req: any, res: any) => {
     res.json({ wsToken: token, success: true });
 });
 userRouter.get("/logout", Logout);
+
+// notes 
+
+
+userRouter.get("/notes/allsubject", getAllNoteSubjectForUser)
 
 
 

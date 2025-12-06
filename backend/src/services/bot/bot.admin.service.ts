@@ -66,7 +66,9 @@ export class BotAdminService {
             },
         });
 
-        await prisma.progress.create({ data: { userid: bot.id } });
+        await prisma.examProgress.create({ data: { userId: bot.id } });
+        await prisma.dppProgress.create({ data: { userId: bot.id } });
+        await prisma.quizProgress.create({ data: { userId: bot.id } });
 
         await prisma.botInfo.create({
             data: {

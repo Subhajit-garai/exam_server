@@ -572,12 +572,7 @@ async function main() {
     },
   });
 
-  // ---------- PROGRESS ----------
-  await prisma.progress.create({
-    data: {
-      userid: user1.id,
-    },
-  });
+
 
   // ---------- TARGET EXAMS ----------
   const target_exam = await prisma.targetExam.create({
@@ -669,13 +664,22 @@ async function main() {
     // Call main to run the top portion first
     await main();
 
+    /* ---------- CATEGORY ---------- */
+    const csCategory = await prisma.category.upsert({
+      where: { name: "CS" },
+      update: {},
+      create: { name: "CS", slug: "cs" },
+    });
+
     /* ---------- EXAM PATTERN ---------- */
     const jeca_exam_pattern = await prisma.exam_pattern.create({
       data: {
         title: "JECA@PATTERN@2025",
         format: "Text",
         examname: "JECA",
-        category: "CS",
+        Category: {
+          connect: { id: csCategory.id },
+        },
         syllabus: "Syllabus",
         syllabusid: (await prisma.syllabus.findFirst({
           where: { title: "jeca_syllabus_2025" },
@@ -690,9 +694,13 @@ async function main() {
         marks_values: [1, 2],
         neg_values: [4, 0],
         is_multiple_ans: [0, 1],
-        created_by: (await prisma.user.findFirst({
-          where: { email: "subhajitgarai988@gmail.com" },
-        }))!.id,
+        User: {
+          connect: {
+            id: (await prisma.user.findFirst({
+              where: { email: "subhajitgarai988@gmail.com" },
+            }))!.id,
+          }
+        }
       },
     });
 

@@ -1,3 +1,4 @@
+-- This is an empty migration.
 
 
 -- notify

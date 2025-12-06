@@ -19,6 +19,7 @@ import {
   getAvalibletargetExamAll,
   getExamYearInfo,
   fetch_targeted_exam_by_id,
+  getCategoryName,
 } from "../controllers/exam.controller.js";
 import { isAdmin } from "@repo/lib/security/auth.js";
 import { create_targeted_exam, create_targeted_exam_year, CreateExam, CreateNewExamPattern } from "@/controllers/exam/exam.create.controller.js";
@@ -31,7 +32,8 @@ examRouter.get("/tokensystem", gettokenSystem);
 
 // examRouter.get("/findexam", findexam); // for -> tergeted exam
 // user
-examRouter.get("/category", getCategory);
+examRouter.get("/category/name", getCategoryName);
+examRouter.get("/categorys", getCategory);
 
 examRouter.get("/joinrequest", examJoinRequestProcess); // for -> all exam
 examRouter.get("/getExams", getExams); // for -> all exam

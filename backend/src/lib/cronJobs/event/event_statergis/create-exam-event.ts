@@ -3,6 +3,7 @@ import { BaseEvent } from "../bace-event.js";
 import prisma from "@/db/index.js";
 import { event_exam_data_type } from "@/lib/types/EventTypes.js";
 import dayjs from "dayjs";
+import { connect } from "http2";
 
 
 
@@ -180,9 +181,8 @@ export class create_exam_event extends BaseEvent {
           let response = await prisma.exam.create({
             data: {
               name: new_exam_names[index][idx],
-              examname: examname,
+
               Visibility: Visibility,
-              category: category,
               examtype: examtype,
               starttime: starttime ? starttime[idx] : "08:00 am",
               jointime: jointime ? jointime : "00:15 m",

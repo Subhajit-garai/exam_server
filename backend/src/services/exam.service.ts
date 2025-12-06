@@ -160,17 +160,20 @@ export class ExamService {
     }
 
     async getCategory() {
-        let response = await prisma.targetExam.findMany({
-            distinct: ["category"],
-            select: {
-                category: true,
-            },
-        });
+        let response = await prisma.category.findMany({});
 
         if (!response) {
             throw new Error("Can not find any Category");
         }
-        let Category = response.flat().map((item) => item.category);
+        return response;
+    }
+    async getCategoryName() {
+        let response = await prisma.category.findMany({});
+        let Category = response.map((item) => item.name);
+
+        if (!response) {
+            throw new Error("Can not find any Category");
+        }
         return Category;
     }
 
@@ -221,6 +224,83 @@ export class ExamService {
 
     async finalsubmitExam(userId: string, examId: string) {
         let status = await em.submitExam(examId, userId);
+
+        // Update progress with accuracy
+        try {
+            const exam = await prisma.exam.findUnique({
+                where: { id: examId },
+                select: { examtype: true }
+            });
+
+            // Fetch score to calculate accuracy
+            const scoreEntry = await prisma.score.findFirst({
+                where: { exam_id: examId, user_id: userId },
+                select: { result: true }
+            });
+
+            let right = 0;
+            let wrong = 0;
+            if (scoreEntry?.result) {
+                const result = scoreEntry.result as any;
+                Object.keys(result).forEach((key) => {
+                    right += result[key].Right || 0;
+                    wrong += result[key].Wrong || 0;
+                });
+            }
+            const totalAttemptedInThisExam = right + wrong;
+
+            if (exam) {
+                if (exam.examtype === "Dpp") {
+                    await prisma.dppProgress.update({
+                        where: { userId: userId },
+                        data: {
+                            solvedCount: { increment: 1 },
+                            questionsSolved: { increment: right },
+                            lastDppId: examId,
+                            lastDppDate: new Date()
+                        }
+                    });
+                } else if (exam.examtype === "Quiz") {
+                    await prisma.quizProgress.update({
+                        where: { userId: userId },
+                        data: {
+                            attended: { increment: 1 },
+                            totalScore: { increment: right * 4 }, // Assuming 4 marks, or just track correct answers
+                            lastQuizId: examId,
+                            lastQuizDate: new Date()
+                        }
+                    });
+                } else {
+                    // Update ExamProgress with accuracy recalculation
+                    // We need to fetch current stats to update accuracy accurately or use a weighted average
+                    // For simplicity, we increment totals and then update accuracy based on new totals
+
+                    // 1. Increment totals
+                    const updatedProgress = await prisma.examProgress.update({
+                        where: { userId: userId },
+                        data: {
+                            attended: { increment: 1 },
+                            totalCorrect: { increment: right },
+                            totalQuestionsAttempted: { increment: totalAttemptedInThisExam },
+                            lastExamId: examId,
+                            lastExamDate: new Date()
+                        }
+                    });
+
+                    // 2. Recalculate accuracy
+                    if (updatedProgress.totalQuestionsAttempted > 0) {
+                        const newAccuracy = (updatedProgress.totalCorrect / updatedProgress.totalQuestionsAttempted) * 100;
+                        await prisma.examProgress.update({
+                            where: { userId: userId },
+                            data: { accuracy: newAccuracy }
+                        });
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Failed to update user progress:", error);
+        }
+
         return status;
     }
 
@@ -398,18 +478,23 @@ export class ExamService {
             select: {
                 id: true,
                 name: true,
-                examname: true,
-                display_id: true,
                 exam_pattern: {
                     select: {
                         id: true,
                         total_questions: true,
+                        examname: true,
                         syllabus: true,
                         difficulty: true,
                         format: true,
+                        Category: {
+                            select: {
+                                id: true,
+                                name: true,
+                                slug: true
+                            }
+                        }
                     },
                 },
-                category: true,
                 Visibility: true,
                 examtype: true,
                 starttime: true,
@@ -460,18 +545,24 @@ export class ExamService {
                 select: {
                     id: true,
                     name: true,
-                    examname: true,
                     display_id: true,
                     exam_pattern: {
                         select: {
                             id: true,
                             total_questions: true,
+                            examname: true,
                             syllabus: true,
                             difficulty: true,
                             format: true,
+                            Category: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    slug: true
+                                }
+                            }
                         },
                     },
-                    category: true,
                     Visibility: true,
                     examtype: true,
                     starttime: true,
@@ -517,18 +608,24 @@ export class ExamService {
                 select: {
                     id: true,
                     name: true,
-                    examname: true,
                     display_id: true,
                     exam_pattern: {
                         select: {
                             id: true,
                             total_questions: true,
+                            examname: true,
                             syllabus: true,
                             difficulty: true,
                             format: true,
+                            Category: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    slug: true
+                                }
+                            }
                         },
                     },
-                    category: true,
                     Visibility: true,
                     examtype: true,
                     starttime: true,
@@ -578,9 +675,13 @@ export class ExamService {
     }
 
     async getAvalibletargetExam(category: string) {
+
+
         let response = await prisma.targetExam.findMany({
             where: {
-                category: category,
+                Category: {
+                    name: category
+                }
             },
             select: {
                 name: true,

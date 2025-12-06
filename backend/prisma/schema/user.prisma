@@ -1,22 +1,24 @@
 model User {
-  id                  String   @id @unique @default(cuid())
+  id                  String        @id @unique @default(cuid())
   name                String
-  email               String   @unique
-  contactno           String?  @default("0000000000") // only india
+  email               String        @unique
+  contactno           String?       @default("0000000000") // only india
   password            String
-  targeted_exam_id    String?  @default("not set")
-  exam_year_id        String?  @default("not set")
+  targeted_exam_id    String?       @default("not set")
+  exam_year_id        String?       @default("not set")
   academicProfile     Json?
   school              String?
   standard            String?
   stream              String?
-  socialId            String?  @unique
-  progressid          String?  @unique
-  role                UserRole @default(User)
-  join_at             DateTime @default(now())
+  socialId            String?       @unique
+  examProgress        ExamProgress?
+  dppProgress         DppProgress?
+  quizProgress        QuizProgress?
+  role                UserRole      @default(User)
+  join_at             DateTime      @default(now())
   forgotpasswordToken String? // forget password
-  resetTokenExpires   DateTime @default(now()) // forget password
-  accesstoken         String[] @default([]) // only one device access token
+  resetTokenExpires   DateTime      @default(now()) // forget password
+  accesstoken         String[]      @default([]) // only one device access token
 
   isOnline Boolean  @default(false)
   lastSeen DateTime @default(now())
@@ -85,34 +87,39 @@ model prime {
   updatedAt   DateTime    @default(now()) @updatedAt
 }
 
-model progress {
-  id              String   @id @default(cuid())
-  attempted       Int      @default(0) // Total attempted
-  attendedContest Int      @default(0) // Total contests attended
-  attendedQuiz    Int      @default(0) // Total quizzes attended
-  attendedExam    Int      @default(0) // Total exams attended
-  attendedMock    Int      @default(0) // Total exams attended
-  attendedPYQ     Int      @default(0) // Total exams attended
-  userid          String   @unique
-  rank            Int      @default(0) // Global rank
-  inTopten        Int      @default(0) // Top 10 status
-  accuracy        Int      @default(0)
-  topinexam       Int      @default(0)
-  topinContest    Int      @default(0)
-  openRegister    Int      @default(0)
-  lastExamid      String   @default("not seted")
-  lastDppid       String   @default("not seted")
-  lastMockid      String   @default("not seted")
-  lastContestid   String   @default("not seted")
-  lastQuizid      String   @default("not seted")
-  lastExamRank    Int      @default(0)
-  lastDppRank     Int      @default(0)
-  lastMockRank    Int      @default(0)
-  lastContestRank Int      @default(0)
-  lastQuizRank    Int      @default(0)
-  time            DateTime @default(now()) @db.Timestamptz(6)
+model ExamProgress {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique
+  attended                Int       @default(0)
+  totalQuestionsAttempted Int       @default(0)
+  totalCorrect            Int       @default(0)
+  accuracy                Float     @default(0.0)
+  lastExamId              String?
+  lastExamDate            DateTime?
+  lastRank                Int       @default(0)
+  bestRank                Int       @default(0)
+  User                    User      @relation(fields: [userId], references: [id])
+}
 
-  // @@index([userid]) // Faster queries by user
+model DppProgress {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  solvedCount     Int       @default(0) // Total DPPs fully solved
+  questionsSolved Int       @default(0)
+  lastDppId       String?
+  lastDppDate     DateTime?
+  currentStreak   Int       @default(0) // Specific streak for DPPs if needed
+  User            User      @relation(fields: [userId], references: [id])
+}
+
+model QuizProgress {
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  attended     Int       @default(0)
+  totalScore   Int       @default(0)
+  lastQuizId   String?
+  lastQuizDate DateTime?
+  User         User      @relation(fields: [userId], references: [id])
 }
 
 model blance {
@@ -135,6 +142,7 @@ model UserAns {
   shuffleMap     Int[]
   selectedOption String[]
   isCorrect      Boolean? // it  may  later    , if user not ansed then  it null
+  createdAt      DateTime  @default(now())
   Question       Questions @relation(fields: [questionId], references: [id])
 
   @@unique([examId, userId, questionId])

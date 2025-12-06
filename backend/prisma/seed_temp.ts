@@ -2100,7 +2100,7 @@ async function addSubjectsAndTopics(data: SeedData) {
             await prisma.targetExam.update({
                 where: { id: data.targetExamId },
                 data: {
-                    categories: {
+                    Category: {
                         connect: { id: category.id },
                     },
                 },

@@ -85,7 +85,7 @@ export const CreateNewExamPattern = asyncHandler(async (req: any, res: any) => {
       title,
       format,
       examname,
-      category,
+      ...(category ? { Category: { connect: { name: category } } } : {}),
       topics,
       difficulty,
       part,
@@ -97,7 +97,9 @@ export const CreateNewExamPattern = asyncHandler(async (req: any, res: any) => {
       neg_values,
       syllabus: checkbox ? syllabusType.Syllabus : syllabusType.Generic,
       syllabusid: checkbox ? syllabusData?.id : null,
-      created_by: user,
+      User: {
+        connect: { id: user },
+      },
     },
   });
 
@@ -114,9 +116,22 @@ export const create_targeted_exam = asyncHandler(async (req: any, res: any) => {
   if (!processedata.success) {
     throw ZodDataSafeParse(processedata, true);
   }
+
+  // here need to extract categoryId
+
+  let categoryData = await prisma.category.findFirst({
+    where: {
+      name: processedata.data.category,
+    },
+  });
+
+  if (!categoryData) throw Error("category not found ");
+
+  let { category, ...rest } = processedata.data
   let target_exam = await prisma.targetExam.create({
     data: {
-      ...processedata.data,
+      ...rest,
+      ...(categoryData && { Category: { connect: { id: categoryData.id } } }),
     },
   });
 
@@ -174,16 +189,13 @@ export const CreateExam = asyncHandler(async (req: any, res: any) => {
 
   let {
     name,
-    examname,
     exam_pattern_id,
     Visibility,
-    category,
     duration,
     date,
     jointime,
     starttime,
-    examtype, // new
-    mock_questions_set_id, // new
+    examtype,
   } = data.data;
 
   let response;
@@ -192,15 +204,12 @@ export const CreateExam = asyncHandler(async (req: any, res: any) => {
   response = await prisma.exam.create({
     data: {
       name,
-      examname,
       Visibility,
-      category,
       examtype: examtype,
       starttime: starttime ? starttime : "no limit",
       jointime: jointime ? jointime : "no limit",
       duration: duration ? duration : "02:00 h",
       date: date,
-      // questions: {},
       exam_pattern: {
         connect: { id: exam_pattern_id },
       },

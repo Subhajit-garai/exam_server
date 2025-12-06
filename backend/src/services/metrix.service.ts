@@ -151,12 +151,28 @@ export class MetrixService {
     }
 
     async getperformance(userId: string) {
-        let data = await prisma.progress.findFirst({
-            where: {
-                userid: userId,
-            },
+        let exam = await prisma.examProgress.findUnique({
+            where: { userId: userId },
         });
-        return data;
+        let dpp = await prisma.dppProgress.findUnique({
+            where: { userId: userId },
+        });
+        let quiz = await prisma.quizProgress.findUnique({
+            where: { userId: userId },
+        });
+
+        // Fallback for legacy data or if not initialized
+        if (!exam) exam = { attended: 0, accuracy: 0, lastRank: 0 } as any;
+        if (!dpp) dpp = { solvedCount: 0, questionsSolved: 0 } as any;
+        if (!quiz) quiz = { attended: 0, totalScore: 0 } as any;
+
+        return {
+            exam,
+            dpp,
+            quiz,
+            // Computed aggregate stats for convenience
+            totalAttended: (exam?.attended || 0) + (quiz?.attended || 0),
+        };
     }
 
     async getScoreMetrix(
@@ -176,18 +192,23 @@ export class MetrixService {
         if (offset) {
             switch (offset) {
                 case "week":
+                    interval = "3 MONTHS"; // Show last 12 weeks
                     data = await prisma.$queryRawTyped(getweeklyscore(userid, interval));
                     break;
                 case "month":
+                    interval = "1 YEAR"; // Show last 12 months
                     data = await prisma.$queryRawTyped(getmonthlyscore(userid, interval));
                     break;
                 case "hour":
+                    interval = "24 HOURS";
                     data = await prisma.$queryRawTyped(gethourscore(userid, interval));
                     break;
                 case "minute":
+                    interval = "30 MINUTES";
                     data = await prisma.$queryRawTyped(getminutescore(userid, interval));
                     break;
                 default:
+                    interval = "7 DAYS"; // Show last 7 days
                     data = await prisma.$queryRawTyped(getdailyscore(userid, interval)); // day
                     break;
             }
@@ -251,26 +272,31 @@ export class MetrixService {
         if (offset) {
             switch (offset) {
                 case "week":
+                    interval = "3 MONTHS";
                     data = await prisma.$queryRawTyped(
                         get_subject_wish_weekly_score(userid, interval)
                     );
                     break;
                 case "month":
+                    interval = "1 YEAR";
                     data = await prisma.$queryRawTyped(
                         get_subject_wish_monthly_score(userid, interval)
                     );
                     break;
                 case "hour":
+                    interval = "24 HOURS";
                     data = await prisma.$queryRawTyped(
                         get_subject_wish_hour_score(userid, interval)
                     );
                     break;
                 case "minute":
+                    interval = "30 MINUTES";
                     data = await prisma.$queryRawTyped(
                         get_subject_wish_minute_score(userid, interval)
                     );
                     break;
                 default:
+                    interval = "7 DAYS";
                     data = await prisma.$queryRawTyped(
                         get_subject_wish_daily_score(userid, interval)
                     ); // day

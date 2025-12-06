@@ -85,9 +85,19 @@ export class UserService {
             },
         });
 
-        await prisma.progress.create({
+        await prisma.examProgress.create({
             data: {
-                userid: newUser.id,
+                userId: newUser.id,
+            },
+        });
+        await prisma.dppProgress.create({
+            data: {
+                userId: newUser.id,
+            },
+        });
+        await prisma.quizProgress.create({
+            data: {
+                userId: newUser.id,
             },
         });
 

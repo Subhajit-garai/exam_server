@@ -23,16 +23,17 @@ model Subject {
 }
 
 model Category {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  slug        String   @unique
-  description String?
-  iconUrl     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  subjects    Subject[]
-  targetExams TargetExam[]
+  id           String         @id @default(cuid())
+  name         String         @unique
+  slug         String         @unique
+  shortName    String?        @unique
+  description  String?
+  iconUrl      String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  subjects     Subject[]
+  targetExams  TargetExam[]
+  examPatterns Exam_pattern[]
 }
 
 model TopicNoteVersion {

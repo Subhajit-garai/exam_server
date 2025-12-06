@@ -7,6 +7,7 @@ import { activityRouter } from "./activity.routes.js";
 import { profileRouter } from "./profileRouter.js";
 import { genToken } from "@/lib/token.js";
 import { getAllNoteSubjectForUser } from "@/controllers/note.controller.js";
+import { getAllCategories } from "@/controllers/category.controller.js";
 
 
 export const userRouter = Router();
@@ -22,6 +23,7 @@ userRouter.get("/logout", Logout);
 
 
 userRouter.get("/notes/allsubject", getAllNoteSubjectForUser)
+userRouter.get("/exam/categorys/get", getAllCategories);
 
 
 

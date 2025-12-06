@@ -1,8 +1,14 @@
 -- CreateEnum
-CREATE TYPE "botPlatform" AS ENUM ('NONE', 'WEB', 'TELEGRAM', 'WHATSAPP');
+CREATE TYPE "ActivityType" AS ENUM ('DAILY_CHALLENGE', 'QUIZ', 'TEST', 'DPP', 'MOCK', 'CHAPTER', 'STREAK_BONUS', 'OTHER');
 
 -- CreateEnum
-CREATE TYPE "eventType" AS ENUM ('RUN_NEW_QUIZ', 'CREATE_QUIZ_CONTEST', 'SEND_MESSAGE', 'CREATE_DPP', 'CREATE_EXAM', 'CLEAR_BOT_CACHE');
+CREATE TYPE "BadgeRule" AS ENUM ('ACTIVITY_COUNT', 'STREAK_COUNT', 'XP_THRESHOLD', 'TOPIC_MASTERY');
+
+-- CreateEnum
+CREATE TYPE "Platform" AS ENUM ('NONE', 'WEBAPP', 'ANDROIDAPP', 'TELEGRAM', 'WHATSAPP');
+
+-- CreateEnum
+CREATE TYPE "eventType" AS ENUM ('RUN_NEW_QUIZ', 'CREATE_QUIZ_CONTEST', 'SEND_MESSAGE', 'CREATE_DPP', 'CREATE_EXAM', 'CLEAR_BOT_CACHE', 'ACTIVITY_LEADERBOARD_ARCHIVE');
 
 -- CreateEnum
 CREATE TYPE "eventRuns" AS ENUM ('ONE', 'DAILY', 'WEEKLY', 'MONTHLY');
@@ -20,6 +26,9 @@ CREATE TYPE "ExamStatus" AS ENUM ('REGISTRATION_OPEN', 'REGISTRATION_CLOSED', 'S
 CREATE TYPE "ExamType" AS ENUM ('Test', 'Contest', 'Mock', 'PYQ', 'Subject', 'Dpp', 'Quiz');
 
 -- CreateEnum
+CREATE TYPE "EventStatus" AS ENUM ('completed', 'current', 'upcoming');
+
+-- CreateEnum
 CREATE TYPE "IssueType" AS ENUM ('QUESTION', 'UI', 'EXAM', 'PAYMENT', 'LOGIN', 'SIGNUP');
 
 -- CreateEnum
@@ -27,6 +36,9 @@ CREATE TYPE "OfferPlan" AS ENUM ('BASIC', 'STANDARD', 'PREMIUM', 'PLATINUM');
 
 -- CreateEnum
 CREATE TYPE "purchaseType" AS ENUM ('SUBSCRIPTION', 'TOKEN');
+
+-- CreateEnum
+CREATE TYPE "ProcessingStatus" AS ENUM ('Pending', 'Approved', 'Rejected');
 
 -- CreateEnum
 CREATE TYPE "quiz_type" AS ENUM ('telegram_quiz', 'quiz');
@@ -74,11 +86,87 @@ CREATE TYPE "primeStatus" AS ENUM ('None', 'Bronze', 'Silver', 'Gold');
 CREATE TYPE "UserRole" AS ENUM ('Admin', 'User', 'Tutor', 'Bot');
 
 -- CreateTable
+CREATE TABLE "DailyChallenge" (
+    "id" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "xp" INTEGER NOT NULL,
+    "createdBy" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "DailyChallenge_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserActivity" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "type" "ActivityType" NOT NULL,
+    "meta" JSONB,
+    "xp" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UserActivity_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserStreak" (
+    "userId" TEXT NOT NULL,
+    "streak" INTEGER NOT NULL DEFAULT 0,
+    "maxStreak" INTEGER NOT NULL DEFAULT 0,
+    "lastActivity" TIMESTAMP(3),
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "UserStreak_pkey" PRIMARY KEY ("userId")
+);
+
+-- CreateTable
+CREATE TABLE "Badge" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "icon" TEXT,
+    "ruleType" "BadgeRule" NOT NULL,
+    "condition" JSONB NOT NULL,
+    "xpBonus" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Badge_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserBadge" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "badgeId" TEXT NOT NULL,
+    "earnedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UserBadge_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ActivityLeaderboard" (
+    "id" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+    "rank" INTEGER NOT NULL,
+    "score" INTEGER NOT NULL,
+    "type" TEXT NOT NULL DEFAULT 'daily',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ActivityLeaderboard_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "botQuizConfig" (
     "id" TEXT NOT NULL,
     "title" TEXT,
     "chatId" TEXT,
-    "platform" "botPlatform" NOT NULL DEFAULT 'NONE',
+    "platform" "Platform" NOT NULL DEFAULT 'NONE',
     "check" "check",
     "syllabusid" TEXT,
     "syllabus" "syllabusType" NOT NULL DEFAULT 'Syllabus',
@@ -162,7 +250,7 @@ CREATE TABLE "TargetExam" (
     "description" TEXT,
     "examScope" "ExamScope" NOT NULL DEFAULT 'NATIONAL',
     "isPublic" BOOLEAN NOT NULL DEFAULT false,
-    "category" TEXT NOT NULL DEFAULT 'not seted',
+    "categoryId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -195,7 +283,7 @@ CREATE TABLE "Exam_pattern" (
     "title" TEXT,
     "format" "examformat" NOT NULL DEFAULT 'Text',
     "examname" TEXT NOT NULL,
-    "category" TEXT NOT NULL,
+    "categoryId" TEXT,
     "syllabus" "syllabusType" NOT NULL DEFAULT 'Syllabus',
     "syllabusid" TEXT,
     "topics" TEXT[],
@@ -218,8 +306,6 @@ CREATE TABLE "Exam" (
     "id" TEXT NOT NULL,
     "display_id" TEXT,
     "name" TEXT DEFAULT 'No name',
-    "examname" TEXT NOT NULL,
-    "category" TEXT NOT NULL,
     "examtype" "ExamType" NOT NULL DEFAULT 'Test',
     "access_type" "access_type" NOT NULL DEFAULT 'Paid',
     "exam_pattern_id" TEXT NOT NULL,
@@ -240,6 +326,21 @@ CREATE TABLE "Exam" (
     "created_by" TEXT NOT NULL,
 
     CONSTRAINT "Exam_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ExamTimeline" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "description" TEXT,
+    "status" "ExamStatus" NOT NULL,
+    "notification" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "exam_year" TEXT NOT NULL,
+
+    CONSTRAINT "ExamTimeline_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -274,10 +375,25 @@ CREATE TABLE "Subject" (
     "color" TEXT,
     "isPublic" BOOLEAN NOT NULL DEFAULT true,
     "category" TEXT NOT NULL,
+    "categoryId" TEXT,
     "level" TEXT,
     "difficulty" INTEGER,
 
     CONSTRAINT "Subject_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Category" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "shortName" TEXT,
+    "description" TEXT,
+    "iconUrl" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -419,6 +535,37 @@ CREATE TABLE "question_map" (
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "question_map_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "QuestionProcessing" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "options" TEXT[],
+    "old_topic" TEXT,
+    "old_sub_topic" TEXT,
+    "extra" JSONB,
+    "ans" TEXT[],
+    "topic_id" TEXT NOT NULL,
+    "subject_id" TEXT NOT NULL,
+    "format" "examformat" NOT NULL DEFAULT 'Text',
+    "category" TEXT NOT NULL,
+    "difficulty" "diffcultlevel" NOT NULL,
+    "is_multiple_ans" BOOLEAN NOT NULL DEFAULT false,
+    "history" TEXT[] DEFAULT ARRAY['']::TEXT[],
+    "explanation" TEXT DEFAULT 'no explanation added',
+    "links" TEXT[] DEFAULT ARRAY['']::TEXT[],
+    "status" "Status" NOT NULL DEFAULT 'Processing',
+    "weight" INTEGER NOT NULL DEFAULT 0,
+    "created_by" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL,
+    "question_id" TEXT,
+    "processing_status" "ProcessingStatus" NOT NULL DEFAULT 'Pending',
+    "admin_comment" TEXT,
+    "processed_by" TEXT,
+    "processed_at" TIMESTAMP(3),
+
+    CONSTRAINT "QuestionProcessing_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -589,16 +736,6 @@ CREATE TABLE "TopicsSubjectMap" (
 );
 
 -- CreateTable
-CREATE TABLE "telegram" (
-    "id" TEXT NOT NULL,
-    "userid" TEXT,
-    "telegramid" TEXT DEFAULT '0000000000',
-    "last_update" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "telegram_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "telegramGroupInfo" (
     "id" TEXT NOT NULL,
     "groupid" TEXT NOT NULL,
@@ -675,9 +812,13 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "contactno" TEXT DEFAULT '0000000000',
     "password" TEXT NOT NULL,
-    "telegramid" TEXT,
-    "verificationid" TEXT,
-    "progressid" TEXT,
+    "targeted_exam_id" TEXT DEFAULT 'not set',
+    "exam_year_id" TEXT DEFAULT 'not set',
+    "academicProfile" JSONB,
+    "school" TEXT,
+    "standard" TEXT,
+    "stream" TEXT,
+    "socialId" TEXT,
     "role" "UserRole" NOT NULL DEFAULT 'User',
     "join_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "forgotpasswordToken" TEXT,
@@ -687,6 +828,32 @@ CREATE TABLE "User" (
     "lastSeen" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Social" (
+    "id" TEXT NOT NULL,
+    "userid" TEXT,
+    "telegram" TEXT DEFAULT '0000000000',
+    "whatsapp" TEXT,
+    "linkedin" TEXT,
+    "github" TEXT,
+    "twitter" TEXT,
+    "instagram" TEXT,
+    "facebook" TEXT,
+    "website" TEXT,
+    "isContactVerified" BOOLEAN NOT NULL DEFAULT false,
+    "isEmailVerified" BOOLEAN NOT NULL DEFAULT false,
+    "isTelegramVerified" BOOLEAN NOT NULL DEFAULT false,
+    "isWhatsappVerified" BOOLEAN NOT NULL DEFAULT false,
+    "isGithubVerified" BOOLEAN NOT NULL DEFAULT false,
+    "isLinkedinVerified" BOOLEAN NOT NULL DEFAULT false,
+    "isInstagramVerified" BOOLEAN NOT NULL DEFAULT false,
+    "isFacebookVerified" BOOLEAN NOT NULL DEFAULT false,
+    "isTwitterVerified" BOOLEAN NOT NULL DEFAULT false,
+    "last_update" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Social_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -702,46 +869,44 @@ CREATE TABLE "prime" (
 );
 
 -- CreateTable
-CREATE TABLE "verification" (
+CREATE TABLE "ExamProgress" (
     "id" TEXT NOT NULL,
-    "contactno" BOOLEAN NOT NULL DEFAULT false,
-    "email" BOOLEAN NOT NULL DEFAULT false,
-    "telegram" BOOLEAN NOT NULL DEFAULT false,
-    "whatsapp" BOOLEAN NOT NULL DEFAULT false,
-    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" TEXT NOT NULL,
+    "attended" INTEGER NOT NULL DEFAULT 0,
+    "totalQuestionsAttempted" INTEGER NOT NULL DEFAULT 0,
+    "totalCorrect" INTEGER NOT NULL DEFAULT 0,
+    "accuracy" DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    "lastExamId" TEXT,
+    "lastExamDate" TIMESTAMP(3),
+    "lastRank" INTEGER NOT NULL DEFAULT 0,
+    "bestRank" INTEGER NOT NULL DEFAULT 0,
 
-    CONSTRAINT "verification_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ExamProgress_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "progress" (
+CREATE TABLE "DppProgress" (
     "id" TEXT NOT NULL,
-    "attempted" INTEGER NOT NULL DEFAULT 0,
-    "attendedContest" INTEGER NOT NULL DEFAULT 0,
-    "attendedQuiz" INTEGER NOT NULL DEFAULT 0,
-    "attendedExam" INTEGER NOT NULL DEFAULT 0,
-    "attendedMock" INTEGER NOT NULL DEFAULT 0,
-    "attendedPYQ" INTEGER NOT NULL DEFAULT 0,
-    "userid" TEXT NOT NULL,
-    "rank" INTEGER NOT NULL DEFAULT 0,
-    "inTopten" INTEGER NOT NULL DEFAULT 0,
-    "accuracy" INTEGER NOT NULL DEFAULT 0,
-    "topinexam" INTEGER NOT NULL DEFAULT 0,
-    "topinContest" INTEGER NOT NULL DEFAULT 0,
-    "openRegister" INTEGER NOT NULL DEFAULT 0,
-    "lastExamid" TEXT NOT NULL DEFAULT 'not seted',
-    "lastDppid" TEXT NOT NULL DEFAULT 'not seted',
-    "lastMockid" TEXT NOT NULL DEFAULT 'not seted',
-    "lastContestid" TEXT NOT NULL DEFAULT 'not seted',
-    "lastQuizid" TEXT NOT NULL DEFAULT 'not seted',
-    "lastExamRank" INTEGER NOT NULL DEFAULT 0,
-    "lastDppRank" INTEGER NOT NULL DEFAULT 0,
-    "lastMockRank" INTEGER NOT NULL DEFAULT 0,
-    "lastContestRank" INTEGER NOT NULL DEFAULT 0,
-    "lastQuizRank" INTEGER NOT NULL DEFAULT 0,
-    "time" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" TEXT NOT NULL,
+    "solvedCount" INTEGER NOT NULL DEFAULT 0,
+    "questionsSolved" INTEGER NOT NULL DEFAULT 0,
+    "lastDppId" TEXT,
+    "lastDppDate" TIMESTAMP(3),
+    "currentStreak" INTEGER NOT NULL DEFAULT 0,
 
-    CONSTRAINT "progress_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "DppProgress_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "QuizProgress" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "attended" INTEGER NOT NULL DEFAULT 0,
+    "totalScore" INTEGER NOT NULL DEFAULT 0,
+    "lastQuizId" TEXT,
+    "lastQuizDate" TIMESTAMP(3),
+
+    CONSTRAINT "QuizProgress_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -766,6 +931,7 @@ CREATE TABLE "UserAns" (
     "shuffleMap" INTEGER[],
     "selectedOption" TEXT[],
     "isCorrect" BOOLEAN,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "UserAns_pkey" PRIMARY KEY ("id")
 );
@@ -792,6 +958,30 @@ CREATE TABLE "_RelatedTopics" (
 
     CONSTRAINT "_RelatedTopics_AB_pkey" PRIMARY KEY ("A","B")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "DailyChallenge_date_key" ON "DailyChallenge"("date");
+
+-- CreateIndex
+CREATE INDEX "UserActivity_userId_idx" ON "UserActivity"("userId");
+
+-- CreateIndex
+CREATE INDEX "UserActivity_date_idx" ON "UserActivity"("date");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Badge_name_key" ON "Badge"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserBadge_userId_badgeId_key" ON "UserBadge"("userId", "badgeId");
+
+-- CreateIndex
+CREATE INDEX "ActivityLeaderboard_date_idx" ON "ActivityLeaderboard"("date");
+
+-- CreateIndex
+CREATE INDEX "ActivityLeaderboard_userId_idx" ON "ActivityLeaderboard"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ActivityLeaderboard_date_userId_type_key" ON "ActivityLeaderboard"("date", "userId", "type");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "botQuizConfig_id_key" ON "botQuizConfig"("id");
@@ -866,6 +1056,15 @@ CREATE UNIQUE INDEX "Subject_shortName_key" ON "Subject"("shortName");
 CREATE UNIQUE INDEX "Subject_slug_key" ON "Subject"("slug");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Category_slug_key" ON "Category"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Category_shortName_key" ON "Category"("shortName");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Topic_id_key" ON "Topic"("id");
 
 -- CreateIndex
@@ -915,6 +1114,18 @@ CREATE INDEX "question_map_examid_idx" ON "question_map"("examid");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "question_map_examid_questionid_part_key" ON "question_map"("examid", "questionid", "part");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "QuestionProcessing_id_key" ON "QuestionProcessing"("id");
+
+-- CreateIndex
+CREATE INDEX "QuestionProcessing_topic_id_idx" ON "QuestionProcessing"("topic_id");
+
+-- CreateIndex
+CREATE INDEX "QuestionProcessing_subject_id_idx" ON "QuestionProcessing"("subject_id");
+
+-- CreateIndex
+CREATE INDEX "QuestionProcessing_processing_status_idx" ON "QuestionProcessing"("processing_status");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "quiz_id_key" ON "quiz"("id");
@@ -986,9 +1197,6 @@ CREATE UNIQUE INDEX "TopicsSubjectMap_id_key" ON "TopicsSubjectMap"("id");
 CREATE UNIQUE INDEX "TopicsSubjectMap_subject_map_id_topic_id_key" ON "TopicsSubjectMap"("subject_map_id", "topic_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "telegram_id_key" ON "telegram"("id");
-
--- CreateIndex
 CREATE UNIQUE INDEX "telegramGroupInfo_id_key" ON "telegramGroupInfo"("id");
 
 -- CreateIndex
@@ -1013,16 +1221,13 @@ CREATE UNIQUE INDEX "User_id_key" ON "User"("id");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_telegramid_key" ON "User"("telegramid");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_verificationid_key" ON "User"("verificationid");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_progressid_key" ON "User"("progressid");
+CREATE UNIQUE INDEX "User_socialId_key" ON "User"("socialId");
 
 -- CreateIndex
 CREATE INDEX "User_role_idx" ON "User"("role");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Social_id_key" ON "Social"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "prime_id_key" ON "prime"("id");
@@ -1031,10 +1236,13 @@ CREATE UNIQUE INDEX "prime_id_key" ON "prime"("id");
 CREATE UNIQUE INDEX "prime_userid_key" ON "prime"("userid");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "verification_id_key" ON "verification"("id");
+CREATE UNIQUE INDEX "ExamProgress_userId_key" ON "ExamProgress"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "progress_userid_key" ON "progress"("userid");
+CREATE UNIQUE INDEX "DppProgress_userId_key" ON "DppProgress"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "QuizProgress_userId_key" ON "QuizProgress"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "blance_id_key" ON "blance"("id");
@@ -1052,6 +1260,21 @@ CREATE UNIQUE INDEX "UserAns_examId_userId_questionId_key" ON "UserAns"("examId"
 CREATE INDEX "_RelatedTopics_B_index" ON "_RelatedTopics"("B");
 
 -- AddForeignKey
+ALTER TABLE "UserActivity" ADD CONSTRAINT "UserActivity_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserStreak" ADD CONSTRAINT "UserStreak_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserBadge" ADD CONSTRAINT "UserBadge_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserBadge" ADD CONSTRAINT "UserBadge_badgeId_fkey" FOREIGN KEY ("badgeId") REFERENCES "Badge"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ActivityLeaderboard" ADD CONSTRAINT "ActivityLeaderboard_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "botQuizConfig" ADD CONSTRAINT "botQuizConfig_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -1067,7 +1290,13 @@ ALTER TABLE "CouponUsage" ADD CONSTRAINT "CouponUsage_userId_fkey" FOREIGN KEY (
 ALTER TABLE "CouponUsage" ADD CONSTRAINT "CouponUsage_couponId_fkey" FOREIGN KEY ("couponId") REFERENCES "Coupon"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "TargetExam" ADD CONSTRAINT "TargetExam_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "ExamYear" ADD CONSTRAINT "ExamYear_targetExamId_fkey" FOREIGN KEY ("targetExamId") REFERENCES "TargetExam"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Exam_pattern" ADD CONSTRAINT "Exam_pattern_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Exam_pattern" ADD CONSTRAINT "Exam_pattern_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1080,6 +1309,12 @@ ALTER TABLE "Exam" ADD CONSTRAINT "Exam_created_by_fkey" FOREIGN KEY ("created_b
 
 -- AddForeignKey
 ALTER TABLE "Exam" ADD CONSTRAINT "Exam_exam_pattern_id_fkey" FOREIGN KEY ("exam_pattern_id") REFERENCES "Exam_pattern"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ExamTimeline" ADD CONSTRAINT "ExamTimeline_exam_year_fkey" FOREIGN KEY ("exam_year") REFERENCES "ExamYear"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Subject" ADD CONSTRAINT "Subject_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TopicNoteVersion" ADD CONSTRAINT "TopicNoteVersion_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "Topic"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1119,6 +1354,18 @@ ALTER TABLE "question_map" ADD CONSTRAINT "question_map_examid_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "question_map" ADD CONSTRAINT "question_map_questionid_fkey" FOREIGN KEY ("questionid") REFERENCES "Questions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "QuestionProcessing" ADD CONSTRAINT "QuestionProcessing_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "QuestionProcessing" ADD CONSTRAINT "QuestionProcessing_processed_by_fkey" FOREIGN KEY ("processed_by") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "QuestionProcessing" ADD CONSTRAINT "QuestionProcessing_subject_id_fkey" FOREIGN KEY ("subject_id") REFERENCES "Subject"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "QuestionProcessing" ADD CONSTRAINT "QuestionProcessing_topic_id_fkey" FOREIGN KEY ("topic_id") REFERENCES "Topic"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "quiz" ADD CONSTRAINT "quiz_quizRegister_id_fkey" FOREIGN KEY ("quizRegister_id") REFERENCES "quizRegister"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -1166,13 +1413,19 @@ ALTER TABLE "telegramGroupTopic" ADD CONSTRAINT "telegramGroupTopic_groupId_fkey
 ALTER TABLE "TierBenefit" ADD CONSTRAINT "TierBenefit_tierId_fkey" FOREIGN KEY ("tierId") REFERENCES "Tier"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_telegramid_fkey" FOREIGN KEY ("telegramid") REFERENCES "telegram"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_verificationid_fkey" FOREIGN KEY ("verificationid") REFERENCES "verification"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_socialId_fkey" FOREIGN KEY ("socialId") REFERENCES "Social"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "prime" ADD CONSTRAINT "prime_userid_fkey" FOREIGN KEY ("userid") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ExamProgress" ADD CONSTRAINT "ExamProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DppProgress" ADD CONSTRAINT "DppProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "QuizProgress" ADD CONSTRAINT "QuizProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "blance" ADD CONSTRAINT "blance_userid_fkey" FOREIGN KEY ("userid") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1185,428 +1438,3 @@ ALTER TABLE "_RelatedTopics" ADD CONSTRAINT "_RelatedTopics_A_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "_RelatedTopics" ADD CONSTRAINT "_RelatedTopics_B_fkey" FOREIGN KEY ("B") REFERENCES "Topic"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
-
-
-
---  time scale db setup
-
-
-        -- Enable TimescaleDB extension
-        CREATE EXTENSION IF NOT EXISTS timescaledb;
-        -- Creating hyper tabele
-        SELECT create_hypertable('timescale_score', by_range('time'));
-
-
-
-        -- creating score _summart basd on day ,week ,month
-
--- hour ---> user_score_summary_day
-
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_name = 'user_score_summary_minute'
-    ) THEN
-        CREATE MATERIALIZED VIEW user_score_summary_minute
-        WITH (timescaledb.continuous) AS
-        SELECT 
-            time_bucket('10 minute', time) AS minute,
-            user_id,
-            SUM(score) AS total_score
-        FROM timescale_score
-        GROUP BY minute, user_id
-        WITH NO DATA;
-    END IF;
-END $$;
-
-
-
-SELECT add_continuous_aggregate_policy(
-    'user_score_summary_minute',
-    start_offset => INTERVAL '30 minute',
-    end_offset => INTERVAL '5 minute',
-    schedule_interval => INTERVAL '5 minute'
-);
-
-
-
-
-
--- hour ---> user_score_summary_day
-
-        DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_name = 'user_score_summary_hour'
-    ) THEN
-        CREATE MATERIALIZED VIEW user_score_summary_hour
-        WITH (timescaledb.continuous) AS
-        SELECT 
-            time_bucket('1 hour', time) AS hour,
-            user_id,
-            SUM(score) AS total_score
-        FROM timescale_score
-        GROUP BY hour, user_id
-        WITH NO DATA;
-    END IF;
-END $$;
-
-
-
-SELECT add_continuous_aggregate_policy(
-    'user_score_summary_hour',
-    start_offset => INTERVAL '3 hour',
-    end_offset => INTERVAL '30 minute',
-    schedule_interval => INTERVAL '1 hour'
-);
-
-
--- day ---> user_score_summary_day
-
-        DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_name = 'user_score_summary_day'
-    ) THEN
-        CREATE MATERIALIZED VIEW user_score_summary_day
-        WITH (timescaledb.continuous) AS
-        SELECT 
-            time_bucket('1 day', time) AS day,
-            user_id,
-            SUM(score) AS total_score
-        FROM timescale_score
-        GROUP BY day, user_id
-        WITH NO DATA;
-    END IF;
-END $$;
-
-
-
-SELECT add_continuous_aggregate_policy(
-    'user_score_summary_day',
-    start_offset => INTERVAL '3 days',
-    end_offset => INTERVAL '1 hour',
-    schedule_interval => INTERVAL '1 day'
-);
-
-
--- @@@@@@@@@@@@@@@
-        DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_name = 'user_score_summary_week'
-    ) THEN
-        CREATE MATERIALIZED VIEW user_score_summary_week
-        WITH (timescaledb.continuous) AS
-        SELECT 
-            time_bucket('1week', time) AS week,
-            user_id,
-            SUM(score) AS total_score
-        FROM timescale_score
-        GROUP BY week, user_id
-        WITH NO DATA;
-    END IF;
-END $$;
-
-
-SELECT add_continuous_aggregate_policy(
-    'user_score_summary_week',
-    start_offset => INTERVAL '3 week',
-    end_offset => INTERVAL '1 hour',
-    schedule_interval => INTERVAL '1 week'
- );
-
-
- --@@@@@@@@@@@@@@@@@
-        DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_name = 'user_score_summary_month'
-    ) THEN
-        CREATE MATERIALIZED VIEW user_score_summary_month
-        WITH (timescaledb.continuous) AS
-        SELECT 
-            time_bucket('1 month', time) AS month,
-            user_id,
-            SUM(score) AS total_score
-        FROM timescale_score
-        GROUP BY month, user_id
-        WITH NO DATA;
-    END IF;
-END $$;
-                SELECT add_continuous_aggregate_policy(
-                    'user_score_summary_month',
-                    start_offset => INTERVAL '3 month',
-                    end_offset => INTERVAL '1 day',
-                    schedule_interval => INTERVAL '1 month'
-                 );
-
- -- creatin subject_score_summary based on day,week , month
-
-
-
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_name = 'subject_score_summary_minute'
-    ) THEN
-        
-        CREATE MATERIALIZED VIEW subject_score_summary_minute
-        WITH (timescaledb.continuous) AS
-        SELECT 
-            time_bucket('10 minute', time) AS minute,
-            user_id,
-            key AS subject,
-            SUM((value::jsonb ->> 'Right')::INTEGER) AS total_right, 
-            SUM((value::jsonb ->> 'Wrong')::INTEGER) AS total_wrong
-        FROM 
-            timescale_score,
-            jsonb_each_text(topic_wise_result)
-        GROUP BY 
-            minute, user_id, key
-        WITH NO DATA;
-    END IF;
-END $$;
-
-
-
-SELECT add_continuous_aggregate_policy(
-    'subject_score_summary_minute',
-    start_offset => INTERVAL '30 minute',
-    end_offset => INTERVAL '5 minute',
-    schedule_interval => INTERVAL '5 minute'
-);
-
-
-
-
--- hour ---> user_score_summary_day
-
-        DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_name = 'subject_score_summary_hour'
-    ) THEN
-        
-        CREATE MATERIALIZED VIEW subject_score_summary_hour
-        WITH (timescaledb.continuous) AS
-        SELECT 
-            time_bucket('1 hour', time) AS hour,
-            user_id,
-            key AS subject,
-            SUM((value::jsonb ->> 'Right')::INTEGER) AS total_right, 
-            SUM((value::jsonb ->> 'Wrong')::INTEGER) AS total_wrong
-        FROM 
-            timescale_score,
-            jsonb_each_text(topic_wise_result)
-        GROUP BY 
-            hour, user_id, key
-        WITH NO DATA;
-    END IF;
-END $$;
-
-
-
-SELECT add_continuous_aggregate_policy(
-    'subject_score_summary_hour',
-    start_offset => INTERVAL '3 hour',
-    end_offset => INTERVAL '30 minute',
-    schedule_interval => INTERVAL '1 hour'
-);
-
-
-        DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_name = 'subject_score_summary_day'
-    ) THEN
-        
-        CREATE MATERIALIZED VIEW subject_score_summary_day
-        WITH (timescaledb.continuous) AS
-        SELECT 
-            time_bucket('1 day', time) AS day,
-            user_id,
-            key AS subject,
-            SUM((value::jsonb ->> 'Right')::INTEGER) AS total_right, 
-            SUM((value::jsonb ->> 'Wrong')::INTEGER) AS total_wrong
-        FROM 
-            timescale_score,
-            jsonb_each_text(topic_wise_result)
-        GROUP BY 
-            day, user_id, key
-        WITH NO DATA;
-    END IF;
-END $$;
-
-SELECT add_continuous_aggregate_policy(
-    'subject_score_summary_day',
-    start_offset => INTERVAL '3 days',
-    end_offset => INTERVAL '1 hour',
-    schedule_interval => INTERVAL '1 day'
-);
-
-
-        DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_name = 'subject_score_summary_week'
-    ) THEN
-        
-        CREATE MATERIALIZED VIEW subject_score_summary_week
-        WITH (timescaledb.continuous) AS
-        SELECT 
-            time_bucket('1 week', time) AS week,
-            user_id,
-            key AS subject,
-            SUM((value::jsonb ->> 'Right')::INTEGER) AS total_right,
-            SUM((value::jsonb ->> 'Wrong')::INTEGER) AS total_wrong
-        FROM 
-            timescale_score,
-            jsonb_each_text(topic_wise_result)
-        GROUP BY 
-            week, user_id, key
-        WITH NO DATA;
-    END IF;
-END $$;
-
-SELECT add_continuous_aggregate_policy(
-                    'subject_score_summary_week',
-                    start_offset => INTERVAL '3 weeks',
-                    end_offset => INTERVAL '1 hour',
-                    schedule_interval => INTERVAL '1 week'
-                 );
-
-
-
-        DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_name = 'subject_score_summary_month'
-    ) THEN
-        
-        CREATE MATERIALIZED VIEW subject_score_summary_month
-        WITH (timescaledb.continuous) AS
-        SELECT 
-            time_bucket('1 month', time) AS month,
-            user_id,
-            key AS subject,
-            SUM((value::jsonb ->> 'Right')::INTEGER) AS total_right,
-            SUM((value::jsonb ->> 'Wrong')::INTEGER) AS total_wrong
-        FROM 
-            timescale_score,
-            jsonb_each_text(topic_wise_result)
-        GROUP BY 
-            month, user_id, key
-        WITH NO DATA;
-    END IF;
-END $$;
-
-SELECT add_continuous_aggregate_policy(
-                    'subject_score_summary_month',
-                    start_offset => INTERVAL '3 months',
-                    end_offset => INTERVAL '1 day',
-                    schedule_interval => INTERVAL '1 month'
-                 );
-
---  notification 
-
-
-
-
--- notify
-
-CREATE OR REPLACE FUNCTION notify_event_change() RETURNS trigger AS $$
-DECLARE
-  action TEXT := TG_OP;  -- 'INSERT' or 'UPDATE'
-BEGIN
-  PERFORM pg_notify(
-    'event_channel',
-    json_build_object(
-      'id', NEW.id,
-      'action', action
-    )::text
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE  TRIGGER events_trigger
-AFTER INSERT OR UPDATE ON events
-FOR EACH ROW EXECUTE FUNCTION notify_event_change();
-
-
-
--- rank tregger
-
-CREATE OR REPLACE FUNCTION update_leaderboard_rank()
-RETURNS TRIGGER AS $$
-BEGIN
-  -- Insert or update leaderboard with highest score
-  INSERT INTO leaderboard (id,user_id,exam_id,score,rank,time)
-  VALUES (NEW.leaderboard_id,NEW.user_id, NEW.exam_id, NEW.score,0, now())
-  ON CONFLICT (user_id, exam_id,time) DO UPDATE
-  SET score = GREATEST(leaderboard.score, EXCLUDED.score),
-      time = now();
-
-  -- Update rank only if score has changed
-  WITH ranked AS (
-    SELECT user_id, exam_id, score,
-           RANK() OVER (PARTITION BY exam_id ORDER BY score DESC) AS new_rank
-    FROM leaderboard
-  )
-  UPDATE leaderboard l
-  SET rank = r.new_rank
-  FROM ranked r
-  WHERE l.user_id = r.user_id 
-    AND l.exam_id = r.exam_id 
-    AND l.rank IS DISTINCT FROM r.new_rank;  -- Avoid unnecessary updates
-
-	-- part 2
-	INSERT INTO timescale_score (id,user_id, exam_id, score,not_attempt,topic_wise_result,result,time)
-  VALUES (NEW.id,NEW.user_id, NEW.exam_id, NEW.score,NEW.not_attempt,NEW.topic_wise_result,NEW.result, NEW.time)
-  ON CONFLICT (id, time) DO UPDATE
-	  SET score = EXCLUDED.score, 
-	      not_attempt = EXCLUDED.not_attempt,
-	      topic_wise_result = EXCLUDED.topic_wise_result,
-	      result = EXCLUDED.result;
-	
-
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
--- tregger
-
-CREATE OR REPLACE TRIGGER trigger_update_leaderboard_rank
-AFTER INSERT OR UPDATE ON score
-FOR EACH ROW
-EXECUTE FUNCTION update_leaderboard_rank();
-
-
-
-
-
-
-

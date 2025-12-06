@@ -4,16 +4,15 @@ model TargetExam {
   shortCode   String?   @unique // e.g., "GATE", "CAT", "UPSC"
   description String?
   examScope   ExamScope @default(NATIONAL) // examType to ExamScope
+  isPublic    Boolean   @default(false)
+  categoryId  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  isPublic Boolean @default(false)
-  category String  @default("not seted")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  // relation
+  Category          Category?           @relation(fields: [categoryId], references: [id])
   subcriptionOffers subcriptionOffers[]
   examYears         ExamYear[]
-  categories        Category[]
 }
 
 model ExamYear {
@@ -27,7 +26,6 @@ model ExamYear {
   registrationCloseDate DateTime?
   examDate              DateTime?
   resultDate            DateTime?
-  // category              String? // e.g., "Engineering", "Management"
   notes                 Json? // flexible field for extra info
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
@@ -43,7 +41,8 @@ model Exam_pattern {
   title           String?       @unique
   format          examformat    @default(Text) // it not needed 
   examname        String
-  category        String
+  categoryId      String?
+  Category        Category?     @relation(fields: [categoryId], references: [id])
   syllabus        syllabusType  @default(Syllabus) // Syllabus mean it follow syllabus base question paper
   syllabusid      String?
   topics          String[]
@@ -62,26 +61,20 @@ model Exam_pattern {
 }
 
 model Exam {
-  id         String  @id @unique @default(cuid())
-  display_id String? @unique @default(nanoid(6))
-
-  name     String? @default("No name")
-  examname String
-
-  category    String
-  examtype    ExamType    @default(Test)
-  access_type access_type @default(Paid)
-
+  id               String        @id @unique @default(cuid())
+  display_id       String?       @unique @default(nanoid(6))
+  name             String?       @default("No name")
+  examtype         ExamType      @default(Test)
+  access_type      access_type   @default(Paid)
   exam_pattern_id  String
   isMultipleAttemp Boolean       @default(true)
   isLive           Boolean       @default(true)
   Visibility       Visibility    @default(Private)
   creationstatus   CreationTypes @default(Processing)
-
-  starttime String?  @default("08:00 pm") //or no limit // -> it start time , at this time you can join the exam , and join process open starttime + jointime 
-  jointime  String?  @default("00:15 m") // Open HH:MM:SS
-  duration  String   @default("02:00 h") // HH:MM   it is time  user can give or mark ans  , ans accept onlt starttime+jointime+timelimit+ 00:10 min
-  date      DateTime @default(now())
+  starttime        String?       @default("08:00 pm") //or no limit // -> it start time , at this time you can join the exam , and join process open starttime + jointime 
+  jointime         String?       @default("00:15 m") // Open HH:MM:SS
+  duration         String        @default("02:00 h") // HH:MM   it is time  user can give or mark ans  , ans accept onlt starttime+jointime+timelimit+ 00:10 min
+  date             DateTime      @default(now())
 
   stage       ExamStage @default(Registration)
   register_id String    @default("")

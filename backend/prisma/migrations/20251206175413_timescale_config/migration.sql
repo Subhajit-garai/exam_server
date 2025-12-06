@@ -1,3 +1,5 @@
+-- This is an empty migration.
+
 
         -- Enable TimescaleDB extension
         CREATE EXTENSION IF NOT EXISTS timescaledb;

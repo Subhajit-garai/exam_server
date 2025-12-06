@@ -103,6 +103,17 @@ export const gettokenSystem = async (req: any, res: any) => {
 };
 
 // checked 2.0
+export const getCategoryName = asyncHandler(async (req: any, res: any) => {
+
+  let Category = await examService.getCategoryName();
+
+  res.json({
+    success: true,
+    message: ` available Categorys `,
+    data: Category,
+  });
+
+});
 export const getCategory = asyncHandler(async (req: any, res: any) => {
 
   let Category = await examService.getCategory();
@@ -310,8 +321,7 @@ export const getAvalibletargetExamAll = asyncHandler(
 );
 export const getAvalibletargetExam = asyncHandler(
   async (req: any, res: any) => {
-    let category = req.query.category.toUpperCase();
-
+    let category = req.query.category;
     try {
       let AvalibleExam = await examService.getAvalibletargetExam(category);
 

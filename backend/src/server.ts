@@ -26,6 +26,7 @@ import { syllabusRouter } from "./routes/syllabusRouter.js";
 import { userRouter } from "./routes/userRouter.js";
 import { quizRouter } from "./routes/quiz.routes.js";
 import { questionProcessingRouter } from "./routes/questionprocessing.routes.js";
+import { statsRouter } from "./routes/statsRoutes.js";
 
 
 
@@ -82,6 +83,7 @@ app.post("/api/v1/payment/paymentverification", paymentVerification);
 
 
 
+app.use("/api/v1/stats", statsRouter);
 app.use("/api/v1/user", CommonuserRoutes);
 app.use("/api/v1/bot", botRouter);
 

@@ -4,6 +4,7 @@ import { updateAppConfig, SendAppConfig, getAllbotUser } from "../controllers/se
 import { addbotToken, createNewBot, setQuizTopic, updateBotWebhook } from "@/controllers/bot/bot.admin.controller.js";
 import { examTimelineRouter } from "./examTimeline.routes.js";
 import { categoryRouter } from "./category.routes.js";
+import { mockRouter } from "./mock.router.js";
 
 
 
@@ -23,3 +24,4 @@ adminRouter.put("/bot/botWebhook", isAdmin, updateBotWebhook)
 
 adminRouter.use("/timeline", examTimelineRouter)
 adminRouter.use("/category", categoryRouter)
+adminRouter.use("/mock", isAdmin, mockRouter)

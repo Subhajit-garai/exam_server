@@ -7,7 +7,7 @@ export const CreateExamTimelineSchema = z.object({
     description: z.string().optional(),
     status: z.nativeEnum(ExamStatus),
     notification: z.string().optional(),
-    exam_year: z.string().uuid("Invalid Exam Year ID"),
+    exam_year: z.string().cuid("Invalid Exam Year ID"),
 });
 
 export const UpdateExamTimelineSchema = z.object({
@@ -16,5 +16,5 @@ export const UpdateExamTimelineSchema = z.object({
     description: z.string().optional(),
     status: z.nativeEnum(ExamStatus).optional(),
     notification: z.string().optional(),
-    exam_year: z.string().uuid().optional(),
+    exam_year: z.string().cuid().optional(),
 });

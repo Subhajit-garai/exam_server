@@ -3,7 +3,8 @@ import { isAdmin } from "@repo/lib/security/auth.js";
 import {
     CreateSyllabus, fetchAllsyllabus, getSyllabusByid, addSubject,
     formatedSyllabus, removeSubject, addTopic, removeTopic, fetchAllsyllabus_id,
-    fetchAllsyllabusExamYearid, DeleteSyllabus
+    fetchAllsyllabusExamYearid, DeleteSyllabus,
+    getDetaildformatedSyllabus
 } from "@/controllers/syllabus.controller.js";
 
 
@@ -13,6 +14,7 @@ import {
 export const syllabusRouter = Router();
 
 syllabusRouter.get("/get/formated", formatedSyllabus)
+syllabusRouter.get("/get/detailed/formated", getDetaildformatedSyllabus)
 
 syllabusRouter.get("/get/all", isAdmin, fetchAllsyllabus);
 syllabusRouter.get("/get/id", isAdmin, fetchAllsyllabus_id);

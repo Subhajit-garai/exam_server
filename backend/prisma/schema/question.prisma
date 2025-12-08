@@ -15,6 +15,7 @@ model Questions {
 
   format          examformat    @default(Text)
   category        String
+  categoryid      String?
   difficulty      diffcultlevel
   is_multiple_ans Boolean       @default(false)
 
@@ -31,6 +32,7 @@ model Questions {
 
   Subject           Subject             @relation(fields: [subject_id], references: [id])
   Topic             Topic               @relation(fields: [topic_id], references: [id])
+  Catagory          Category?           @relation(fields: [categoryid], references: [id])
   quiz_question_map quiz_question_map[]
   question_map      question_map[]
   userAns           UserAns[]

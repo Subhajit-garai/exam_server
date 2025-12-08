@@ -154,3 +154,13 @@ export const formatedSyllabus = asyncHandler(async (req: any, res: any) => {
     data: formated_syllabus,
   });
 });
+export const getDetaildformatedSyllabus = asyncHandler(async (req: any, res: any) => {
+  let { syllabusid } = req.query;
+  const formated_syllabus = await syllabusService.getDetaildformatedSyllabus(syllabusid);
+
+  return res.json({
+    success: true,
+    message: " formated syllabus",
+    data: formated_syllabus,
+  });
+});

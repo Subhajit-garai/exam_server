@@ -92,3 +92,26 @@ export const getSubcriptionAndOffer = asyncHandler(
     });
   }
 );
+export const getSubcriptionAndOfferFormated = asyncHandler(
+
+  async (req: any, res: any) => {
+
+    console.log("run ---> ");
+
+    let data = await paymentService.getSubcriptionAndOfferFormated();
+
+    if (!data) {
+      return res.status(400).json({
+        success: false,
+        message: "offer not found",
+      });
+    }
+    console.log("data is ", data);
+
+    return res.json({
+      success: true,
+      message: "offer and subcription",
+      data: data,
+    });
+  }
+);

@@ -6,5 +6,5 @@ dist
 /prisma/seed_Temp.ts
 /prisma/generated/*
 dockercompose.copy
-docs
 scripts
+/seeds/data/*

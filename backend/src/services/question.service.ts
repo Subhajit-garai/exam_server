@@ -140,13 +140,17 @@ export class QuestionService {
             category,
             topic,
             difficulty,
-            formate,
+            format,
             status,
             id,
             title,
             ismultipleans,
             links,
             history,
+            subject_id,
+            topic_id,
+            categoryid,
+            created_by
         } = filters;
 
         const questionsPerPage = 16;
@@ -162,13 +166,13 @@ export class QuestionService {
         let Formatedfilter: any = id
             ? { id: id }
             : {
-                ...(category && { category: category.toUpperCase() }),
-                ...(topic && { topic: topic.toUpperCase() }),
+                ...(category && { category: category }), // Removed toUpperCase to allow exact match or case sensitive if needed, or keep consistent with frontend
+                ...(topic && { topic: topic }), // Removed toUpperCase
                 ...(difficulty && { difficulty: difficulty }),
-                ...(formate && { formate: formate }),
+                ...(format && { format: format }),
                 ...(status && { status: status }),
                 ...(filtertitle && { title: filtertitle }),
-                ...(ismultipleans && { is_multiple_ans: ismultipleans }),
+                ...(ismultipleans !== undefined && { is_multiple_ans: ismultipleans }),
                 ...(links && {
                     links: {
                         has: links,
@@ -179,6 +183,10 @@ export class QuestionService {
                         has: history,
                     },
                 }), // array
+                ...(subject_id && { subject_id: subject_id }),
+                ...(topic_id && { topic_id: topic_id }),
+                ...(categoryid && { categoryid: categoryid }),
+                ...(created_by && { created_by: created_by }),
             };
 
         if (id) {

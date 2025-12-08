@@ -230,4 +230,13 @@ export class PaymentService {
         let data = await prisma.subcriptionOffers.findMany({});
         return data;
     }
+    async getSubcriptionAndOfferFormated() {
+        let data = await prisma.subcriptionOffers.findMany({
+
+            include: {
+                target_exam: true
+            }
+        });
+        return data;
+    }
 }

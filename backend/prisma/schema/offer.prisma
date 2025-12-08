@@ -15,9 +15,8 @@ model subcriptionOffers {
   btncolor       String       @default("")
   created_by     String?
   created_at     DateTime     @default(now())
-
-  target_exam TargetExam? @relation(fields: [target_exam_id], references: [id])
-  tier        Tier?       @relation(fields: [tierId], references: [id])
+  target_exam    TargetExam?  @relation(fields: [target_exam_id], references: [id])
+  tier           Tier?        @relation(fields: [tierId], references: [id])
 }
 
 enum OfferPlan {

@@ -59,18 +59,23 @@ export const QuestionFilterDataFetchZodSchema = z.object({
   id: z.string().optional(),
   page: z.string().optional(),
   title: z.string().optional(),
-  sub_topic: z.string().optional(),
+  sub_topic: z.string().optional(), // kept for backward compatibility if needed, though not in plan explicitly, good to keep
   category: z.string().optional(),
   links: z.string().optional(),
   history: z.string().optional(),
   topic: z.string().optional(),
   difficulty: z.nativeEnum(diffcultlevel).optional(),
-  formate: z.nativeEnum(examformat).optional(),
+  format: z.nativeEnum(examformat).optional(), // Fixed typo from formate
   status: z.nativeEnum(Status).optional(),
   ismultipleans: z
     .string()
     .transform((val) => val === "true")
     .optional(),
+  // New filters
+  subject_id: z.string().optional(),
+  topic_id: z.string().optional(),
+  categoryid: z.string().optional(),
+  created_by: z.string().optional(),
 });
 
 export const SubmitedQuestionAnsZodSchema = z.object({

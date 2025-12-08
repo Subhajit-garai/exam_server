@@ -34,6 +34,7 @@ model Category {
   subjects     Subject[]
   targetExams  TargetExam[]
   examPatterns Exam_pattern[]
+  Questions    Questions[]
 }
 
 model TopicNoteVersion {

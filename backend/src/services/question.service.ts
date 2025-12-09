@@ -167,7 +167,7 @@ export class QuestionService {
             ? { id: id }
             : {
                 ...(category && { category: category }), // Removed toUpperCase to allow exact match or case sensitive if needed, or keep consistent with frontend
-                ...(topic && { topic: topic }), // Removed toUpperCase
+                ...(topic && { old_topic: topic }), // Removed toUpperCase
                 ...(difficulty && { difficulty: difficulty }),
                 ...(format && { format: format }),
                 ...(status && { status: status }),

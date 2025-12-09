@@ -156,6 +156,9 @@ export const getQuestionalldatabyID = async (req: any, res: any) => {
 export const getAllQuestions = async (req: any, res: any) => {
   try {
     let body = QuestionFilterDataFetchZodSchema.safeParse(req.query);
+
+    console.log("--> body", body);
+
     if (!body.success) {
       return res.status(401).json({
         success: false,

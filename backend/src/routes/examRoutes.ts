@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  getCategory,
   getAvalibleExamPattern,
   // CreateContest,
   deletexams,
@@ -24,49 +23,32 @@ import {
 import { isAdmin } from "@repo/lib/security/auth.js";
 import { create_targeted_exam, create_targeted_exam_year, CreateExam, CreateNewExamPattern } from "@/controllers/exam/exam.create.controller.js";
 
-export const examRouter = Router();
+export const examAdminRouter = Router();
+export const examPublicRouter = Router();
 
-examRouter.get("/tokensystem", gettokenSystem);
+// Public Routes
+examPublicRouter.get("/tokensystem", gettokenSystem);
+examPublicRouter.get("/category/name", getCategoryName);
+examPublicRouter.get("/joinrequest", examJoinRequestProcess);
+examPublicRouter.get("/getExams", getExams);
+examPublicRouter.get("/getexambyid", getExamsbyid);
+examPublicRouter.get("/data", joinedExamData);
+examPublicRouter.get("/submitans", submitAnswerhandler);
+examPublicRouter.get("/finalsubmit", finalsubmitExam);
+examPublicRouter.get("/year/get", getExamYearInfo);
+examPublicRouter.get("/usermetadataforanexam", getUserMetaDataforAnExam)
+examPublicRouter.get("/examattemptquestiondata", ExamAttemptQuestionMetaData)
+examPublicRouter.get("/getuseransset", getUserAnsSetOfAnExam)
+examPublicRouter.get("/avalible/targeted/exam", getAvalibletargetExam);
+examPublicRouter.get("/avalibleExamPattern", getAvalibleExamPattern);
+examPublicRouter.get("/avalible/targeted/exam/all", getAvalibletargetExamAll);
 
+// Admin Routes (Protected)
+examAdminRouter.post("/get/target/exam/id", fetch_targeted_exam_by_id);
 
-
-// examRouter.get("/findexam", findexam); // for -> tergeted exam
-// user
-examRouter.get("/category/name", getCategoryName);
-examRouter.get("/categorys", getCategory);
-
-examRouter.get("/joinrequest", examJoinRequestProcess); // for -> all exam
-examRouter.get("/getExams", getExams); // for -> all exam
-examRouter.get("/getexambyid", getExamsbyid); // for -> all exam   ----------------------> working
-examRouter.get("/data", joinedExamData); // for -> current  exam question data
-examRouter.get("/submitans", submitAnswerhandler); // for -> all exam
-examRouter.get("/finalsubmit", finalsubmitExam); // close final submit exam
-examRouter.get("/year/get", getExamYearInfo); // close final submit exam
-
-//admin
-examRouter.get("/deletexams", isAdmin, deletexams); // for -> tergeted exam
-examRouter.get("/avalible/targeted/exam", isAdmin, getAvalibletargetExam); // for -> all exam
-examRouter.get("/avalible/targeted/exam/all", isAdmin, getAvalibletargetExamAll); // for -> all exam
-examRouter.get("/avalibleExamPattern", isAdmin, getAvalibleExamPattern); // for -> tergeted exam
-examRouter.post("/createpattern", isAdmin, CreateNewExamPattern);
-
-examRouter.post("/create", isAdmin, CreateExam);
-
-examRouter.post("/get/target/exam/id", isAdmin, fetch_targeted_exam_by_id);
-examRouter.post("/create/target/exam", isAdmin, create_targeted_exam);
-examRouter.post("/create/target/examyear", isAdmin, create_targeted_exam_year);
-examRouter.put("/update/target/examyear/info", isAdmin, update_targeted_exam_year);
-
-
-
-// end admin
-
-
-// leader board of an exam
-examRouter.get("/usermetadataforanexam", getUserMetaDataforAnExam)
-examRouter.get("/examattemptquestiondata", ExamAttemptQuestionMetaData)
-examRouter.get("/getuseransset", getUserAnsSetOfAnExam)
-
-// all scorse / over all performance
-
-// performange increase and decrease  graph
+examAdminRouter.get("/deletexams", deletexams);
+examAdminRouter.post("/createpattern", CreateNewExamPattern);
+examAdminRouter.post("/create", CreateExam);
+examAdminRouter.post("/create/target/exam", create_targeted_exam);
+examAdminRouter.post("/create/target/examyear", create_targeted_exam_year);
+examAdminRouter.put("/update/target/examyear/info", update_targeted_exam_year);

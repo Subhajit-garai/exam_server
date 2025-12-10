@@ -6,12 +6,15 @@ import {
     updateTimeline,
     deleteTimeline,
 } from "../controllers/examTimeline.controller.js";
-import { isAdmin } from "@repo/lib/security/auth.js";
 
-export const examTimelineRouter = Router();
+export const examTimelineAdminRouter = Router();
+export const examTimelinePublicRouter = Router();
 
-examTimelineRouter.get("/", getTimelines);
-examTimelineRouter.get("/all", getAllTimelines);
-examTimelineRouter.post("/create", isAdmin, createTimeline);
-examTimelineRouter.put("/update", isAdmin, updateTimeline);
-examTimelineRouter.delete("/delete", isAdmin, deleteTimeline);
+// Public Routes
+examTimelinePublicRouter.get("/", getTimelines);
+
+// Admin Routes (Protected)
+examTimelineAdminRouter.get("/all", getAllTimelines);
+examTimelineAdminRouter.post("/create", createTimeline);
+examTimelineAdminRouter.put("/update", updateTimeline);
+examTimelineAdminRouter.delete("/delete", deleteTimeline);

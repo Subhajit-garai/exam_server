@@ -5,28 +5,29 @@ import cors from "cors";
 import http from "http";
 import Razorpay from "razorpay";
 import "@repo/lib/cronJobs/index.js";
-import { userauthenticate } from "@repo/lib/security/auth.js";
+import { isAdmin, userauthenticate } from "@repo/lib/security/auth.js";
 
 
 // routers
 import { adminRouter } from "./routes/adminRouter.js";
-import { IssueRouter } from "./routes/IssueRouter.js";
-import { eventRouter } from "./routes/eventRouter.js";
+import { IssuePublicRouter } from "./routes/IssueRouter.js";
+
 import { paymentVerification } from "./controllers/payment.controller.js";
 import { metrixRoute } from "./routes/metrix.route.js";
 import { paymentRouter } from "./routes/paymentRouter.js";
 import { botRouter } from "./routes/botRouter.js";
 import { DataManageRouter } from "./routes/DataManageRouter.js";
-import { examRouter } from "./routes/examRoutes.js";
-import { questionRouter } from "./routes/questionsRoutes.js";
+import { examPublicRouter } from "./routes/examRoutes.js";
+import { questionPublicRouter } from "./routes/questionsRoutes.js";
 import { CommonuserRoutes } from "./routes/CommonuserRoutes.js";
-import { noteRouter } from "./routes/noteRoute.js";
+import { notePublicRouter } from "./routes/noteRoute.js";
 import { errorHandler } from "./middleware/globalErrorHandler.js";
-import { syllabusRouter } from "./routes/syllabusRouter.js";
+import { syllabusPublicRouter } from "./routes/syllabusRouter.js";
 import { userRouter } from "./routes/userRouter.js";
 import { quizRouter } from "./routes/quiz.routes.js";
-import { questionProcessingRouter } from "./routes/questionprocessing.routes.js";
+import { questionProcessingPublicRouter } from "./routes/questionprocessing.routes.js";
 import { statsRouter } from "./routes/statsRoutes.js";
+import { categoryPublicRouter } from "./routes/category.routes.js";
 
 
 
@@ -86,20 +87,21 @@ app.post("/api/v1/payment/paymentverification", paymentVerification);
 app.use("/api/v1/stats", statsRouter);
 app.use("/api/v1/user", CommonuserRoutes);
 app.use("/api/v1/bot", botRouter);
+app.use("/api/v1/category", categoryPublicRouter);
 
 app.use(userauthenticate);
 app.use("/api/v1/payment", paymentRouter);
-app.use("/api/v1/admin", adminRouter);
-app.use("/api/v1/syllabus", syllabusRouter);
-app.use("/api/v1/issue", IssueRouter);
-app.use("/api/v1/event", eventRouter);
+app.use("/api/v1/syllabus", syllabusPublicRouter);
+app.use("/api/v1/issue", IssuePublicRouter);
 app.use("/api/v1/user", userRouter);
-app.use("/api/v1/notes", noteRouter);
+app.use("/api/v1/notes", notePublicRouter);
 app.use("/api/v1/metrix", metrixRoute);
-app.use("/api/v1/exam", examRouter);
-app.use("/api/v1/question", questionRouter);
+app.use("/api/v1/exam", examPublicRouter);
+app.use("/api/v1/question", questionPublicRouter);
 app.use("/api/v1/quiz", quizRouter);
-app.use("/api/v1/question-processing", questionProcessingRouter);
+app.use("/api/v1/question-processing", questionProcessingPublicRouter);
+
+app.use("/api/v1/admin", isAdmin, adminRouter);
 
 
 

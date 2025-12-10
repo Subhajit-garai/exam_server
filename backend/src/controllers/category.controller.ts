@@ -12,8 +12,8 @@ export const createCategory = asyncHandler(async (req: any, res: any) => {
     return res.status(201).json({ success: true, message: "Category created", data: category });
 });
 
-export const getAllCategories = asyncHandler(async (req: any, res: any) => {
-    const categories = await categoryService.getAllCategories();
+export const getCategories = asyncHandler(async (req: any, res: any) => {
+    const categories = await categoryService.getCategory();
     return res.json({ success: true, data: categories });
 });
 

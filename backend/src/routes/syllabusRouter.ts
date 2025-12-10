@@ -11,35 +11,29 @@ import {
 
 
 
-export const syllabusRouter = Router();
+export const syllabusAdminRouter = Router();
+export const syllabusPublicRouter = Router();
 
-syllabusRouter.get("/get/formated", formatedSyllabus)
-syllabusRouter.get("/get/detailed/formated", getDetaildformatedSyllabus)
-
-syllabusRouter.get("/get/all", isAdmin, fetchAllsyllabus);
-syllabusRouter.get("/get/id", isAdmin, fetchAllsyllabus_id);
-syllabusRouter.get("/get/examyearid", isAdmin, fetchAllsyllabusExamYearid);
-syllabusRouter.get("/name/get/all", isAdmin, fetchAllsyllabus);
-
-syllabusRouter.post("/admin/create", isAdmin, CreateSyllabus);
-syllabusRouter.delete("/admin/delete", isAdmin, DeleteSyllabus);
-
-syllabusRouter.post("/admin/add/subject", isAdmin, addSubject);
-syllabusRouter.delete("/admin/remove/subject", isAdmin, removeSubject);
-syllabusRouter.post("/admin/add/topic", isAdmin, addTopic);
-syllabusRouter.delete("/admin/remove/topic", isAdmin, removeTopic);
+// Public Routes
+syllabusPublicRouter.get("/get/formated", formatedSyllabus)
+syllabusPublicRouter.get("/get/detailed/formated", getDetaildformatedSyllabus)
+syllabusPublicRouter.get("/get/syllabus/id", getSyllabusByid);
 
 
 
 
 
-
-
-
-//user
-
-// syllabusRouter.get("/syllabus", getSyllabus);   // breaked update !!!
-syllabusRouter.get("/get/syllabus/id", getSyllabusByid);
+// Admin Routes (Protected)
+syllabusAdminRouter.get("/get/all", isAdmin, fetchAllsyllabus);
+syllabusAdminRouter.get("/get/id", isAdmin, fetchAllsyllabus_id);
+syllabusAdminRouter.get("/get/examyearid", isAdmin, fetchAllsyllabusExamYearid);
+syllabusAdminRouter.get("/name/get/all", isAdmin, fetchAllsyllabus);
+syllabusAdminRouter.post("/create", isAdmin, CreateSyllabus);
+syllabusAdminRouter.delete("/delete", isAdmin, DeleteSyllabus);
+syllabusAdminRouter.post("/add/subject", isAdmin, addSubject);
+syllabusAdminRouter.delete("/remove/subject", isAdmin, removeSubject);
+syllabusAdminRouter.post("/add/topic", isAdmin, addTopic);
+syllabusAdminRouter.delete("/remove/topic", isAdmin, removeTopic);
 
 
 

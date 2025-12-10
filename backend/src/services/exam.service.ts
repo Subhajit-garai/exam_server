@@ -160,14 +160,7 @@ export class ExamService {
         return data;
     }
 
-    async getCategory() {
-        let response = await prisma.category.findMany({});
 
-        if (!response) {
-            throw new Error("Can not find any Category");
-        }
-        return response;
-    }
     async getCategoryName() {
         let response = await prisma.category.findMany({});
         let Category = response.map((item) => item.name);

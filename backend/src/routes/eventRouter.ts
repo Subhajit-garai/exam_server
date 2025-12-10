@@ -2,12 +2,12 @@
 import { Router } from "express";
 import { getAllEvents, createEvent } from "../controllers/event.controller.js";
 import { isAdmin } from "@repo/lib/security/auth.js";
-export const eventRouter = Router();
+export const eventAdminRouter = Router();
 
 
 
-eventRouter.get("/all", isAdmin, getAllEvents)
-eventRouter.post("/create", isAdmin, createEvent)
+eventAdminRouter.get("/all", isAdmin, getAllEvents)
+eventAdminRouter.post("/create", isAdmin, createEvent)
 
 
 

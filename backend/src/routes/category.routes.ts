@@ -1,16 +1,21 @@
 import { Router } from "express";
 import {
     createCategory,
-    getAllCategories,
     getCategoryById,
     updateCategory,
-    deleteCategory
+    deleteCategory,
+    getCategories
 } from "@/controllers/category.controller.js";
 import { isAdmin } from "@repo/lib/security/auth.js";
 
-export const categoryRouter = Router();
+export const categoryAdminRouter = Router();
+export const categoryPublicRouter = Router();
 
-categoryRouter.post("/create", isAdmin, createCategory);
-categoryRouter.get("/:id", isAdmin, getCategoryById);
-categoryRouter.put("/update/:id", isAdmin, updateCategory);
-categoryRouter.delete("/delete/:id", isAdmin, deleteCategory);
+// Public Routes
+categoryPublicRouter.get("/all", getCategories);
+categoryPublicRouter.get("/:id", getCategoryById);
+
+// Admin Routes (Protected)
+categoryAdminRouter.post("/create", isAdmin, createCategory);
+categoryAdminRouter.put("/update/:id", isAdmin, updateCategory);
+categoryAdminRouter.delete("/delete/:id", isAdmin, deleteCategory);

@@ -4,6 +4,7 @@ import prisma from "@repo/db/index.js";
 import { UserRole } from "@repo/prisma/client.js";
 
 export class BotAdminService {
+
     async updateBotWebhook(botUserId: string, data: any) {
         const { name, newvalue, type } = data;
 

@@ -162,27 +162,5 @@ export class ActivityService {
         };
     }
 
-    async getUserActivities(userId: string, limit: number = 10) {
-        const activities = await prisma.userActivity.findMany({
-            where: {
-                userId,
-            },
-            orderBy: {
-                date: "desc",
-            },
-            take: limit,
-        });
 
-        // Map back to the expected format
-        return activities.map(activity => {
-            const meta = activity.meta as any || {};
-            return {
-                title: meta.title || activity.type, // Fallback to type if title missing
-                score: meta.score || "Pending",
-                status: meta.status || "Completed",
-                completedAt: activity.date,
-                activityType: meta.originalType || activity.type.toLowerCase(),
-            };
-        });
-    }
 }

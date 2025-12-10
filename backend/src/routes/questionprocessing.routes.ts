@@ -8,14 +8,14 @@ import {
     updateProcessedQuestion
 } from "../controllers/questionprocessing.controller.js";
 
-export const questionProcessingRouter = Router();
+export const questionProcessingAdminRouter = Router();
+export const questionProcessingPublicRouter = Router();
 
-// User routes (or maybe restricted to certain roles?)
-// Assuming authenticated users can submit questions
-questionProcessingRouter.post("/", createProcessedQuestion);
+// Public Routes (User)
+questionProcessingPublicRouter.post("/", createProcessedQuestion);
 
-// Admin routes
-questionProcessingRouter.get("/", isAdmin, getProcessedQuestions);
-questionProcessingRouter.post("/:id/review", isAdmin, reviewQuestion);
-questionProcessingRouter.delete("/:id", isAdmin, deleteProcessedQuestion);
-questionProcessingRouter.put("/:id", isAdmin, updateProcessedQuestion);
+// Admin Routes (Protected)
+questionProcessingAdminRouter.get("/", isAdmin, getProcessedQuestions);
+questionProcessingAdminRouter.post("/:id/review", isAdmin, reviewQuestion);
+questionProcessingAdminRouter.delete("/:id", isAdmin, deleteProcessedQuestion);
+questionProcessingAdminRouter.put("/:id", isAdmin, updateProcessedQuestion);

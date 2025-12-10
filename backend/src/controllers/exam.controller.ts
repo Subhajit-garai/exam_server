@@ -114,17 +114,7 @@ export const getCategoryName = asyncHandler(async (req: any, res: any) => {
   });
 
 });
-export const getCategory = asyncHandler(async (req: any, res: any) => {
 
-  let Category = await examService.getCategory();
-
-  res.json({
-    success: true,
-    message: ` available Categorys `,
-    data: Category,
-  });
-
-});
 
 export const fetch_targeted_exam_by_id = asyncHandler(
   async (req: any, res: any) => {
@@ -341,18 +331,12 @@ export const getAvalibleExamPattern = asyncHandler(
     let exam = req.query.exam.toUpperCase();
     let user = req.user;
 
-    try {
-      let response = await examService.getAvalibleExamPattern(exam, user);
+    let response = await examService.getAvalibleExamPattern(exam, user);
 
-      res.json({
-        success: true,
-        message: `alalible Exam patterns`,
-        data: response,
-      });
-    } catch (error: any) {
-      return res
-        .status(400)
-        .json({ success: false, message: `Can not find any exampattern` });
-    }
+    res.json({
+      success: true,
+      message: `alalible Exam patterns`,
+      data: response,
+    });
   }
 );

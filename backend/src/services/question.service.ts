@@ -16,7 +16,7 @@ export class QuestionService {
             throw new Error("User not found");
         }
 
-        let question = await prisma.questions.update({
+        let question = await prisma.question.update({
             where: {
                 id: data.id,
             },
@@ -33,7 +33,7 @@ export class QuestionService {
     }
 
     async getQuestionExplanation(questionId: string) {
-        let data = await prisma.questions.findFirst({
+        let data = await prisma.question.findFirst({
             where: { id: questionId },
             select: {
                 explanation: true,
@@ -44,7 +44,7 @@ export class QuestionService {
     }
 
     async checkQuestion(title: string) {
-        let responce = await prisma.questions.findMany({
+        let responce = await prisma.question.findMany({
             where: {
                 title: {
                     contains: title,
@@ -85,7 +85,7 @@ export class QuestionService {
             links,
         } = data;
 
-        let question = await prisma.questions.create({
+        let question = await prisma.question.create({
             data: {
                 title: Title,
                 options: options,
@@ -114,7 +114,7 @@ export class QuestionService {
     }
 
     async getQuestion(questionId: string) {
-        let responce = await prisma.questions.findUnique({
+        let responce = await prisma.question.findUnique({
             where: {
                 id: questionId,
             },
@@ -127,7 +127,7 @@ export class QuestionService {
     }
 
     async getQuestionAllDataById(questionId: string) {
-        let responce = await prisma.questions.findUnique({
+        let responce = await prisma.question.findUnique({
             where: {
                 id: questionId,
             },
@@ -136,9 +136,12 @@ export class QuestionService {
     }
 
     async getAllQuestions(filters: any, page: number = 1) {
+
+
+
+        console.log("--> body", filters);
         let {
             category,
-            topic,
             difficulty,
             format,
             status,
@@ -147,14 +150,55 @@ export class QuestionService {
             ismultipleans,
             links,
             history,
-            subject_id,
-            topic_id,
+            subject,
+            topic,
             categoryid,
             created_by
         } = filters;
 
         const questionsPerPage = 16;
         let responce;
+
+        let subjectid: string = ""
+        let topicid: string = ""
+
+
+        if (subject) {
+            let subRes = await prisma.subject.findUnique({
+                where: {
+                    name: subject,
+                },
+                select: {
+                    id: true,
+                },
+            })
+
+            if (!subRes) {
+                throw new Error("Subject not found");
+            }
+
+            subjectid = subRes.id
+
+            if (topic) {
+                let topicRes = await prisma.topic.findUnique({
+                    where: {
+                        name: topic,
+                    },
+                    select: {
+                        id: true,
+                    },
+                })
+
+                if (!topicRes) {
+                    throw new Error("Topic not found");
+                }
+
+                topicid = topicRes.id
+            }
+
+
+
+        }
 
         let filtertitle: any;
         if (title?.trim()) {
@@ -183,21 +227,18 @@ export class QuestionService {
                         has: history,
                     },
                 }), // array
-                ...(subject_id && { subject_id: subject_id }),
-                ...(topic_id && { topic_id: topic_id }),
+                ...(subjectid && { subject_id: subjectid }),
+                ...(topicid && { topic_id: topicid }),
                 ...(categoryid && { categoryid: categoryid }),
                 ...(created_by && { created_by: created_by }),
             };
 
         if (id) {
-            responce = await prisma.questions.findMany({
-                where: Formatedfilter,
-                // skip: (pageNumber - 1) * questionsPerPage,
-                // take: questionsPerPage,
-                // orderBy: { id: "asc" },
+            responce = await prisma.question.findMany({
+                where: Formatedfilter
             });
         } else {
-            responce = await prisma.questions.findMany({
+            responce = await prisma.question.findMany({
                 where: Formatedfilter,
                 skip: (page - 1) * questionsPerPage,
                 take: questionsPerPage,
@@ -205,7 +246,7 @@ export class QuestionService {
             });
         }
 
-        const total = await prisma.questions.count({
+        const total = await prisma.question.count({
             where: Formatedfilter,
         });
 
@@ -213,8 +254,8 @@ export class QuestionService {
     }
 
     async backupQuestion() {
-        let responce = await prisma.questions.findMany({});
-        const total = await prisma.questions.count({});
+        let responce = await prisma.question.findMany({});
+        const total = await prisma.question.count({});
         return { questions: responce, total: total };
     }
 }

@@ -25,7 +25,7 @@ model User {
 
   Exam                        Exam[]
   Exam_pattern                Exam_pattern[]
-  Questions                   Questions[]
+  Question                    Question[]
   QuestionProcessingCreated   QuestionProcessing[] @relation("CreatedBy")
   QuestionProcessingProcessed QuestionProcessing[] @relation("ProcessedBy")
   social                      Social?              @relation(fields: [socialId], references: [id])
@@ -133,17 +133,17 @@ model blance {
 }
 
 model UserAns {
-  id             String    @id @unique @default(cuid())
-  number         Int       @default(0) // 0- >  not updated 
-  part           String    @default("part1")
+  id             String   @id @unique @default(cuid())
+  number         Int      @default(0) // 0- >  not updated 
+  part           String   @default("part1")
   examId         String
   userId         String
-  questionId     String    @default("not set")
+  questionId     String   @default("not set")
   shuffleMap     Int[]
   selectedOption String[]
   isCorrect      Boolean? // it  may  later    , if user not ansed then  it null
-  createdAt      DateTime  @default(now())
-  Question       Questions @relation(fields: [questionId], references: [id])
+  createdAt      DateTime @default(now())
+  Question       Question @relation(fields: [questionId], references: [id])
 
   @@unique([examId, userId, questionId])
 }

@@ -32,12 +32,12 @@ model quiz {
 }
 
 model quiz_question_map {
-  id         String     @id @unique @default(cuid())
-  number     Int        @default(0)
+  id         String    @id @unique @default(cuid())
+  number     Int       @default(0)
   questionid String
   quizid     String?
-  quiz       quiz?      @relation(fields: [quizid], references: [id])
-  question   Questions? @relation(fields: [questionid], references: [id])
+  quiz       quiz?     @relation(fields: [quizid], references: [id])
+  Question   Question? @relation(fields: [questionid], references: [id])
 
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt

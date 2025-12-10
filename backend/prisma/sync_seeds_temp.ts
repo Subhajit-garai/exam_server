@@ -31,7 +31,7 @@ async function main() {
         const social = await prisma.social.findMany();
 
         // New Important Tables
-        const questions = await prisma.questions.findMany();
+        const questions = await prisma.question.findMany();
         const examPatterns = await prisma.exam_pattern.findMany();
         const tiers = await prisma.tier.findMany();
         const tierBenefits = await prisma.tierBenefit.findMany();

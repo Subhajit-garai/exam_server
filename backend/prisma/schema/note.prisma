@@ -17,7 +17,7 @@ model Subject {
   difficulty  Int? // e.g. 1-5 scale
 
   topics             Topic[]
-  Questions          Questions[]
+  Question           Question[]
   QuestionProcessing QuestionProcessing[]
   SubjectSyllabusMap SubjectSyllabusMap[]
 }
@@ -34,7 +34,7 @@ model Category {
   subjects     Subject[]
   targetExams  TargetExam[]
   examPatterns Exam_pattern[]
-  Questions    Questions[]
+  Question     Question[]
 }
 
 model TopicNoteVersion {
@@ -97,7 +97,7 @@ model Topic {
   relatedByTopics Topic[] @relation("RelatedTopics")
   User            User?   @relation(fields: [createdBy], references: [id])
 
-  Questions          Questions[]
+  Question           Question[]
   QuestionProcessing QuestionProcessing[]
   TopicsSubjectMap   TopicsSubjectMap[]
 

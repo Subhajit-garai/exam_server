@@ -1,4 +1,4 @@
-model Questions {
+model Question {
   id String @id @unique @default(cuid())
 
   title   String
@@ -42,15 +42,15 @@ model Questions {
 }
 
 model question_map {
-  id         String     @id @unique @default(cuid())
-  number     Int        @default(0)
+  id         String    @id @unique @default(cuid())
+  number     Int       @default(0)
   questionid String
-  part       String     @default("part1")
+  part       String    @default("part1") // part1 , part2 ,....
   examid     String?
-  created_at DateTime   @default(now())
-  updated_at DateTime   @default(now()) @updatedAt
-  exam       Exam?      @relation("ExamRelation", fields: [examid], references: [id])
-  question   Questions? @relation(fields: [questionid], references: [id])
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now()) @updatedAt
+  exam       Exam?     @relation("ExamRelation", fields: [examid], references: [id])
+  question   Question? @relation(fields: [questionid], references: [id])
 
   @@unique([examid, questionid, part])
   @@index([examid])

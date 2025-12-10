@@ -21,7 +21,7 @@ export class SystemStateService {
                 totalMocks,
                 activityCount
             ] = await Promise.all([
-                prisma.questions.count(),
+                prisma.question.count(),
                 prisma.user.count(),
                 prisma.exam.count({ where: { examtype: "Test" } }),
                 prisma.exam.count({ where: { examtype: "Mock" } }),

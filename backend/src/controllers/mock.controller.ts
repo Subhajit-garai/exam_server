@@ -90,8 +90,9 @@ export const getAvalibleMock = asyncHandler(async (req: any, res: any) => {
 });
 export const getmockQuestion = asyncHandler(async (req: any, res: any) => {
     let id = req.query.id;
+    let info: "full" | "Onlyid" = req.query.info;
     if (!id) throw new Error("Mock Set ID is required");
-    const response = await mockService.getMockQuestions(id as string);
+    const response = await mockService.getMockQuestions(id as string, info);
     res.json({
         success: true,
         data: response

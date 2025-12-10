@@ -155,7 +155,7 @@ export class QuestionProcessingService {
 
             if (processedQuestion.question_id) {
                 // Update existing question
-                await prisma.questions.update({
+                await prisma.question.update({
                     where: { id: processedQuestion.question_id },
                     data: {
                         ...questionData,
@@ -164,7 +164,7 @@ export class QuestionProcessingService {
                 });
             } else {
                 // Create new question
-                await prisma.questions.create({
+                await prisma.question.create({
                     data: questionData
                 });
             }

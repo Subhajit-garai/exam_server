@@ -242,7 +242,7 @@ export const bulkQuestionCreate = async (bulkData: any[]) => {
     return;
   }
 
-  const result = await prisma.questions.createMany({
+  const result = await prisma.question.createMany({
     data: bulkData,
     skipDuplicates: true,
   });

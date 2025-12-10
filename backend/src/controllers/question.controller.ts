@@ -4,6 +4,8 @@ import {
   questionUpdateZodSchema,
 } from "../zod/question.zod.js";
 import { QuestionService } from "../services/question.service.js";
+import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
+import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 
 const questionService = new QuestionService();
 
@@ -153,41 +155,30 @@ export const getQuestionalldatabyID = async (req: any, res: any) => {
   }
 };
 
-export const getAllQuestions = async (req: any, res: any) => {
-  try {
-    let body = QuestionFilterDataFetchZodSchema.safeParse(req.query);
+export const getAllQuestions = asyncHandler(async (req: any, res: any) => {
+  let body = QuestionFilterDataFetchZodSchema.safeParse(req.query);
 
-    console.log("--> body", body);
 
-    if (!body.success) {
-      return res.status(401).json({
-        success: false,
-        message: "user credential format invalid ",
-      });
-    }
+  if (!body.success) {
+    throw ZodDataSafeParse(body)
+  }
 
-    const pageNumber = body.data.page ? parseInt(body.data.page) : 1;
+  const pageNumber = body.data.page ? parseInt(body.data.page) : 1;
 
-    const { questions, total, currentPage } = await questionService.getAllQuestions(body.data, pageNumber);
+  const { questions, total, currentPage } = await questionService.getAllQuestions(body.data, pageNumber);
 
-    if (!questions) {
-      return res.status(400).json({
-        message: "questions not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: { questions: questions, total: total, currentPage: currentPage },
-    });
-  } catch (error) {
-    console.log("error -> ", error);
-
-    res.status(500).json({
-      message: "surver error",
+  if (!questions) {
+    return res.status(400).json({
+      message: "questions not found",
     });
   }
-};
+
+  res.status(200).json({
+    success: true,
+    data: { questions: questions, total: total, currentPage: currentPage },
+  });
+
+})
 
 export const backupQuestion = async (req: any, res: any) => {
   try {

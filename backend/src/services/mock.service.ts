@@ -144,7 +144,7 @@ export class MockService {
         return response;
     }
 
-    async getMockQuestions(mockId: string) {
+    async getMockQuestions(mockId: string, info: "full" | "Onlyid") {
 
         const isMock = await prisma.exam.findFirst({
             where: {
@@ -154,14 +154,32 @@ export class MockService {
         })
 
 
+
+        let questions: any
+
         if (!isMock) {
             throw new CustomError("mock set not found ", 400)
         }
-        const questions = await prisma.question_map.findMany({
-            where: {
-                examid: mockId
-            }
-        })
+
+        if (info === "Onlyid") {
+            questions = await prisma.question_map.findMany({
+                where: {
+                    examid: mockId
+                }
+            })
+        } else {
+            questions = await prisma.question_map.findMany({
+                where: {
+                    examid: mockId
+                },
+                include: {
+                    question: true
+                }
+            })
+        }
+
+
+
 
         return questions
     }

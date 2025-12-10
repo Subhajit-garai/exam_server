@@ -199,7 +199,7 @@ export class PaymentService {
                                 },
                             });
 
-                            await prisma.blance.update({
+                            await prisma.balance.update({
                                 where: {
                                     userid: userid,
                                 },

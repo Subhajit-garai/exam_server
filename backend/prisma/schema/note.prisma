@@ -12,7 +12,7 @@ model Subject {
   isPublic    Boolean   @default(true)
   category    String // e.g. "Computer Science"
   categoryId  String?
-  categoryRel Category? @relation(fields: [categoryId], references: [id])
+  Category    Category? @relation(fields: [categoryId], references: [id])
   level       String? // e.g. "Beginner", "Advanced"
   difficulty  Int? // e.g. 1-5 scale
 

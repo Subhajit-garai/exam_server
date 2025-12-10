@@ -29,7 +29,7 @@ model User {
   QuestionProcessingCreated   QuestionProcessing[] @relation("CreatedBy")
   QuestionProcessingProcessed QuestionProcessing[] @relation("ProcessedBy")
   social                      Social?              @relation(fields: [socialId], references: [id])
-  blance                      blance?
+  balance                     balance?
   Order                       Order[]
   payment                     payment[]
   leaderboard                 leaderboard[]
@@ -122,14 +122,13 @@ model QuizProgress {
   User         User      @relation(fields: [userId], references: [id])
 }
 
-model blance {
+model balance {
   id          String   @id @unique @default(cuid())
   userid      String   @unique
   amount      Int      @default(0)
   ticket      Int      @default(0)
   last_update DateTime @updatedAt
-
-  User User @relation(fields: [userid], references: [id])
+  User        User     @relation(fields: [userid], references: [id])
 }
 
 model UserAns {

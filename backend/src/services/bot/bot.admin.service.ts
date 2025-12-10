@@ -61,7 +61,7 @@ export class BotAdminService {
                 role: UserRole.Bot,
                 prime: { create: { status: "None" } }, // Assuming 'None' is string or enum
                 social: { create: { telegram: telegramid } },
-                blance: { create: { amount: 1, ticket: 1, last_update: new Date() } },
+                balance: { create: { amount: 1, ticket: 1, last_update: new Date() } },
                 password: hashedPassword,
             },
         });

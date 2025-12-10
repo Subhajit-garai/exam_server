@@ -458,7 +458,7 @@ async function main() {
           last_update: new Date(),
         },
       },
-      blance: {
+      balance: {
         create: {
           amount: 1000,
           ticket: 100,
@@ -485,7 +485,7 @@ async function main() {
           last_update: new Date(),
         },
       },
-      blance: {
+      balance: {
         create: {
           amount: 1,
           ticket: 1,
@@ -512,7 +512,7 @@ async function main() {
           last_update: new Date(),
         },
       },
-      blance: {
+      balance: {
         create: {
           amount: 1,
           ticket: 1,
@@ -550,7 +550,7 @@ async function main() {
           last_update: new Date(),
         },
       },
-      blance: {
+      balance: {
         create: {
           amount: 1,
           ticket: 1,

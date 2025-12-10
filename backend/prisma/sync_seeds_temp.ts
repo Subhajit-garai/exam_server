@@ -44,7 +44,7 @@ async function main() {
         const examProgress = await prisma.examProgress.findMany();
         const dppProgress = await prisma.dppProgress.findMany();
         const quizProgress = await prisma.quizProgress.findMany();
-        const blance = await prisma.blance.findMany();
+        const blance = await prisma.balance.findMany();
         const userAns = await prisma.userAns.findMany();
         const notifications = await prisma.notification.findMany();
         const comments = await prisma.comment.findMany();

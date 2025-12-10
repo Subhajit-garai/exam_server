@@ -37,7 +37,7 @@ export class ProfileService {
                 school: true,
                 standard: true,
                 stream: true,
-                blance: {
+                balance: {
                     select: {
                         amount: true,
                         ticket: true,

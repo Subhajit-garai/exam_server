@@ -74,7 +74,7 @@ export class UserService {
 
                     },
                 },
-                blance: {
+                balance: {
                     create: {
                         amount: 10,
                         ticket: 1,

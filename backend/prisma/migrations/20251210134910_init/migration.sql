@@ -499,7 +499,7 @@ CREATE TABLE "payment" (
 );
 
 -- CreateTable
-CREATE TABLE "Questions" (
+CREATE TABLE "Question" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "options" TEXT[],
@@ -511,6 +511,7 @@ CREATE TABLE "Questions" (
     "subject_id" TEXT NOT NULL,
     "format" "examformat" NOT NULL DEFAULT 'Text',
     "category" TEXT NOT NULL,
+    "categoryid" TEXT,
     "difficulty" "diffcultlevel" NOT NULL,
     "is_multiple_ans" BOOLEAN NOT NULL DEFAULT false,
     "history" TEXT[] DEFAULT ARRAY['']::TEXT[],
@@ -521,7 +522,7 @@ CREATE TABLE "Questions" (
     "created_by" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Questions_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Question_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -910,14 +911,14 @@ CREATE TABLE "QuizProgress" (
 );
 
 -- CreateTable
-CREATE TABLE "blance" (
+CREATE TABLE "balance" (
     "id" TEXT NOT NULL,
     "userid" TEXT NOT NULL,
     "amount" INTEGER NOT NULL DEFAULT 0,
     "ticket" INTEGER NOT NULL DEFAULT 0,
     "last_update" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "blance_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "balance_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -1098,13 +1099,13 @@ CREATE UNIQUE INDEX "payment_razorpay_order_id_key" ON "payment"("razorpay_order
 CREATE UNIQUE INDEX "payment_razorpay_payment_id_key" ON "payment"("razorpay_payment_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Questions_id_key" ON "Questions"("id");
+CREATE UNIQUE INDEX "Question_id_key" ON "Question"("id");
 
 -- CreateIndex
-CREATE INDEX "Questions_topic_id_idx" ON "Questions"("topic_id");
+CREATE INDEX "Question_topic_id_idx" ON "Question"("topic_id");
 
 -- CreateIndex
-CREATE INDEX "Questions_subject_id_idx" ON "Questions"("subject_id");
+CREATE INDEX "Question_subject_id_idx" ON "Question"("subject_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "question_map_id_key" ON "question_map"("id");
@@ -1245,10 +1246,10 @@ CREATE UNIQUE INDEX "DppProgress_userId_key" ON "DppProgress"("userId");
 CREATE UNIQUE INDEX "QuizProgress_userId_key" ON "QuizProgress"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "blance_id_key" ON "blance"("id");
+CREATE UNIQUE INDEX "balance_id_key" ON "balance"("id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "blance_userid_key" ON "blance"("userid");
+CREATE UNIQUE INDEX "balance_userid_key" ON "balance"("userid");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserAns_id_key" ON "UserAns"("id");
@@ -1341,19 +1342,22 @@ ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") RE
 ALTER TABLE "payment" ADD CONSTRAINT "payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Questions" ADD CONSTRAINT "Questions_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Question" ADD CONSTRAINT "Question_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Questions" ADD CONSTRAINT "Questions_subject_id_fkey" FOREIGN KEY ("subject_id") REFERENCES "Subject"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Question" ADD CONSTRAINT "Question_subject_id_fkey" FOREIGN KEY ("subject_id") REFERENCES "Subject"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Questions" ADD CONSTRAINT "Questions_topic_id_fkey" FOREIGN KEY ("topic_id") REFERENCES "Topic"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Question" ADD CONSTRAINT "Question_topic_id_fkey" FOREIGN KEY ("topic_id") REFERENCES "Topic"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Question" ADD CONSTRAINT "Question_categoryid_fkey" FOREIGN KEY ("categoryid") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "question_map" ADD CONSTRAINT "question_map_examid_fkey" FOREIGN KEY ("examid") REFERENCES "Exam"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "question_map" ADD CONSTRAINT "question_map_questionid_fkey" FOREIGN KEY ("questionid") REFERENCES "Questions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "question_map" ADD CONSTRAINT "question_map_questionid_fkey" FOREIGN KEY ("questionid") REFERENCES "Question"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "QuestionProcessing" ADD CONSTRAINT "QuestionProcessing_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1377,7 +1381,7 @@ ALTER TABLE "quiz" ADD CONSTRAINT "quiz_created_by_fkey" FOREIGN KEY ("created_b
 ALTER TABLE "quiz_question_map" ADD CONSTRAINT "quiz_question_map_quizid_fkey" FOREIGN KEY ("quizid") REFERENCES "quiz"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "quiz_question_map" ADD CONSTRAINT "quiz_question_map_questionid_fkey" FOREIGN KEY ("questionid") REFERENCES "Questions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "quiz_question_map" ADD CONSTRAINT "quiz_question_map_questionid_fkey" FOREIGN KEY ("questionid") REFERENCES "Question"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "Topic"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1428,10 +1432,10 @@ ALTER TABLE "DppProgress" ADD CONSTRAINT "DppProgress_userId_fkey" FOREIGN KEY (
 ALTER TABLE "QuizProgress" ADD CONSTRAINT "QuizProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "blance" ADD CONSTRAINT "blance_userid_fkey" FOREIGN KEY ("userid") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "balance" ADD CONSTRAINT "balance_userid_fkey" FOREIGN KEY ("userid") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserAns" ADD CONSTRAINT "UserAns_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "Questions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UserAns" ADD CONSTRAINT "UserAns_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "Question"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_RelatedTopics" ADD CONSTRAINT "_RelatedTopics_A_fkey" FOREIGN KEY ("A") REFERENCES "Topic"("id") ON DELETE CASCADE ON UPDATE CASCADE;

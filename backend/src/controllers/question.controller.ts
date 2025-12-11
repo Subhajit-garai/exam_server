@@ -155,6 +155,29 @@ export const getQuestionalldatabyID = async (req: any, res: any) => {
   }
 };
 
+export const deleteQuestion = async (req: any, res: any) => {
+  try {
+    const questionId = req.params.id;
+    const userId = req.user; // Assuming auth middleware populates this
+
+    const question = await questionService.deleteQuestion(userId, questionId);
+
+    res.status(200).json({
+      success: true,
+      message: "Question deleted successfully",
+      data: question,
+    });
+  } catch (error: any) {
+    console.log("error : ", error);
+    // Determine status code based on error message (simple heuristic)
+    const status = error.message?.includes("Cannot delete") ? 400 : 500;
+    res.status(status).json({
+      success: false,
+      message: error.message || "server error",
+    });
+  }
+};
+
 export const getAllQuestions = asyncHandler(async (req: any, res: any) => {
   let body = QuestionFilterDataFetchZodSchema.safeParse(req.query);
 

@@ -6,6 +6,7 @@ import {
   getQuestionalldatabyID,
   GetQuestionExplanation,
   updateQuestion,
+  deleteQuestion,
 } from "../controllers/question.controller.js";
 
 
@@ -21,6 +22,7 @@ questionAdminRouter.get("/:id", getQuestion);
 questionAdminRouter.get("/alldata/:id", getQuestionalldatabyID);
 questionAdminRouter.get("/allquestions", getAllQuestions);
 questionAdminRouter.put("/update", updateQuestion);
+questionAdminRouter.delete("/:id", deleteQuestion);
 
 
 

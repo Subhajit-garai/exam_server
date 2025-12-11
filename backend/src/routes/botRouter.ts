@@ -8,6 +8,7 @@ import { getExamPattern, getExamPatternId, getMockSetExamPattern, updatExamCrati
 import { addQuestions, getQuestions, getQuestionsByids, getQuestionsIds } from "@/controllers/bot/bot.question.controller.js";
 import { getQuizConfigdData, getQuizTopic, sentQuizData } from "@/controllers/bot/bot.quiz.controller.js";
 import { AllUserData, bot_login, isGroupJoinable, IsprimeUser, sendAlluser, sendGroupinfo, sendGroupTopicinfo, sendValidchatids } from "@/controllers/bot/bot.telegram.controller.js";
+
 export const botRouter = Router();
 
 botRouter.get("/auth", botauthenticate, (req, res) => {

@@ -1,33 +1,25 @@
 model botQuizConfig {
-  id    String  @id @unique @default(cuid())
-  title String? @unique
-
-  chatId   String? // Telegram chat ID / whats app location ID
-  platform Platform @default(NONE) // e.g., "Telegram", "WhatsApp"
-
-  check      check?
-  syllabusid String?
-  syllabus   syllabusType @default(Syllabus) // Syllabus mean it follow syllabus base question paper
-
-  topics String[]
-  exam   String?
-
-  nextQuestionTime Int     @default(40) // in seconds
-  quizOpenFor      Int     @default(60) // in seconds
-  variableDelay    Boolean @default(false)
-  suffleQuestions  Boolean @default(true)
-
-  total_questions Int @default(0)
-
-  marks_values    Int     @default(1)
-  neg_values      Int     @default(0)
-  is_multiple_ans Boolean @default(false) // 0 mean false 1 mean it is multiple value ans
-  waiting_time    Int     @default(10)
-
-  created_by String
-  created_at DateTime @default(now())
-
-  User User @relation(fields: [created_by], references: [id])
+  id               String       @id @unique @default(cuid())
+  title            String?      @unique
+  chatId           String? // Telegram chat ID / whats app location ID
+  platform         Platform     @default(NONE) // e.g., "Telegram", "WhatsApp"
+  check            check?       @default(Normal)
+  syllabusid       String?
+  syllabus         syllabusType @default(Syllabus) // Syllabus mean it follow syllabus base question paper
+  topics           String[]
+  exam             String?
+  nextQuestionTime Int          @default(40) // in seconds
+  quizOpenFor      Int          @default(60) // in seconds
+  variableDelay    Boolean      @default(false)
+  suffleQuestions  Boolean      @default(true)
+  total_questions  Int          @default(0)
+  marks_values     Int          @default(1)
+  neg_values       Int          @default(0)
+  is_multiple_ans  Boolean      @default(false) // 0 mean false 1 mean it is multiple value ans
+  waiting_time     Int          @default(10)
+  created_by       String
+  created_at       DateTime     @default(now())
+  User             User         @relation(fields: [created_by], references: [id])
 }
 
 model botInfo {

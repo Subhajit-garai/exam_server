@@ -1,6 +1,8 @@
 import { diffcultlevel, examformat, Status } from "@repo/prisma/client.js"
 import z from "zod";
 
+
+export type questionInput_type = z.infer<typeof questionInputZodSchema>;
 export const questionInputZodSchema = z.object({
   Title: z.string(),
   examname: z.string(),
@@ -9,7 +11,9 @@ export const questionInputZodSchema = z.object({
   ans: z.array(z.string()),
   isMultiple: z.boolean().default(false),
   category: z.string(),
-  topic_id: z.string(),
+  old_topic: z.string().optional(),
+  old_sub_topic: z.string().optional(),
+  topic_id: z.string().optional(),
   subject_id: z.string(),
   history: z.array(z.string()).optional().default([""]), // new
   links: z
@@ -27,10 +31,12 @@ export const questionInputZodSchema = z.object({
     .optional()
     .default({}),
 });
+
+
 export const questionUpdateZodSchema = z.object({
   id: z.string(),
-  title: z.string(),
-  options: z.array(z.string()),
+  title: z.string().optional(),
+  options: z.array(z.string()).optional(),
   extra: z
     .object({
       Code: z.string().optional(),
@@ -40,19 +46,26 @@ export const questionUpdateZodSchema = z.object({
     })
     .nullable()
     .optional(),
-  ans: z.array(z.string()),
-  formate: z.nativeEnum(examformat),
-  category: z.string(),
-  sub_topic: z.string(),
-  history: z.array(z.string()),
-  topic: z.string(),
-  explanation: z.string(),
-  links: z.array(z.string()),
-  is_multiple_ans: z.boolean(),
-  created_by: z.string(),
-  difficulty: z.nativeEnum(diffcultlevel),
-  status: z.nativeEnum(Status),
-  weight: z.number(),
+  ans: z.array(z.string()).optional(),
+  format: z.nativeEnum(examformat).optional(),
+  category: z.string().optional(),
+
+  // Relations (optional updates)
+  topic_id: z.string().optional(),
+  subject_id: z.string().optional(),
+
+  // Old fields (optional updates)
+  old_topic: z.string().optional(),
+  old_sub_topic: z.string().optional(),
+
+  history: z.array(z.string()).optional(),
+  explanation: z.string().optional(),
+  links: z.array(z.string()).optional(),
+  is_multiple_ans: z.boolean().optional(),
+  created_by: z.string().optional(),
+  difficulty: z.nativeEnum(diffcultlevel).optional(),
+  status: z.nativeEnum(Status).optional(),
+  weight: z.number().optional(),
 });
 
 export const QuestionFilterDataFetchZodSchema = z.object({

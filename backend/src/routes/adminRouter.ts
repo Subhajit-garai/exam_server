@@ -12,6 +12,7 @@ import { questionProcessingAdminRouter } from "./questionprocessing.routes.js";
 import { IssueAdminRouter } from "./IssueRouter.js";
 import { noteAdminRouter } from "./noteRoute.js";
 import { examAdminRouter } from "./examRoutes.js";
+import { botQuizConfigAdminRouter } from "./botQuizConfig.routes.js";
 
 
 
@@ -39,3 +40,4 @@ adminRouter.use("/question-processing", questionProcessingAdminRouter)
 adminRouter.use("/issue", IssueAdminRouter)
 adminRouter.use("/note", noteAdminRouter)
 adminRouter.use("/exam", examAdminRouter)
+adminRouter.use("/quizconfig", botQuizConfigAdminRouter)

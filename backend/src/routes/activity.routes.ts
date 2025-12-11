@@ -17,8 +17,7 @@ activityRouter.get("/challenge/history", getDailyChallengeHistory);
 activityRouter.post("/challenge/daily/complete", completeDailyChallenge);
 activityRouter.get("/leaderboard", getLeaderboard);
 activityRouter.get("/stats", getUserStats);
-
 // Recent Activity Routes
 activityRouter.post("/log", logActivity);
-activityRouter.get("/recent", getRecentActivities);
+activityRouter.get("/history/recent", getRecentActivities);
 activityRouter.use("/leaderboard", leaderboardRouter);

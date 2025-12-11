@@ -6,52 +6,24 @@ import {
   getQuestionalldatabyID,
   GetQuestionExplanation,
   updateQuestion,
+  deleteQuestion,
 } from "../controllers/question.controller.js";
-import { isAdmin } from "@repo/lib/security/auth.js";
 
 
-export const questionRouter = Router();
+export const questionAdminRouter = Router();
+export const questionPublicRouter = Router();
 
+// Public Routes
+questionPublicRouter.get("/getquestionexplanation", GetQuestionExplanation);
 
-
-questionRouter.post("/admin/create", isAdmin, createQuestion);
-
-questionRouter.get("/getquestionexplanation", GetQuestionExplanation);
-questionRouter.get("/:id", isAdmin, getQuestion);
-questionRouter.get("/alldata/:id", isAdmin, getQuestionalldatabyID);
-questionRouter.get("/admin/allquestions", isAdmin, getAllQuestions);
-// new in development
-// questionRouter.post("/admin/prossing" ,isAdmin,QuestionProssingDataFetch)
-questionRouter.put("/admin/update", isAdmin, updateQuestion);
-
-
+// Admin Routes (Protected)
+questionAdminRouter.post("/create", createQuestion);
+questionAdminRouter.get("/:id", getQuestion);
+questionAdminRouter.get("/alldata/:id", getQuestionalldatabyID);
+questionAdminRouter.get("/allquestions", getAllQuestions);
+questionAdminRouter.put("/update", updateQuestion);
+questionAdminRouter.delete("/:id", deleteQuestion);
 
 
 
 
-
-
-
-
-// mock set
-
-// questionRouter.post("/admin/mockset/create", isAdmin, Create_Mock_question_set);
-// questionRouter.get("/admin/mockset/getall", isAdmin, get_all_mock_question_set);
-// questionRouter.get("/admin/mockset/get", isAdmin, get_mock_question_set_by_id);
-// questionRouter.get("/admin/mockset/get/questions", isAdmin, get_mock_set_questions);
-// questionRouter.get(
-//   "/admin/mockset/topics",
-//   isAdmin,
-//   getSyllabusByMockQuestionSetid
-// );
-// questionRouter.get(
-//   "/admin/mockset/question/add",
-//   isAdmin,
-//   AddQuestionIntoMockQuestionSet
-// );
-// questionRouter.get(
-//   "/admin/mockset/question/remove",
-//   isAdmin,
-//   RemoveQuestionFromMockQuestionSet
-// );
-// questionRouter.get("/admin/mockset/getids", isAdmin, getAvalibleMockSets);

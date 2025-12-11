@@ -1,4 +1,4 @@
-model Questions {
+model Question {
   id String @id @unique @default(cuid())
 
   title   String
@@ -15,6 +15,7 @@ model Questions {
 
   format          examformat    @default(Text)
   category        String
+  categoryid      String?
   difficulty      diffcultlevel
   is_multiple_ans Boolean       @default(false)
 
@@ -31,6 +32,7 @@ model Questions {
 
   Subject           Subject             @relation(fields: [subject_id], references: [id])
   Topic             Topic               @relation(fields: [topic_id], references: [id])
+  Catagory          Category?           @relation(fields: [categoryid], references: [id])
   quiz_question_map quiz_question_map[]
   question_map      question_map[]
   userAns           UserAns[]
@@ -40,15 +42,15 @@ model Questions {
 }
 
 model question_map {
-  id         String     @id @unique @default(cuid())
-  number     Int        @default(0)
+  id         String    @id @unique @default(cuid())
+  number     Int       @default(0)
   questionid String
-  part       String     @default("part1")
+  part       String    @default("part1") // part1 , part2 ,....
   examid     String?
-  created_at DateTime   @default(now())
-  updated_at DateTime   @default(now()) @updatedAt
-  exam       Exam?      @relation("ExamRelation", fields: [examid], references: [id])
-  question   Questions? @relation(fields: [questionid], references: [id])
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now()) @updatedAt
+  exam       Exam?     @relation("ExamRelation", fields: [examid], references: [id])
+  question   Question? @relation(fields: [questionid], references: [id])
 
   @@unique([examid, questionid, part])
   @@index([examid])

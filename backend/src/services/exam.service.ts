@@ -1,4 +1,4 @@
-import { ExamType, Visibility } from "@repo/prisma/client.js";
+import { ExamType, Visibility, syllabusType } from "@repo/prisma/client.js";
 import prisma from "@repo/db/index.js";
 import { ExamManager } from "@repo/lib/manager/examManager.js";
 import { ExamMetaData } from "@repo/lib/types.js";
@@ -7,6 +7,7 @@ import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
 import { getServiceCharge, TokenDeduction } from "@repo/lib/helper/payment.js";
+import { ConvertInSlug } from "@/lib/slug.js";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -159,14 +160,7 @@ export class ExamService {
         return data;
     }
 
-    async getCategory() {
-        let response = await prisma.category.findMany({});
 
-        if (!response) {
-            throw new Error("Can not find any Category");
-        }
-        return response;
-    }
     async getCategoryName() {
         let response = await prisma.category.findMany({});
         let Category = response.map((item) => item.name);
@@ -716,4 +710,187 @@ export class ExamService {
 
         return response;
     }
+
+    async createExamPattern(data: any, userId: string) {
+        let {
+            title,
+            checkbox,
+            format,
+            examname,
+            category,
+            topics,
+            difficulty,
+            part,
+            part_Count,
+            total_questions,
+            check,
+            marks_values,
+            neg_values,
+            examyear,
+            syllabus,
+        } = data;
+
+        let syllabusData;
+
+        if (checkbox) {
+            if (!syllabus) throw Error("syllabus not found ");
+
+            let examYearData = await prisma.examYear.findFirst({
+                where: {
+                    targetExam: {
+                        name: examname,
+                    },
+                    year: parseInt(examyear),
+                },
+            });
+
+            if (!examYearData) throw Error("examYearData not found ");
+
+            syllabusData = await prisma.syllabus.findFirst({
+                where: {
+                    exam_year_id: examYearData.id,
+                    title: syllabus,
+                },
+            });
+
+            if (!syllabusData) throw Error("syllabusdata not found ");
+
+        } else {
+            if ((topics?.length as number) < 1) {
+                throw new Error("Topics is Empty ");
+            }
+        }
+
+        let response = await prisma.exam_pattern.create({
+            data: {
+                title,
+                format,
+                examname,
+                ...(category ? { Category: { connect: { name: category } } } : {}),
+                topics,
+                difficulty,
+                part,
+                part_Count,
+                total_questions,
+                check,
+                checkbox,
+                marks_values,
+                neg_values,
+                syllabus: checkbox ? syllabusType.Syllabus : syllabusType.Generic,
+                ...(syllabusData && { syllabusid: syllabusData.id }),
+                User: {
+                    connect: { id: userId },
+                },
+            },
+        });
+
+        if (!response) throw Error(" exam patten not created ");
+
+        return response;
+    }
+
+    async createTargetedExam(data: any) {
+        let categoryData = await prisma.category.findFirst({
+            where: {
+                name: data.category,
+            },
+        });
+
+        if (!categoryData) throw Error("category not found ");
+
+        let { category, ...rest } = data;
+        let target_exam = await prisma.targetExam.create({
+            data: {
+                ...rest,
+                ...(categoryData && { Category: { connect: { id: categoryData.id } } }),
+            },
+        });
+
+        return target_exam;
+    }
+
+    async createTargetedExamYear(data: any) {
+        let target_exam_data = await prisma.targetExam.findFirst({
+            where: {
+                id: data.targetExamId,
+            },
+        });
+
+        if (!target_exam_data) throw new Error("select valid exam name ");
+
+        data.slug = ConvertInSlug(
+            `${target_exam_data.shortCode} ${data.year}`
+        );
+
+        let target_exam_year = await prisma.examYear.create({
+            data: {
+                ...data,
+                slug: data.slug,
+                year: parseInt(data.year),
+            },
+        });
+
+        if (!target_exam_year) throw new Error("targated_exam_year not created ");
+        return target_exam_year;
+    }
+
+    async createExam(data: any, userId: string) {
+        let {
+            name,
+            exam_pattern_id,
+            Visibility,
+            duration,
+            date,
+            jointime,
+            starttime,
+            examtype,
+        } = data;
+
+        let response = await prisma.exam.create({
+            data: {
+                name,
+                Visibility,
+                examtype: examtype,
+                starttime: starttime ? starttime : "no limit",
+                jointime: jointime ? jointime : "no limit",
+                duration: duration ? duration : "02:00 h",
+                date: date,
+                exam_pattern: {
+                    connect: { id: exam_pattern_id },
+                },
+                User: {
+                    connect: { id: userId }, // createdby
+                },
+                ContestRegister: {
+                    create: {},
+                },
+            },
+        });
+
+        if (!response) {
+            throw new Error(`${examtype} not created , try again later `);
+        }
+
+        // send it into queue to process question
+        let { id } = response;
+        let Notifystatus = await em.getRedisClient().push({
+            type: "CREATE_EXAM",
+            id: id,
+            payload: {
+                examid: id,
+                userid: userId,
+                examtype: response.examtype,
+            },
+            variant: response.examtype,
+            category: "JECA",
+        });
+
+        // call back to user
+        if (Notifystatus) {
+            console.log(`${examtype} Created ....`);
+        }
+
+        return response;
+    }
 }
+

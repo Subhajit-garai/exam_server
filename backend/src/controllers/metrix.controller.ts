@@ -168,6 +168,9 @@ export const getScoreMetrix = async (req: any, res: any) => {
   }
 };
 
+import { SystemStateService } from "../services/system-state.service.js";
+const systemStateService = new SystemStateService();
+
 export const getSubjectScoreMetrix = async (req: any, res: any) => {
   try {
     let userid = req.user;
@@ -201,5 +204,15 @@ export const getSubjectScoreMetrix = async (req: any, res: any) => {
     });
   } catch (error) {
     console.log("Error in metrix --->", error);
+  }
+};
+
+export const getPlatformStats = async (req: any, res: any) => {
+  try {
+    const stats = await systemStateService.getSystemStats();
+    res.json({ success: true, message: "Platform stats retrieved", data: stats });
+  } catch (error) {
+    console.log("Error in getPlatformStats --->", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

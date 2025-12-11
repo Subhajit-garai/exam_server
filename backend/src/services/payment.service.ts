@@ -199,7 +199,7 @@ export class PaymentService {
                                 },
                             });
 
-                            await prisma.blance.update({
+                            await prisma.balance.update({
                                 where: {
                                     userid: userid,
                                 },
@@ -228,6 +228,15 @@ export class PaymentService {
 
     async getSubcriptionAndOffer() {
         let data = await prisma.subcriptionOffers.findMany({});
+        return data;
+    }
+    async getSubcriptionAndOfferFormated() {
+        let data = await prisma.subcriptionOffers.findMany({
+
+            include: {
+                target_exam: true
+            }
+        });
         return data;
     }
 }

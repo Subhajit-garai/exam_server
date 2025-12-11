@@ -324,4 +324,42 @@ export class SyllabusService {
 
         return formated_syllabus;
     }
+    async getDetaildformatedSyllabus(syllabusid?: string) {
+        if (!syllabusid) {
+            throw Error("invalid exam year id or syllabus id");
+        }
+
+        let syllabus = await prisma.syllabus.findFirst({
+            where: { id: syllabusid },
+            select: {
+                SubjectSyllabusMap: {
+                    select: {
+                        subject: {
+                            select: {
+                                name: true,
+                                shortName: true,
+                            },
+                        },
+                        weightage: true,
+                        TopicsSubjectMap: {
+                            select: {
+                                Topic: {
+                                    select: {
+                                        name: true,
+                                        shortName: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                created_at: true,
+                id: true,
+            },
+        });
+
+        if (!syllabus) throw Error("syllabus data not exist");
+
+        return syllabus;
+    }
 }

@@ -78,7 +78,7 @@ async function insertBulkData(req: any, res: any) {
 
     // console.log(bulkData);
 
-    const result = await prisma.questions.createMany({
+    const result = await prisma.question.createMany({
       data: bulkData,
       skipDuplicates: true, // Optional: skips records with duplicate unique keys
     });
@@ -129,7 +129,7 @@ async function backupImportantTables(req: any, res: any) {
     const targetExams = await prisma.targetExam.findMany({
       include: { examYears: true },
     });
-    const questions = await prisma.questions.findMany();
+    const questions = await prisma.question.findMany();
 
     res.status(200).json({
       success: true,

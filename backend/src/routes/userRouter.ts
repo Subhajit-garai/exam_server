@@ -7,7 +7,7 @@ import { activityRouter } from "./activity.routes.js";
 import { profileRouter } from "./profileRouter.js";
 import { genToken } from "@/lib/token.js";
 import { getAllNoteSubjectForUser } from "@/controllers/note.controller.js";
-import { getAllCategories } from "@/controllers/category.controller.js";
+import { botQuizConfigUserRouter } from "./botQuizConfig.routes.js";
 
 
 export const userRouter = Router();
@@ -18,23 +18,16 @@ userRouter.get("/ws-token", IsUserLoginOpen, (req: any, res: any) => {
     res.json({ wsToken: token, success: true });
 });
 userRouter.get("/logout", Logout);
-
 // notes 
-
-
 userRouter.get("/notes/allsubject", getAllNoteSubjectForUser)
-userRouter.get("/exam/categorys/get", getAllCategories);
-
-
-
 userRouter.post("/validate/telegramid", otpLimiter, usertelegramidValidationTokengen);
 userRouter.post("/verify/telegramid", otpLimiter, usertetegramidValidationTokenVerify);
 //purchases 
 userRouter.get("/purchases", userPurchases);
 userRouter.use("/activity", activityRouter)
-
 // timeline get 
 userRouter.get("/timeline", getUserTimeline);
 userRouter.use("/profile", profileRouter);
 userRouter.get("/subscription/tiers", getUserSubscriptionDetails);
 userRouter.get("/rewards", getUserRewards);
+userRouter.use("/quizconfig", botQuizConfigUserRouter);

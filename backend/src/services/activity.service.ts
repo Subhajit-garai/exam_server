@@ -161,4 +161,6 @@ export class ActivityService {
             // otherRewards: [] 
         };
     }
+
+
 }

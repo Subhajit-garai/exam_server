@@ -1,5 +1,6 @@
 import { diffcultlevel, Prisma } from "@repo/prisma/client.js";
 import prisma from "@repo/db/index.js";
+import { questionInput_type } from "@/zod/question.zod";
 
 export class QuestionService {
     async updateQuestion(userId: string, data: any) {
@@ -16,16 +17,108 @@ export class QuestionService {
             throw new Error("User not found");
         }
 
-        let question = await prisma.questions.update({
+        // Explicitly partial update to prevent issues with strict mode or unknown fields
+        const {
+            title,
+            options,
+            extra,
+            ans,
+            format,
+            category,
+            topic_id,
+            subject_id,
+            old_topic,
+            old_sub_topic,
+            history,
+            explanation,
+            links,
+            is_multiple_ans,
+            created_by,
+            difficulty,
+            status,
+            weight,
+        } = data;
+
+        let question = await prisma.question.update({
             where: {
                 id: data.id,
             },
             data: {
-                ...data,
-                ...(data.extra ? { extra: data.extra } : undefined),
-                ...(data.extra === null
-                    ? { extra: Prisma.JsonNull }
-                    : { extra: data.extra }),
+                ...(title && { title: title }),
+                ...(options && { options: options }),
+                ...(extra && { extra: extra }),
+                ...(ans && { ans: ans }),
+                ...(format && { format: format }),
+                ...(category && { category: category }),
+
+                ...(topic_id && { topic_id: topic_id }),
+                ...(subject_id && { subject_id: subject_id }),
+                ...(old_topic && { old_topic: old_topic }),
+                ...(old_sub_topic && { old_sub_topic: old_sub_topic }),
+
+                ...(history && { history: history }),
+                ...(explanation && { explanation: explanation }),
+                ...(links && { links: links }),
+                ...(is_multiple_ans !== undefined && { is_multiple_ans: is_multiple_ans }),
+                ...(created_by && { created_by: created_by }),
+                ...(difficulty && { difficulty: difficulty }),
+                ...(status && { status: status }),
+                ...(weight !== undefined && { weight: weight }),
+
+                // Handle JSON null explicity if extra is null in input, though zod handles optional
+                ...(data.extra === null ? { extra: Prisma.JsonNull } : {}),
+            },
+        });
+
+        return question;
+    }
+
+    async deleteQuestion(userId: string, questionId: string) {
+        let user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true },
+        });
+
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        // Check for dependencies before delete
+        // Check if question is in any exam/quiz map
+        // Note: This logic depends on business requirements.
+        // If we want to allow delete even if used, we might violate FK constraints unless cascade is on.
+        // Assuming we want to block if used.
+
+        // Check Question Map (Exams)
+        const usageInExams = await prisma.question_map.count({
+            where: { questionid: questionId },
+        });
+
+        if (usageInExams > 0) {
+            throw new Error(`Cannot delete: Question is used in ${usageInExams} exam(s).`);
+        }
+
+        // Check Quiz Map
+        const usageInQuizzes = await prisma.quiz_question_map.count({
+            where: { questionid: questionId },
+        });
+
+        if (usageInQuizzes > 0) {
+            throw new Error(`Cannot delete: Question is used in ${usageInQuizzes} quiz(zes).`);
+        }
+
+        // Check User Answers
+        const userAnswers = await prisma.userAns.count({
+            where: { questionId: questionId }
+        });
+
+        if (userAnswers > 0) {
+            throw new Error(`Cannot delete: Question has ${userAnswers} user answers recorded.`);
+        }
+
+        let question = await prisma.question.delete({
+            where: {
+                id: questionId,
             },
         });
 
@@ -33,7 +126,7 @@ export class QuestionService {
     }
 
     async getQuestionExplanation(questionId: string) {
-        let data = await prisma.questions.findFirst({
+        let data = await prisma.question.findFirst({
             where: { id: questionId },
             select: {
                 explanation: true,
@@ -44,7 +137,7 @@ export class QuestionService {
     }
 
     async checkQuestion(title: string) {
-        let responce = await prisma.questions.findMany({
+        let responce = await prisma.question.findMany({
             where: {
                 title: {
                     contains: title,
@@ -54,7 +147,8 @@ export class QuestionService {
         return responce;
     }
 
-    async createQuestion(userId: string, data: any) {
+    async createQuestion(userId: string, data: questionInput_type
+    ) {
         let user = await prisma.user.findUnique({
             where: {
                 id: userId,
@@ -80,12 +174,47 @@ export class QuestionService {
             Explanation,
             extra,
             subject_id,
+            old_sub_topic,
+            old_topic,
             status,
             history,
             links,
         } = data;
 
-        let question = await prisma.questions.create({
+        if (!old_sub_topic) {
+            old_sub_topic = "unknown";
+        }
+
+        if (!old_topic) {
+            old_topic = "unknown";
+        }
+
+
+        let subject = await prisma.subject.findUnique({
+            where: {
+                name: subject_id,
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        if (!subject) {
+            throw new Error("Subject not found");
+        }
+        let topic = await prisma.topic.findUnique({
+            where: {
+                name: topic_id || "unknown",
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        if (!topic) {
+            throw new Error("Topic not found");
+        }
+        let question = await prisma.question.create({
             data: {
                 title: Title,
                 options: options,
@@ -94,12 +223,12 @@ export class QuestionService {
                 format: format,
                 category: category,
 
-                // temp data
-                old_sub_topic: "",
-                old_topic: "",
+                // correctly mapped data
+                old_sub_topic: old_sub_topic,
+                old_topic: old_topic,
 
-                topic_id: topic_id, // change to sub_topic
-                subject_id: subject_id,
+                topic_id: topic?.id,
+                subject_id: subject?.id,
                 ...(status ? { status: status } : { status: "Processing" }),
                 ...(history ? { history: history } : { history: [""] }),
                 ...(links ? { links: links } : { links: [""] }),
@@ -114,7 +243,7 @@ export class QuestionService {
     }
 
     async getQuestion(questionId: string) {
-        let responce = await prisma.questions.findUnique({
+        let responce = await prisma.question.findUnique({
             where: {
                 id: questionId,
             },
@@ -127,7 +256,7 @@ export class QuestionService {
     }
 
     async getQuestionAllDataById(questionId: string) {
-        let responce = await prisma.questions.findUnique({
+        let responce = await prisma.question.findUnique({
             where: {
                 id: questionId,
             },
@@ -136,21 +265,66 @@ export class QuestionService {
     }
 
     async getAllQuestions(filters: any, page: number = 1) {
+        console.log("--> body", filters);
         let {
             category,
-            topic,
             difficulty,
-            formate,
+            format,
             status,
             id,
             title,
             ismultipleans,
             links,
             history,
+            subject,
+            topic,
+            categoryid,
+            created_by
         } = filters;
 
         const questionsPerPage = 16;
         let responce;
+
+        let subjectid: string = ""
+        let topicid: string = ""
+
+
+        if (subject) {
+            let subRes = await prisma.subject.findUnique({
+                where: {
+                    name: subject,
+                },
+                select: {
+                    id: true,
+                },
+            })
+
+            if (!subRes) {
+                throw new Error("Subject not found");
+            }
+
+            subjectid = subRes.id
+
+            if (topic) {
+                let topicRes = await prisma.topic.findUnique({
+                    where: {
+                        name: topic,
+                    },
+                    select: {
+                        id: true,
+                    },
+                })
+
+                if (!topicRes) {
+                    throw new Error("Topic not found");
+                }
+
+                topicid = topicRes.id
+            }
+
+
+
+        }
 
         let filtertitle: any;
         if (title?.trim()) {
@@ -162,13 +336,13 @@ export class QuestionService {
         let Formatedfilter: any = id
             ? { id: id }
             : {
-                ...(category && { category: category.toUpperCase() }),
-                ...(topic && { topic: topic.toUpperCase() }),
+                ...(category && { category: category }), // Removed toUpperCase to allow exact match or case sensitive if needed, or keep consistent with frontend
+                ...(topic && { old_topic: topic }), // Removed toUpperCase
                 ...(difficulty && { difficulty: difficulty }),
-                ...(formate && { formate: formate }),
+                ...(format && { format: format }),
                 ...(status && { status: status }),
                 ...(filtertitle && { title: filtertitle }),
-                ...(ismultipleans && { is_multiple_ans: ismultipleans }),
+                ...(ismultipleans !== undefined && { is_multiple_ans: ismultipleans }),
                 ...(links && {
                     links: {
                         has: links,
@@ -179,17 +353,18 @@ export class QuestionService {
                         has: history,
                     },
                 }), // array
+                ...(subjectid && { subject_id: subjectid }),
+                ...(topicid && { topic_id: topicid }),
+                ...(categoryid && { categoryid: categoryid }),
+                ...(created_by && { created_by: created_by }),
             };
 
         if (id) {
-            responce = await prisma.questions.findMany({
-                where: Formatedfilter,
-                // skip: (pageNumber - 1) * questionsPerPage,
-                // take: questionsPerPage,
-                // orderBy: { id: "asc" },
+            responce = await prisma.question.findMany({
+                where: Formatedfilter
             });
         } else {
-            responce = await prisma.questions.findMany({
+            responce = await prisma.question.findMany({
                 where: Formatedfilter,
                 skip: (page - 1) * questionsPerPage,
                 take: questionsPerPage,
@@ -197,7 +372,7 @@ export class QuestionService {
             });
         }
 
-        const total = await prisma.questions.count({
+        const total = await prisma.question.count({
             where: Formatedfilter,
         });
 
@@ -205,8 +380,8 @@ export class QuestionService {
     }
 
     async backupQuestion() {
-        let responce = await prisma.questions.findMany({});
-        const total = await prisma.questions.count({});
+        let responce = await prisma.question.findMany({});
+        const total = await prisma.question.count({});
         return { questions: responce, total: total };
     }
 }

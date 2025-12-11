@@ -75,9 +75,8 @@ model Exam {
   jointime         String?       @default("00:15 m") // Open HH:MM:SS
   duration         String        @default("02:00 h") // HH:MM   it is time  user can give or mark ans  , ans accept onlt starttime+jointime+timelimit+ 00:10 min
   date             DateTime      @default(now())
-
-  stage       ExamStage @default(Registration)
-  register_id String    @default("")
+  stage            ExamStage     @default(Registration)
+  register_id      String        @default("")
 
   question_difficulty_weight Json? // { "Easy": 0, "MEDIUM": 0, "HARD": 0 }
   question_topic_count       Json? // { "OS": 0, "DBMS": 0, "C": 0 }

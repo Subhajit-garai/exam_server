@@ -110,7 +110,6 @@ export const ExamCreateInputeSchema = z.object({
   jointime: z.string().optional(),
   duration: z.string().optional(),
   date: z.string(),
-  mock_questions_set_id: z.string().optional(), // new
   examtype: z.nativeEnum(ExamType) // new
 
 });

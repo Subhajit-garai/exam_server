@@ -4,6 +4,8 @@ import {
   questionUpdateZodSchema,
 } from "../zod/question.zod.js";
 import { QuestionService } from "../services/question.service.js";
+import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
+import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 
 const questionService = new QuestionService();
 
@@ -153,38 +155,53 @@ export const getQuestionalldatabyID = async (req: any, res: any) => {
   }
 };
 
-export const getAllQuestions = async (req: any, res: any) => {
+export const deleteQuestion = async (req: any, res: any) => {
   try {
-    let body = QuestionFilterDataFetchZodSchema.safeParse(req.query);
-    if (!body.success) {
-      return res.status(401).json({
-        success: false,
-        message: "user credential format invalid ",
-      });
-    }
+    const questionId = req.params.id;
+    const userId = req.user; // Assuming auth middleware populates this
 
-    const pageNumber = body.data.page ? parseInt(body.data.page) : 1;
-
-    const { questions, total, currentPage } = await questionService.getAllQuestions(body.data, pageNumber);
-
-    if (!questions) {
-      return res.status(400).json({
-        message: "questions not found",
-      });
-    }
+    const question = await questionService.deleteQuestion(userId, questionId);
 
     res.status(200).json({
       success: true,
-      data: { questions: questions, total: total, currentPage: currentPage },
+      message: "Question deleted successfully",
+      data: question,
     });
-  } catch (error) {
-    console.log("error -> ", error);
-
-    res.status(500).json({
-      message: "surver error",
+  } catch (error: any) {
+    console.log("error : ", error);
+    // Determine status code based on error message (simple heuristic)
+    const status = error.message?.includes("Cannot delete") ? 400 : 500;
+    res.status(status).json({
+      success: false,
+      message: error.message || "server error",
     });
   }
 };
+
+export const getAllQuestions = asyncHandler(async (req: any, res: any) => {
+  let body = QuestionFilterDataFetchZodSchema.safeParse(req.query);
+
+
+  if (!body.success) {
+    throw ZodDataSafeParse(body)
+  }
+
+  const pageNumber = body.data.page ? parseInt(body.data.page) : 1;
+
+  const { questions, total, currentPage } = await questionService.getAllQuestions(body.data, pageNumber);
+
+  if (!questions) {
+    return res.status(400).json({
+      message: "questions not found",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: { questions: questions, total: total, currentPage: currentPage },
+  });
+
+})
 
 export const backupQuestion = async (req: any, res: any) => {
   try {

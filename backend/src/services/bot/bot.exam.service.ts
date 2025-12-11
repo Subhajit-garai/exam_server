@@ -100,7 +100,7 @@ export class BotExamService {
 
         console.log(" log filer where state --> ", where, take, skip);
 
-        let questionData = await prisma.questions.findMany({
+        let questionData = await prisma.question.findMany({
             where: {
                 old_topic: where.old_topic
             }
@@ -169,7 +169,7 @@ export class BotExamService {
     }
 
     async getQuestionDetailsForBot(ids: string[]) {
-        const questionData = await prisma.questions.findMany({
+        const questionData = await prisma.question.findMany({
             where: { id: { in: ids } },
             select: {
                 id: true,
@@ -195,7 +195,7 @@ export class BotExamService {
     }
 
     async getQuestionsByIds(ids: string[]) {
-        const questions = await prisma.questions.findMany({
+        const questions = await prisma.question.findMany({
             where: { id: { in: ids } },
             select: {
                 ans: true,
@@ -220,7 +220,7 @@ export class BotExamService {
 
         const questionIds = questionMapData.map((q) => q.questionid);
 
-        const questions = await prisma.questions.findMany({
+        const questions = await prisma.question.findMany({
             where: { id: { in: questionIds } },
             select: {
                 ans: true,
@@ -287,7 +287,7 @@ export class BotExamService {
 
         const questionIds = questions.map((item) => item.questionid);
 
-        const questionData = await prisma.questions.findMany({
+        const questionData = await prisma.question.findMany({
             where: { id: { in: questionIds } },
             select: { id: true, ans: true, topic_id: true },
         });

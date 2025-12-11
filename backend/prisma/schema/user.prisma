@@ -25,11 +25,11 @@ model User {
 
   Exam                        Exam[]
   Exam_pattern                Exam_pattern[]
-  Questions                   Questions[]
+  Question                    Question[]
   QuestionProcessingCreated   QuestionProcessing[] @relation("CreatedBy")
   QuestionProcessingProcessed QuestionProcessing[] @relation("ProcessedBy")
   social                      Social?              @relation(fields: [socialId], references: [id])
-  blance                      blance?
+  balance                     balance?
   Order                       Order[]
   payment                     payment[]
   leaderboard                 leaderboard[]
@@ -122,28 +122,27 @@ model QuizProgress {
   User         User      @relation(fields: [userId], references: [id])
 }
 
-model blance {
+model balance {
   id          String   @id @unique @default(cuid())
   userid      String   @unique
   amount      Int      @default(0)
   ticket      Int      @default(0)
   last_update DateTime @updatedAt
-
-  User User @relation(fields: [userid], references: [id])
+  User        User     @relation(fields: [userid], references: [id])
 }
 
 model UserAns {
-  id             String    @id @unique @default(cuid())
-  number         Int       @default(0) // 0- >  not updated 
-  part           String    @default("part1")
+  id             String   @id @unique @default(cuid())
+  number         Int      @default(0) // 0- >  not updated 
+  part           String   @default("part1")
   examId         String
   userId         String
-  questionId     String    @default("not set")
+  questionId     String   @default("not set")
   shuffleMap     Int[]
   selectedOption String[]
   isCorrect      Boolean? // it  may  later    , if user not ansed then  it null
-  createdAt      DateTime  @default(now())
-  Question       Questions @relation(fields: [questionId], references: [id])
+  createdAt      DateTime @default(now())
+  Question       Question @relation(fields: [questionId], references: [id])
 
   @@unique([examId, userId, questionId])
 }

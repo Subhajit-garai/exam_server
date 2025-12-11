@@ -2,6 +2,7 @@ import prisma from "@repo/db/index.js";
 import { ConvertInSlug } from "@/lib/slug.js";
 
 export class CategoryService {
+
     async createCategory(data: any) {
         // Generate slug if not provided
         const slug = data.slug || ConvertInSlug(data.name);
@@ -32,15 +33,13 @@ export class CategoryService {
         return category;
     }
 
-    async getAllCategories() {
-        return await prisma.category.findMany({
-            orderBy: { name: "asc" },
-            include: {
-                _count: {
-                    select: { examPatterns: true, targetExams: true }
-                }
-            }
-        });
+    async getCategory() {
+        let response = await prisma.category.findMany({});
+
+        if (!response) {
+            throw new Error("Can not find any Category");
+        }
+        return response;
     }
 
     async getCategoryById(id: string) {
@@ -101,5 +100,7 @@ export class CategoryService {
         });
     }
 }
+
+
 
 export const categoryService = new CategoryService();

@@ -11,6 +11,7 @@ import { timeToCron } from "./cronHelper.js";
 import { events } from "../types/EventTypes.js";
 import { eventRunner } from "./event/event-runner.js";
 import { resetWeeklyLeaderboard } from "./activity.cron.js";
+import { updateSystemStats, initSystemStats } from "./stats.cron.js";
 
 const pgClient = new Client({ connectionString: process.env.DATABASE_URL });
 
@@ -196,4 +197,6 @@ async function loadAndScheduleAllEvents() {
 
 loadAndScheduleAllEvents(); // Load and schedule all events on startup
 resetWeeklyLeaderboard.start();
+updateSystemStats.start();
+initSystemStats();
 

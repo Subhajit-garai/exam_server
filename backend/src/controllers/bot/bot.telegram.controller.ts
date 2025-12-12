@@ -7,65 +7,50 @@ import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 
 const botService = new BotService();
 
-export const sendAlluser = async (req: any, res: any) => {
-  try {
-    const users = await botService.telegram.getAllUsersForTelegram();
-    res.json({ success: true, message: "sending users", users: users });
-  } catch (error) {
-    console.log("Error in bot.controller sendAlluser  --->", error);
-    return res.status(400).json({
-      success: false,
-      message: "server error",
-    });
-  }
-};
+export const sendAlluser = asyncHandler(async (req: any, res: any) => {
 
-export const sendValidchatids = async (req: any, res: any) => {
-  try {
-    const data = await botService.telegram.getValidChatIds();
-    res.json({ success: true, message: "message", data: data });
-  } catch (error) {
-    console.log("Error in metrix --->", error);
-  }
-};
+  const users = await botService.telegram.getAllUsersForTelegram();
+  res.json({ success: true, message: "sending users", users: users });
 
-export const sendGroupTopicinfo = async (req: any, res: any) => {
-  try {
-    const { groupId, name } = req.query;
-    const groupTopicInfo = await botService.telegram.getGroupTopicInfo(groupId, name);
-    return res.json({
-      success: true,
-      message: "message",
-      data: groupTopicInfo,
-    });
-  } catch (error) {
-    console.log("Error in metrix --->", error);
-  }
-};
+})
 
-export const sendGroupinfo = async (req: any, res: any) => {
-  try {
-    const group_telegramid = req.query.chatid;
-    const chatid = typeof group_telegramid !== "string" ? String(group_telegramid) : group_telegramid;
+export const sendValidchatids = asyncHandler(async (req: any, res: any) => {
 
-    const groupInfo = await botService.telegram.getGroupInfo(chatid);
-    res.json({ success: true, message: "message", data: groupInfo });
-  } catch (error) {
-    console.log("Error in metrix --->", error);
-  }
-};
+  const data = await botService.telegram.getValidChatIds();
+  res.json({ success: true, message: "message", data: data });
 
-export const isGroupJoinable = async (req: any, res: any) => {
-  try {
-    const group_telegramid = req.query.chatid;
-    const chatid = typeof group_telegramid !== "string" ? String(group_telegramid) : group_telegramid;
+})
 
-    const isjoinable = await botService.telegram.isGroupJoinable(chatid);
-    res.json({ success: true, message: "message", data: isjoinable });
-  } catch (error) {
-    console.log("Error in bot.controller (in isgroupjoinable)  --->", error);
-  }
-};
+export const sendGroupTopicinfo = asyncHandler(async (req: any, res: any) => {
+
+  const { groupId, name } = req.query;
+  const groupTopicInfo = await botService.telegram.getGroupTopicInfo(groupId, name);
+  return res.json({
+    success: true,
+    message: "message",
+    data: groupTopicInfo,
+  });
+})
+
+export const sendGroupinfo = asyncHandler(async (req: any, res: any) => {
+
+  const group_telegramid = req.query.chatid;
+  const chatid = typeof group_telegramid !== "string" ? String(group_telegramid) : group_telegramid;
+
+  const groupInfo = await botService.telegram.getGroupInfo(chatid);
+  res.json({ success: true, message: "message", data: groupInfo });
+
+})
+
+export const isGroupJoinable = asyncHandler(async (req: any, res: any) => {
+
+  const group_telegramid = req.query.chatid;
+  const chatid = typeof group_telegramid !== "string" ? String(group_telegramid) : group_telegramid;
+
+  const isjoinable = await botService.telegram.isGroupJoinable(chatid);
+  res.json({ success: true, message: "message", data: isjoinable });
+
+})
 
 export const AllUserData = asyncHandler(async (req: any, res: any) => {
   const role = req.query.role;

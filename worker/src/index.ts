@@ -65,10 +65,10 @@ const run = async () => {
   await main();
 };
 
-process.on("SIGINT", async () => {
-  console.log("🧹 Shutting down worker...");
-  await RedisProvider.getInstance().disconnect();
-  process.exit(0);
-});
+// process.on("SIGINT", async () => {
+//   console.log("🧹 Shutting down worker...");
+//   await RedisProvider.getInstance().disconnect();
+//   process.exit(0);
+// });
 
 run();

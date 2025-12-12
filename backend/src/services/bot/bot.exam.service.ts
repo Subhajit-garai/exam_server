@@ -189,12 +189,13 @@ export class BotExamService {
 
     // ### Question Logic
     async getQuestionsIds() {
-        const topicNormalAnsQuestions = await prisma.$queryRawUnsafe(`SELECT old_topic, ARRAY_AGG(id) AS ids FROM "Questions"  WHERE is_multiple_ans = false AND status = 'Done' GROUP BY old_topic;`);
-        const topicMultiplaAnsQuestions = await prisma.$queryRawUnsafe(`SELECT old_topic, ARRAY_AGG(id) AS ids FROM "Questions"  WHERE is_multiple_ans = true AND status = 'Done' GROUP BY old_topic;`);
+        const topicNormalAnsQuestions = await prisma.$queryRawUnsafe(`SELECT old_topic, ARRAY_AGG(id) AS ids FROM "Question"  WHERE is_multiple_ans = false AND status = 'Done' GROUP BY old_topic;`);
+        const topicMultiplaAnsQuestions = await prisma.$queryRawUnsafe(`SELECT old_topic, ARRAY_AGG(id) AS ids FROM "Question"  WHERE is_multiple_ans = true AND status = 'Done' GROUP BY old_topic;`);
         return { topicNormalAnsQuestions, topicMultiplaAnsQuestions };
     }
 
     async getQuestionsByIds(ids: string[]) {
+
         const questions = await prisma.question.findMany({
             where: { id: { in: ids } },
             select: {

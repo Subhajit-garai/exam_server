@@ -21,7 +21,7 @@ export class QuizService {
         if (!config) throw new Error("Quiz config not found");
         return config;
     }
-    async setupQuiz(botUser: any, data: any) {
+    async setupQuiz(botUser: string, data: any) {
         const notifyStatus = await QuizeSetupFunction(botUser, data);
         return notifyStatus;
     }
@@ -35,9 +35,6 @@ export class QuizService {
 
 
         //admin
-
-
-
 
     }
 

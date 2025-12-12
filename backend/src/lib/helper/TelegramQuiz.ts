@@ -3,6 +3,7 @@ import { z } from "zod";
 import prisma, { Prisma } from "@repo/db/index.js";
 import { ExamManager } from "../manager/examManager.js";
 import { bot_create_quiz_data_ZodSchema } from "../../zod/bot.zod.js";
+import { logger } from "./logger.js";
 const em = ExamManager.getInstance();
 
 type BotCreateQuizData = z.infer<typeof bot_create_quiz_data_ZodSchema>;
@@ -23,18 +24,22 @@ export const QuizeSetupFunction = async (
     chat_type,
   } = data;
 
+
+  logger.info("bot user info ", bot_user);
+
+
   let bot_webhook = await prisma.botInfo.findFirst({
     where: {
       botuser_id: bot_user,
     },
   });
   if (!bot_webhook) {
-    console.log("No bot webhook found");
+    logger.error("No bot webhook found");
+    // notify admin bot need to update its cburl
+    return false;
   }
-
   let webhook: webhook_type = bot_webhook?.webhook as webhook_type;
   let cbUrl = `${webhook.baseurl}${webhook.endpoint.survertask}`;
-
   let Notifystatus = await em.getRedisClient().push({
     type: "SEND_QUIZ_DATA",
     id: String(chat_id),

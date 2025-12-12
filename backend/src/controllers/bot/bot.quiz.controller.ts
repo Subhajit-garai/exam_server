@@ -7,28 +7,26 @@ import { QuizService } from "../../services/quiz.service.js";
 const quizService = new QuizService();
 
 
-export const sentQuizData = async (req: any, res: any) => {
-  try {
-    const data = bot_create_quiz_data_ZodSchema.safeParse(req.body);
+export const sentQuizData = asyncHandler(async (req: any, res: any) => {
 
-    if (!data.success) {
-      return res.status(403).json({ success: false, message: "invalid data" });
-    }
+  const data = bot_create_quiz_data_ZodSchema.safeParse(req.body);
 
-    const Notifystatus = await quizService.setupQuiz(req.bot_user, data.data);
-
-    if (Notifystatus) {
-      res.json({
-        success: true,
-        message: " quiz setup completed successfully",
-      });
-    } else {
-      res.status(400).json({ success: false, message: "server error" });
-    }
-  } catch (error) {
-    console.log("error in getQuizData in bot controller", error);
+  if (!data.success) {
+    return res.status(403).json({ success: false, message: "invalid data" });
   }
-};
+
+  const Notifystatus = await quizService.setupQuiz(req.bot_user.id, data.data);
+
+  if (Notifystatus) {
+    res.json({
+      success: true,
+      message: " quiz setup completed successfully",
+    });
+  } else {
+    res.status(400).json({ success: false, message: "server error" });
+  }
+
+})
 
 export const getQuizTopic = async (req: any, res: any) => {
   try {

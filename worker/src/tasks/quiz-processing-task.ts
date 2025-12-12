@@ -9,8 +9,6 @@ import axios from "axios";
 // src/workers/ans-processing-task.ts
 export class QuizProcessingTask extends BaseWorkerTask {
   async execute(): Promise<void> {
-
-    
     console.log("Running QuizProcessingTask with data:", this.task.payload);
 
     let newtWorkClient = Network.getInstance();
@@ -31,10 +29,19 @@ export class QuizProcessingTask extends BaseWorkerTask {
         case "channel":
           break;
         case "group":
+          {
+            let groupData = await newtWorkClient.telegramgroupinfo(chatid);
+            if (!groupData) {
+              throw new Error(
+                `No group data found or it may be banned",${chatid}`
+              );
+            }
+          }
           break;
         case "supergroup":
           {
             console.log("supergroup chat");
+
             let groupData = await newtWorkClient.telegramgroupinfo(chatid);
             if (!groupData) {
               throw new Error(
@@ -80,6 +87,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
         platform,
         userid
       );
+      
 
       let {
         total_questions,

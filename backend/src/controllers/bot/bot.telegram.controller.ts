@@ -3,6 +3,7 @@ import { genToken } from "@/lib/token.js";
 import prisma from "@repo/db/index.js";
 import { UserRole } from "@repo/prisma/client.js";
 import { BotService } from "../../services/bot.service.js";
+import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 
 const botService = new BotService();
 
@@ -66,56 +67,32 @@ export const isGroupJoinable = async (req: any, res: any) => {
   }
 };
 
-export const AllUserData = async (req: any, res: any) => {
-  try {
-    const role = req.query.role;
-    const users = await botService.telegram.getUsersByRole(role);
-    res.json({ success: true, message: "success ", data: users });
-  } catch (error) {
-    console.log("Error in bot.controller (in allUserdata) --->", error);
-    res.status(404).json({ success: false, message: "no user found " });
-  }
-};
+export const AllUserData = asyncHandler(async (req: any, res: any) => {
+  const role = req.query.role;
+  const users = await botService.telegram.getUsersByRole(role);
+  res.json({ success: true, message: "success ", data: users });
 
-export const IsprimeUser = async (req: any, res: any) => {
-  try {
-    const user_telegramid = req.query.userid;
-    const isPrime = await botService.telegram.isPrimeUser(user_telegramid);
-    res.json({ success: true, message: "is user prime ", data: isPrime });
-  } catch (error) {
-    console.log("Error in IsprimeUser --->", error);
-    res.status(403).json({ success: false, message: "user not found" });
-  }
-};
+})
 
-export const bot_login = async (req: any, res: any) => {
-  try {
-    const newToken = await botService.admin.botLogin(req.body);
-    res.json({ success: true, message: "successful", data: newToken });
-  } catch (error: any) {
-    console.log("Error in bot login --->", error);
-    if (error.message === "bot not verified") {
-      res.status(403).json({ success: false, message: "bot not verified" });
-    } else {
-      res.status(400).json({ success: false, message: error.message });
-    }
-  }
-};
+export const IsprimeUser = asyncHandler(async (req: any, res: any) => {
 
-export const processNotification = async (req: any, res: any) => {
-  try {
-    const type = req.query.type;
-    const data = req.body;
-    const botUserId = req.bot_user;
+  const user_telegramid = req.query.userid;
+  const isPrime = await botService.telegram.isPrimeUser(user_telegramid);
+  res.json({ success: true, message: "is user prime ", data: isPrime });
+})
 
-    const result = await botService.telegram.processNotification(type, data, botUserId);
-    res.json({ success: true, ...result });
-  } catch (error: any) {
-    console.error("Error in processNotification:", error);
-    const statusCode = error.message.includes("Invalid data") || error.message.includes("Unknown") ? 400 : 500;
-    res.status(statusCode).json({
-      success: false,
-      message: error.message || "Server error while processing notification",
-    });
-  }
-};
+export const bot_login = asyncHandler(async (req: any, res: any) => {
+
+  const newToken = await botService.admin.botLogin(req.body);
+  res.json({ success: true, message: "successful", data: newToken });
+})
+
+export const processNotification = asyncHandler(async (req: any, res: any) => {
+
+  const type = req.query.type;
+  const data = req.body;
+  const botUserId = req.bot_user.id;
+
+  const result = await botService.telegram.processNotification(type, data, botUserId);
+  res.json({ success: true, ...result });
+})

@@ -1,6 +1,5 @@
 import axios from "axios";
 import dotenv from "dotenv";
-import { debuglog } from "./debugLog";
 import { botPlatform } from "../lib/types/types";
 import { logger } from "./logger";
 dotenv.config();

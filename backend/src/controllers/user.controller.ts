@@ -37,24 +37,16 @@ export const userPurchases = async (req: any, res: any) => {
   }
 };
 
-export const auth = async (req: any, res: any) => {
-  try {
-    let User = await userService.auth(req.user);
+export const auth = asyncHandler(async (req: any, res: any) => {
+  let User = await userService.auth(req.user);
 
-    res.status(200).json({
-      success: true,
-      message: "user created sucessfully ",
-      data: User,
-    });
-  } catch (error) {
-    console.log("Error in auth", error);
+  res.status(200).json({
+    success: true,
+    message: "user created sucessfully ",
+    data: User,
+  });
 
-    res.status(401).json({
-      success: false,
-      message: "token not send , plz try again  ",
-    });
-  }
-};
+})
 
 export const Logout = asyncHandler(async (req: any, res: any) => {
   res.cookie("token", null, {

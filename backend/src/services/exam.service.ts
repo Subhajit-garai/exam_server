@@ -1,4 +1,4 @@
-import { ExamType, Visibility, syllabusType } from "@repo/prisma/client.js";
+import { ExamType, SocialPlatform, Visibility, syllabusType } from "@repo/prisma/client.js";
 import prisma from "@repo/db/index.js";
 import { ExamManager } from "@repo/lib/manager/examManager.js";
 import { ExamMetaData } from "@repo/lib/types.js";
@@ -310,22 +310,26 @@ export class ExamService {
     }
 
     async examJoinRequestProcess(userId: string, examId: string) {
-        let isUserVerified = await prisma.user.findFirst({
-            where: { id: userId },
-            select: {
-                social: {
-                    select: {
-                        isEmailVerified: true,
-                        isTelegramVerified: true,
-                    },
-                },
+        let istelegramVerified = await prisma.social.findFirst({
+            where: {
+                userId: userId,
+                platform: SocialPlatform.telegram
+
+            },
+        });
+        let isEmailVerified = await prisma.social.findFirst({
+            where: {
+                userId: userId,
+                platform: SocialPlatform.email
+
             },
         });
 
+
         if (
             !(
-                isUserVerified?.social?.isEmailVerified &&
-                isUserVerified.social.isTelegramVerified
+                isEmailVerified?.isVerified &&
+                istelegramVerified?.isVerified
             )
         ) {
             throw new Error(

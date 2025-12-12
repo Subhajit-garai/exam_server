@@ -1,7 +1,7 @@
 import { veryfyhashPasswordFn } from "@/lib/security/hash.js";
 import { genToken } from "@/lib/token.js";
 import prisma from "@repo/db/index.js";
-import { UserRole } from "@repo/prisma/client.js";
+import { SocialPlatform, UserRole } from "@repo/prisma/client.js";
 
 export class BotAdminService {
 
@@ -61,7 +61,6 @@ export class BotAdminService {
                 email,
                 role: UserRole.Bot,
                 prime: { create: { status: "None" } }, // Assuming 'None' is string or enum
-                social: { create: { telegram: telegramid } },
                 balance: { create: { amount: 1, ticket: 1, last_update: new Date() } },
                 password: hashedPassword,
             },

@@ -10,7 +10,6 @@ model User {
   school              String?
   standard            String?
   stream              String?
-  socialId            String?       @unique
   examProgress        ExamProgress?
   dppProgress         DppProgress?
   quizProgress        QuizProgress?
@@ -26,9 +25,9 @@ model User {
   Exam                        Exam[]
   Exam_pattern                Exam_pattern[]
   Question                    Question[]
-  QuestionProcessingCreated   QuestionProcessing[] @relation("CreatedBy")
-  QuestionProcessingProcessed QuestionProcessing[] @relation("ProcessedBy")
-  social                      Social?              @relation(fields: [socialId], references: [id])
+  QuestionProcessingCreated   QuestionProcessing[]  @relation("CreatedBy")
+  QuestionProcessingProcessed QuestionProcessing[]  @relation("ProcessedBy")
+  social                      Social[]
   balance                     balance?
   Order                       Order[]
   payment                     payment[]
@@ -37,44 +36,29 @@ model User {
   prime                       prime?
   Comment                     Comment[]
   Topic                       Topic[]
-
-  botQuizConfig botQuizConfig[]
-  CouponUsages  CouponUsage[] // Relation: which users used it
-  Coupon        Coupon[]
-  botInfo       botInfo[]
-
-  userActivities       UserActivity[]
-  userStreaks          UserStreak[]
-  userBadges           UserBadge[]
-  activityLeaderboards ActivityLeaderboard[]
+  botQuizConfig               botQuizConfig[]
+  CouponUsages                CouponUsage[] // Relation: which users used it
+  Coupon                      Coupon[]
+  botInfo                     botInfo[]
+  userActivities              UserActivity[]
+  userStreaks                 UserStreak[]
+  userBadges                  UserBadge[]
+  activityLeaderboards        ActivityLeaderboard[]
 
   @@index([role])
 }
 
 model Social {
-  id                  String  @id @unique @default(cuid())
-  userid              String?
-  telegram            String? @default("0000000000") // Required field
-  whatsapp            String?
-  linkedin            String?
-  github              String?
-  twitter             String?
-  instagram           String?
-  facebook            String?
-  website             String?
-  // Verification status
-  isContactVerified   Boolean @default(false)
-  isEmailVerified     Boolean @default(false)
-  isTelegramVerified  Boolean @default(false)
-  isWhatsappVerified  Boolean @default(false)
-  isGithubVerified    Boolean @default(false)
-  isLinkedinVerified  Boolean @default(false)
-  isInstagramVerified Boolean @default(false)
-  isFacebookVerified  Boolean @default(false)
-  isTwitterVerified   Boolean @default(false)
+  id         String         @id @default(cuid())
+  userId     String
+  platform   SocialPlatform
+  link       String
+  isVerified Boolean        @default(false)
+  updatedAt  DateTime       @updatedAt
+  User       User           @relation(fields: [userId], references: [id])
 
-  last_update DateTime @updatedAt
-  User        User?
+  @@unique([userId, platform])
+  @@unique([platform, link])
 }
 
 model prime {

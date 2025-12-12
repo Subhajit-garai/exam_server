@@ -1,4 +1,4 @@
-import { primeStatus } from "@repo/prisma/client.js"
+import { primeStatus, SocialPlatform } from "@repo/prisma/client.js"
 import prisma from "@repo/db/index.js";
 import {
     Createhash,
@@ -71,8 +71,10 @@ export class UserService {
                 },
                 social: {
                     create: {
+                        platform: SocialPlatform.email,
+                        link: email
+                    }
 
-                    },
                 },
                 balance: {
                     create: {
@@ -173,10 +175,13 @@ export class UserService {
 
             await tx.social.update({
                 where: {
-                    id: User?.socialId as string,
+                    userId_platform: {
+                        userId: User.id,
+                        platform: SocialPlatform.email
+                    }
                 },
                 data: {
-                    isEmailVerified: true,
+                    isVerified: true,
                 },
             });
 
@@ -185,25 +190,22 @@ export class UserService {
     }
 
     async usertelegramidValidationTokengen(userId: string, telegramid: string) {
-        let User = await prisma.user.findUnique({
+
+
+        let telegram = await prisma.social.findUnique({
             where: {
-                id: userId,
-            },
-            select: {
-                id: true,
-                social: {
-                    select: {
-                        telegram: true,
-                    },
-                },
-            },
+                userId_platform: {
+                    userId: userId,
+                    platform: SocialPlatform.telegram
+                }
+
+            }
         });
 
-        if (!User) {
-            throw new Error("user not exist");
+        if (!telegram) {
+            throw new Error("user's telegram data not exist");
         }
-
-        if (User?.social?.telegram !== telegramid) {
+        if (telegram.link !== telegramid) {
             throw new Error("user telegram id not match");
         }
 
@@ -212,7 +214,7 @@ export class UserService {
 
         let update = await prisma.user.update({
             where: {
-                id: User.id,
+                id: userId,
             },
             data: {
                 forgotpasswordToken: hashedToken,
@@ -270,10 +272,13 @@ export class UserService {
 
             await tx.social.update({
                 where: {
-                    id: User.socialId as string,
+                    userId_platform: {
+                        userId: userId,
+                        platform: SocialPlatform.telegram
+                    }
                 },
                 data: {
-                    isTelegramVerified: true,
+                    isVerified: true,
                 },
             });
 

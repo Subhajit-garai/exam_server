@@ -26,6 +26,7 @@ export const QuizeSetupFunction = async (
 
 
   logger.info("bot user info ", bot_user);
+  logger.info(" telegram   chat   info ", chat_type);
 
 
   let bot_webhook = await prisma.botInfo.findFirst({

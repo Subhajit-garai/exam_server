@@ -12,6 +12,7 @@ import { events } from "../types/EventTypes.js";
 import { eventRunner } from "./event/event-runner.js";
 import { resetWeeklyLeaderboard } from "./activity.cron.js";
 import { updateSystemStats, initSystemStats } from "./stats.cron.js";
+import { SocialPlatform } from "@repo/prisma/enums.js";
 
 const pgClient = new Client({ connectionString: process.env.DATABASE_URL });
 
@@ -67,8 +68,8 @@ pgClient.connect().then(async () => {
               },
               select: {
                 social: {
-                  select: {
-                    telegram: true,
+                  where: {
+                    platform: SocialPlatform.telegram
                   },
                 },
               },
@@ -81,10 +82,7 @@ pgClient.connect().then(async () => {
               throw new Error("Feature not available for user");
             } else {
               if (status.access) {
-                // console.log("User has access to prime group service");
-                // send message to user
-                // let message = `You have been granted access to the prime group service. Enjoy your benefits!`;
-                //  send webhook
+
 
                 let bot_user = await prisma.user.findFirst({
                   where: {
@@ -104,9 +102,10 @@ pgClient.connect().then(async () => {
                   bot_webhook?.webhook as webhook_type;
                 let cbUrl = `${webhook.baseurl}${webhook.endpoint.survertask}`;
 
+                let userTelegramId = userData?.social[0].link;
                 let responce = await axios.post(cbUrl, {
                   type: "unbanuser",
-                  user_id: userData?.social?.telegram,
+                  user_id: userTelegramId
                 });
                 if (responce) {
                   console.log("User unbanned successfully");

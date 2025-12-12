@@ -11,6 +11,7 @@ import {
   purchaseType,
   UserRole,
   Visibility,
+  SocialPlatform
 } from "./generated/prisma/enums";
 import fs from "fs";
 import path from "path";
@@ -453,10 +454,12 @@ async function main() {
         },
       },
       social: {
-        create: {
-          telegram: "7057093987",
-          last_update: new Date(),
-        },
+        create: [
+          {
+            platform: SocialPlatform.telegram,
+            link: "7057093987",
+          },
+        ],
       },
       balance: {
         create: {
@@ -480,10 +483,12 @@ async function main() {
         },
       },
       social: {
-        create: {
-          telegram: "92837878822",
-          last_update: new Date(),
-        },
+        create: [
+          {
+            platform: SocialPlatform.telegram,
+            link: "92837878822",
+          },
+        ],
       },
       balance: {
         create: {
@@ -507,10 +512,12 @@ async function main() {
         },
       },
       social: {
-        create: {
-          telegram: "123456",
-          last_update: new Date(),
-        },
+        create: [
+          {
+            platform: SocialPlatform.telegram,
+            link: "123456",
+          },
+        ],
       },
       balance: {
         create: {
@@ -545,10 +552,12 @@ async function main() {
         },
       },
       social: {
-        create: {
-          telegram: "#8177562050",
-          last_update: new Date(),
-        },
+        create: [
+          {
+            platform: SocialPlatform.telegram,
+            link: "#8177562050",
+          },
+        ],
       },
       balance: {
         create: {

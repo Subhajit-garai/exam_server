@@ -1,10 +1,12 @@
 import prisma from "@repo/db/index.js";
 import { z } from "zod";
-import { updateAcademicProfileZodSchema, updateSocialLinksZodSchema } from "../zod/user.zod.js";
+import { DeleteSocialLinksInput, updateAcademicProfileZodSchema, updateSocialLinksZodSchema } from "../zod/user.zod.js";
+import { SocialPlatform } from "@repo/prisma/enums.js";
 
 type UpdateProfileInput = z.infer<typeof updateAcademicProfileZodSchema>;
 type UpdateSocialLinksInput = z.infer<typeof updateSocialLinksZodSchema>;
 
+SocialPlatform
 export class ProfileService {
     async getProfile(userId: string) {
         let User = await prisma.user.findFirst({
@@ -17,21 +19,9 @@ export class ProfileService {
                 academicProfile: true,
                 social: {
                     select: {
-                        telegram: true,
-                        whatsapp: true,
-                        github: true,
-                        linkedin: true,
-                        instagram: true,
-                        facebook: true,
-                        twitter: true,
-                        isTelegramVerified: true,
-                        isEmailVerified: true,
-                        isWhatsappVerified: true,
-                        isGithubVerified: true,
-                        isLinkedinVerified: true,
-                        isInstagramVerified: true,
-                        isFacebookVerified: true,
-                        isTwitterVerified: true,
+                        platform: true,
+                        link: true,
+                        isVerified: true,
                     },
                 },
                 school: true,
@@ -54,11 +44,8 @@ export class ProfileService {
         if (!User) {
             throw new Error("user not exist");
         }
-
-
-        return User;
+        return User
     }
-
     async updateAcademicProfile(userId: string, data: UpdateProfileInput) {
 
 
@@ -132,51 +119,42 @@ export class ProfileService {
 
         return updatedUser;
     }
-
     async updateSocialLinks(userId: string, data: UpdateSocialLinksInput) {
 
-        // Check if user has a social record
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { socialId: true }
-        });
-
-        if (!user) throw new Error("User not found");
-
-        let socialId = user.socialId;
-        let updateData: any = { ...data };
-
-        if (socialId) {
-            // Update existing social record
-            await prisma.social.update({
-                where: { id: socialId },
-                data: updateData
-            });
-        } else {
-            // Create new social record
-            const newSocial = await prisma.social.create({
-                data: {
-                    ...updateData,
-                    User: { connect: { id: userId } }
+        if (data.link) {
+            await prisma.social.upsert({
+                where: {
+                    userId_platform: {
+                        userId: userId,
+                        platform: data.platform
+                    }
+                },
+                update: {
+                    link: data.link
+                },
+                create: {
+                    userId: userId,
+                    platform: data.platform,
+                    link: data.link
                 }
-            });
-
-            // Link to user
-            await prisma.user.update({
-                where: { id: userId },
-                data: { socialId: newSocial.id }
             });
         }
 
-        let updatedUser = await prisma.user.findUnique({
+        // Return the full profile again to be safe/consistent
+        return this.getProfile(userId);
+    }
+
+    async deleteSocialLinksRecord(userId: string, data: DeleteSocialLinksInput) {
+
+        await prisma.social.delete({
             where: {
-                id: userId,
-            },
-            select: {
-                social: true
+                userId_platform: {
+                    userId: userId,
+                    platform: data.platform
+                }
             }
         });
 
-        return updatedUser;
+        return this.getProfile(userId);
     }
 }

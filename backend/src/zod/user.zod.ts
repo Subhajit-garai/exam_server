@@ -1,4 +1,4 @@
-import { ExamType, Visibility } from "@repo/prisma/client.js"
+import { ExamType, SocialPlatform, Visibility } from "@repo/prisma/client.js"
 import z, { date } from "zod";
 
 export const singupZodSchema = z.object({
@@ -33,14 +33,13 @@ export const updateAcademicProfileZodSchema = z.object({
 });
 
 export const updateSocialLinksZodSchema = z.object({
-  telegram: z.string().optional(), // Required in logic if not present, but optional in update payload if only updating others? User said "marked telegram to reuired". Let's make it optional here but enforce in service or frontend if it's an update. Actually, "marked telegram to reuired" likely means it cannot be null in DB.
-  whatsapp: z.string().optional(),
-  linkedin: z.string().optional(),
-  github: z.string().optional(),
-  twitter: z.string().optional(),
-  instagram: z.string().optional(),
-  facebook: z.string().optional(),
-  website: z.string().optional(),
+  platform: z.nativeEnum(SocialPlatform), // Enforce Enum values if possible, or string that maps to it
+  link: z.string().optional(),
+}); // Service transforms these keys to SocialPlatform enum
+
+export type DeleteSocialLinksInput = z.infer<typeof deleteSocialLinksZodSchema>;
+export const deleteSocialLinksZodSchema = z.object({
+  platform: z.nativeEnum(SocialPlatform), // Enforce Enum values if possible, or string that maps to it
 });
 
 export const singinZodSchema = z.object({

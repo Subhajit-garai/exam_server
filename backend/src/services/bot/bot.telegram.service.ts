@@ -3,6 +3,7 @@ import {
     banuser_notification_zod_type,
     unbanuser_notification_zod_type,
 } from "../../zod/bot.zod.js";
+import { SocialPlatform } from "@repo/prisma/enums.js";
 
 
 export class BotTelegramService {
@@ -71,7 +72,11 @@ export class BotTelegramService {
     async getAllUsersForTelegram() {
         const users = await prisma.user.findMany({
             select: {
-                social: { select: { telegram: true } },
+                social: {
+                    where: {
+                        platform: SocialPlatform.telegram,
+                    },
+                },
                 prime: { select: { status: true } },
             },
         });
@@ -123,7 +128,11 @@ export class BotTelegramService {
         const users = await prisma.user.findMany({
             where: { role: role ?? "User" },
             select: {
-                social: { select: { telegram: true } },
+                social: {
+                    where: {
+                        platform: SocialPlatform.telegram
+                    },
+                },
                 prime: { select: { status: true, expiry: true } },
             },
         });
@@ -132,8 +141,24 @@ export class BotTelegramService {
     }
 
     async isPrimeUser(telegramid: string) {
+
+        const userTelegramdata = await prisma.social.findUnique({
+            where: {
+
+                platform_link: {
+                    platform: SocialPlatform.telegram,
+                    link: telegramid,
+                }
+
+            }
+        })
+        if (!userTelegramdata) throw new Error("User not found");
+
+
         const user = await prisma.user.findFirst({
-            where: { social: { telegram: telegramid } },
+            where: {
+                id: userTelegramdata.userId
+            },
             select: { prime: { select: { status: true } } },
         });
         if (!user) throw new Error("User not found");

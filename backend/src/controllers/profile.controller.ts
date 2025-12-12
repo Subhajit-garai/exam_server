@@ -1,6 +1,6 @@
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 import { ProfileService } from "../services/profile.service.js";
-import { updateAcademicProfileZodSchema, updateSocialLinksZodSchema } from "../zod/user.zod.js";
+import { deleteSocialLinksZodSchema, updateAcademicProfileZodSchema, updateSocialLinksZodSchema } from "../zod/user.zod.js";
 import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 
 const profileService = new ProfileService();
@@ -37,7 +37,6 @@ export const updateAcademicProfile = asyncHandler(async (req: any, res: any) => 
 })
 
 export const updateSocialLinks = asyncHandler(async (req: any, res: any) => {
-
     const data = updateSocialLinksZodSchema.safeParse(req.body);
 
     if (!data.success) {
@@ -50,5 +49,23 @@ export const updateSocialLinks = asyncHandler(async (req: any, res: any) => {
         success: true,
         message: "User social links updated successfully",
         data: updatedUser,
+    });
+})
+export const deleteSocialLinksRecord = asyncHandler(async (req: any, res: any) => {
+
+    const data = deleteSocialLinksZodSchema.safeParse({
+        platform: req.params.platform,
+    });
+
+    if (!data.success) {
+        return ZodDataSafeParse(data)
+    }
+
+    const deletedSocialLink = await profileService.deleteSocialLinksRecord(req.user, data.data);
+
+    res.status(200).json({
+        success: true,
+        message: "User social links deleted successfully",
+        data: deletedSocialLink,
     });
 })

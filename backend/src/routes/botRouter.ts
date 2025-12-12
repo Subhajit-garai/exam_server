@@ -28,7 +28,6 @@ botRouter.get("/user/ans/get", botauthenticate, getUserans);
 // exam
 botRouter.get("/exam/patternid/get/:examid", botauthenticate, getExamPatternId);
 botRouter.get("/exam/update/creation/status/:examid", botauthenticate, updatExamCrationStatus); // call is to update , no data
-
 botRouter.get("/exampattern/get/:exampatternid", botauthenticate, getExamPattern);
 botRouter.get("/exam/details/get/:examid", botauthenticate, getExamDetails);
 botRouter.get("/mock/exampattern/details/get", botauthenticate, getMockSetExamPattern);
@@ -42,7 +41,6 @@ botRouter.get("/syllabus/exam/get", botauthenticate, getSyllabusDataForExamCreat
 //questions
 botRouter.post("/question/processing/get", botauthenticate, getQuestionViaIdsforProcessing);
 botRouter.post("/question/processed/add", botauthenticate, AddProcessingQuestions);
-
 botRouter.get("/questions/info/get", botauthenticate, getQuestionViaIds);
 botRouter.get("/questions/ans/get/:examid", botauthenticate, getExamAns);
 botRouter.get("/questions/ids", botauthenticate, getQuestionsIds);

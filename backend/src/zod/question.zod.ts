@@ -11,10 +11,8 @@ export const questionInputZodSchema = z.object({
   ans: z.array(z.string()),
   isMultiple: z.boolean().default(false),
   category: z.string(),
-  old_topic: z.string().optional(),
-  old_sub_topic: z.string().optional(),
-  topic_id: z.string().optional(),
-  subject_id: z.string(),
+  topic: z.string(),
+  subject: z.string(),
   history: z.array(z.string()).optional().default([""]), // new
   links: z
     .string()

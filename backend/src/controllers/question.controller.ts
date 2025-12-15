@@ -77,39 +77,28 @@ export const checkQuestion = async (req: any, res: any) => {
     });
   }
 };
-export const createQuestion = async (req: any, res: any) => {
-  try {
-    let data = questionInputZodSchema.safeParse(req.body);
+export const createQuestion = asyncHandler(async (req: any, res: any) => {
 
-    if (!data.success) {
-      return res.status(401).json({
-        success: false,
-        message: "inpute format/value invalid ",
-      });
-    }
+  let data = questionInputZodSchema.safeParse(req.body);
 
-    let question = await questionService.createQuestion(req.user, data.data);
+  if (!data.success) {
+    throw ZodDataSafeParse(data)
+  }
 
-    if (!question) {
-      return res.status(400).json({
-        success: false,
-        message: "Question not created ",
-      });
-    }
+  let question = await questionService.createQuestion(req.user, data.data);
 
-    res.status(200).json({
-      success: true,
-      message: "Question creation successfull",
-    });
-  } catch (error) {
-    console.log("error : ", error);
-
-    res.status(500).json({
+  if (!question) {
+    return res.status(400).json({
       success: false,
-      message: "surver error",
+      message: "Question not created ",
     });
   }
-};
+
+  res.status(200).json({
+    success: true,
+    message: "Question creation successfull",
+  });
+})
 
 export const getQuestion = async (req: any, res: any) => {
   try {

@@ -168,51 +168,49 @@ export class QuestionService {
             ans,
             format,
             category,
-            topic_id,
             difficulty,
             isMultiple,
             Explanation,
             extra,
-            subject_id,
-            old_sub_topic,
-            old_topic,
+            subject,
+            topic,
             status,
             history,
             links,
         } = data;
 
-        if (!old_sub_topic) {
-            old_sub_topic = "unknown";
-        }
-
-        if (!old_topic) {
-            old_topic = "unknown";
-        }
-
-
-        let subject = await prisma.subject.findUnique({
-            where: {
-                name: subject_id,
-            },
-            select: {
-                id: true,
-            },
-        });
-
         if (!subject) {
-            throw new Error("Subject not found");
+            subject = "unknown";
         }
-        let topic = await prisma.topic.findUnique({
-            where: {
-                name: topic_id || "unknown",
-            },
-            select: {
-                id: true,
-            },
-        });
 
         if (!topic) {
-            throw new Error("Topic not found");
+            topic = "unknown";
+        }
+
+
+        let subjectData = await prisma.subject.findUnique({
+            where: {
+                name: subject,
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        if (!subjectData) {
+            throw new Error(`Subject data not found for this ${subject}`);
+        }
+        let topicData = await prisma.topic.findUnique({
+            where: {
+                name: topic
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        if (!topicData) {
+            throw new Error(`Topic data not found for this ${topic}`);
         }
         let question = await prisma.question.create({
             data: {
@@ -222,13 +220,10 @@ export class QuestionService {
                 ans: ans,
                 format: format,
                 category: category,
-
-                // correctly mapped data
-                old_sub_topic: old_sub_topic,
-                old_topic: old_topic,
-
-                topic_id: topic?.id,
-                subject_id: subject?.id,
+                old_sub_topic: subject,
+                old_topic: topic,
+                topic_id: topicData?.id,
+                subject_id: subjectData?.id,
                 ...(status ? { status: status } : { status: "Processing" }),
                 ...(history ? { history: history } : { history: [""] }),
                 ...(links ? { links: links } : { links: [""] }),

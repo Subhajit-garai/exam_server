@@ -3,7 +3,6 @@ import { BaseEvent } from "../bace-event.js";
 import prisma from "@/db/index.js";
 import { event_exam_data_type } from "@/lib/types/EventTypes.js";
 import dayjs from "dayjs";
-import { connect } from "http2";
 
 
 

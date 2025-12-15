@@ -7,7 +7,11 @@ import { MockSetProcessingStatus, ProcessMockSet } from "./Mockset.processing.js
 import { isFeatureAvailable } from "../../controllers/tier.controller.js";
 import { webhook_type } from "../types/botTypes.js";
 import axios from "axios";
-import { timeToCron } from "./cronHelper.js";
+import {
+  timeToCron,
+  timeToCronWeekly,
+  timeToCronMonthly,
+} from "./cronHelper.js";
 import { events } from "../types/EventTypes.js";
 import { eventRunner } from "./event/event-runner.js";
 import { resetWeeklyLeaderboard } from "./activity.cron.js";
@@ -150,6 +154,10 @@ function scheduleJob(event: events) {
       .add(Math.floor(Math.random() * 10), "minute")
       .format("H:mm a");
     cronTime = timeToCron(time);
+  } else if (event.runs === "WEEKLY") {
+    cronTime = timeToCronWeekly(event.run_at);
+  } else if (event.runs === "MONTHLY") {
+    cronTime = timeToCronMonthly(event.run_at);
   } else {
     cronTime = timeToCron(event.run_at);
   }

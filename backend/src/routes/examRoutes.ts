@@ -20,7 +20,6 @@ import {
   fetch_targeted_exam_by_id,
   getCategoryName,
 } from "../controllers/exam.controller.js";
-import { isAdmin } from "@repo/lib/security/auth.js";
 import { create_targeted_exam, create_targeted_exam_year, CreateExam, CreateNewExamPattern } from "@/controllers/exam/exam.create.controller.js";
 
 export const examAdminRouter = Router();

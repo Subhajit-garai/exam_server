@@ -9,117 +9,107 @@ import { NoteService } from "../services/note.service.js";
 
 const noteService = new NoteService();
 
-export const test = async (req: any, res: any) => {
-  try {
-    res.json({ success: true, message: "message", data: "data" });
-  } catch (error) {
-    console.log("Error in note controller --->", error);
+export const test = asyncHandler(async (req: any, res: any) => {
+  res.json({ success: true, message: "message", data: "data" });
+})
+
+export const like = asyncHandler(async (req: any, res: any) => {
+  const { subject, topic } = req.params;
+  if (!subject || !topic) throw new Error("subject or topic missing");
+
+  // Assuming 'topic' param is the slug, passing it to service
+  const updatedContent = await noteService.like(topic);
+
+  if (!updatedContent) {
+    return res.status(400).json({
+      success: false,
+      message: "error while updateing like , plz try again",
+    });
   }
-};
 
-export const like = async (req: any, res: any) => {
-  try {
-    const { subject, topic } = req.params;
-    if (!subject || !topic) throw new Error("subject or topic missing");
+  res.json({ success: true, message: "like added" });
+});
 
-    // Assuming 'topic' param is the slug, passing it to service
-    const updatedContent = await noteService.like(topic);
+export const dislike = asyncHandler(async (req: any, res: any) => {
+  const { subject, topic } = req.params;
+  if (!subject || !topic) throw new Error("subject or topic missing");
 
-    if (!updatedContent) {
-      return res.status(400).json({
-        success: false,
-        message: "error while updateing like , plz try again",
-      });
-    }
+  const updatedContent = await noteService.dislike(topic);
 
-    res.json({ success: true, message: "like added" });
-  } catch (error) {
-    console.log("Error in note controller --->", error);
-    res.status(500).json({ success: false, message: "Error adding like" });
+  if (!updatedContent) {
+    return res.status(400).json({
+      success: false,
+      message: "error while updateing dislike , plz try again",
+    });
   }
-};
 
-export const dislike = async (req: any, res: any) => {
-  try {
-    const { subject, topic } = req.params;
-    if (!subject || !topic) throw new Error("subject or topic missing");
+  res.json({ success: true, message: "dislike added" });
+})
 
-    const updatedContent = await noteService.dislike(topic);
+export const UpdateContentOfTopic = asyncHandler(async (req: any, res: any) => {
+  let data = req.body;
 
-    if (!updatedContent) {
-      return res.status(400).json({
-        success: false,
-        message: "error while updateing dislike , plz try again",
-      });
-    }
+  let processedData = noteUpdate_schema.safeParse(data);
 
-    res.json({ success: true, message: "dislike added" });
-  } catch (error) {
-    console.log("Error in note controller --->", error);
-    res.status(500).json({ success: false, message: "Error adding dislike" });
+  if (!processedData.success) {
+    throw ZodDataSafeParse(processedData);
   }
-};
 
-export const UpdateContentOfTopic = async (req: any, res: any) => {
-  try {
-    let data = req.body;
+  let newContent = processedData.data.content;
+  let topicid = processedData.data.topicid;
 
-    let processedData = noteUpdate_schema.safeParse(data);
+  const updatedContent = await noteService.updateContentOfTopic(topicid, newContent);
 
-    if (!processedData.success) {
-      console.log("data error ---> ", processedData.error);
-
-      return res.status(400).json({
-        success: false,
-        message: "notification catch ,but data not recived ",
-      });
-    }
-
-    let newContent = processedData.data.content;
-    let topicid = processedData.data.topicid;
-
-    const updatedContent = await noteService.updateContentOfTopic(topicid, newContent);
-
-    if (!updatedContent) {
-      return res.status(400).json({
-        success: false,
-        message: "error while updateing Content , plz try again",
-      });
-    }
-
-    res.json({ success: true, message: " Content updated", data: "" });
-  } catch (error) {
-    console.log("Error in note controller --->", error);
+  if (!updatedContent) {
+    return res.status(400).json({
+      success: false,
+      message: "error while updateing Content , plz try again",
+    });
   }
-};
 
-export const CreateTopic = async (req: any, res: any) => {
-  try {
-    let data = req.body;
-    let processedData = createTopic_schema.safeParse(data);
+  res.json({ success: true, message: " Content updated", data: "" });
+})
 
-    if (!processedData.success) {
-      console.log("data error ---> ", processedData.error);
+export const CreateTopic = asyncHandler(async (req: any, res: any) => {
 
-      return res.status(400).json({
-        success: false,
-        message: "notification catch ,but data not recived ",
-      });
-    }
+  let data = req.body;
+  let processedData = createTopic_schema.safeParse(data);
 
-    let subject = await noteService.createTopic(processedData.data);
-
-    if (!subject) {
-      return res.status(400).json({
-        success: false,
-        message: "error while creating topic , plz try again",
-      });
-    }
-    res.json({ success: true, message: "message", data: "data" });
-  } catch (error) {
-    console.log("Error in note controller --->", error);
+  if (!processedData.success) {
+    throw ZodDataSafeParse(processedData);
   }
-};
+
+  let subject = await noteService.createTopic(processedData.data);
+
+  if (!subject) {
+    return res.status(400).json({
+      success: false,
+      message: "error while creating topic , plz try again",
+    });
+  }
+  res.json({ success: true, message: "message", data: "data" });
+})
+
+export const DeleteTopic = asyncHandler(async (req: any, res: any) => {
+  const { id } = req.query;
+
+  if (!id && typeof id != "string") {
+    return res.status(400).json({
+      success: false,
+      message: " topic id required ",
+    });
+  }
+
+  let topic = await noteService.deleteTopic(id);
+
+  if (!topic) {
+    return res.status(400).json({
+      success: false,
+      message: "error while deleting topic , plz try again",
+    });
+  }
+  res.json({ success: true, message: "Topic delete processed ", data: id });
+});
 
 export const DeleteSubject = asyncHandler(async (req: any, res: any) => {
   const { id } = req.query;
@@ -127,7 +117,7 @@ export const DeleteSubject = asyncHandler(async (req: any, res: any) => {
   if (!id && typeof id != "string") {
     return res.status(400).json({
       success: false,
-      message: "notification catch ,but id not recived ",
+      message: "subject id required ",
     });
   }
 
@@ -157,63 +147,51 @@ export const CreateSubject = asyncHandler(async (req: any, res: any) => {
   res.json({ success: true, message: "message", data: "data" });
 });
 
-export const getAllVersionOfNote = async (req: any, res: any) => {
-  try {
-    const { topic } = req.params;
+export const getAllVersionOfNote = asyncHandler(async (req: any, res: any) => {
+  const { topic } = req.params;
 
-    if (!topic) throw new Error("topic is missing");
+  if (!topic) throw new Error("topic is missing");
 
-    let versions = await noteService.getAllVersionOfNote(topic);
+  let versions = await noteService.getAllVersionOfNote(topic);
 
-    res.json({
-      success: true,
-      message: `all version of ${topic} `,
-      data: versions,
+  res.json({
+    success: true,
+    message: `all version of ${topic} `,
+    data: versions,
+  });
+})
+
+export const getAllNoteTopic = asyncHandler(async (req: any, res: any) => {
+  const { slug } = req.params;
+
+  if (!slug) throw new Error("subject is missing");
+
+  let topicdatas = await noteService.getAllNoteTopic(slug);
+
+  if (!topicdatas) {
+    return res.status(400).json({
+      success: false,
+      message: "error while getting Topics , plz try again",
     });
-  } catch (error) {
-    console.log("Error in note controller --->", error);
   }
-};
 
-export const getAllNoteTopic = async (req: any, res: any) => {
-  try {
-    const { slug } = req.params;
+  res.json({ success: true, message: "Topics", data: topicdatas });
+})
 
-    if (!slug) throw new Error("subject is missing");
+export const getAllNoteSubjectByExam = asyncHandler(async (req: any, res: any) => {
+  const { exam } = req.query;
 
-    let topicdatas = await noteService.getAllNoteTopic(slug);
+  let subjectdatas = await noteService.getAllNoteSubjectByExam(exam as string);
 
-    if (!topicdatas) {
-      return res.status(400).json({
-        success: false,
-        message: "error while getting Topics , plz try again",
-      });
-    }
-
-    res.json({ success: true, message: "Topics", data: topicdatas });
-  } catch (error) {
-    console.log("Error in note controller --->", error);
+  if (!subjectdatas) {
+    return res.status(400).json({
+      success: false,
+      message: "error while getting Subject , plz try again",
+    });
   }
-};
 
-export const getAllNoteSubjectByExam = async (req: any, res: any) => {
-  try {
-    const { exam } = req.query;
-
-    let subjectdatas = await noteService.getAllNoteSubjectByExam(exam as string);
-
-    if (!subjectdatas) {
-      return res.status(400).json({
-        success: false,
-        message: "error while getting Subject , plz try again",
-      });
-    }
-
-    res.json({ success: true, message: "Subjects", data: subjectdatas });
-  } catch (error) {
-    console.log("Error in note controller --->", error);
-  }
-};
+  res.json({ success: true, message: "Subjects", data: subjectdatas });
+})
 
 export const getAllNoteSubjectForUser = asyncHandler(async (req: any, res: any) => {
 
@@ -241,41 +219,33 @@ export const getAllNoteSubjectForUser = asyncHandler(async (req: any, res: any) 
 })
 
 
-export const getTopic = async (req: any, res: any) => {
-  try {
-    const topicid = req.query.topicid;
+export const getTopic = asyncHandler(async (req: any, res: any) => {
+  const topicid = req.query.topicid;
 
-    let note = await noteService.getTopic(topicid);
+  let note = await noteService.getTopic(topicid);
 
-    if (!note) {
-      return res.status(400).json({
-        success: false,
-        message: "error while getting note Content , plz try again",
-      });
-    }
-
-    res.json({ success: true, message: "message", data: note });
-  } catch (error) {
-    console.log("Error in note controller --->", error);
+  if (!note) {
+    return res.status(400).json({
+      success: false,
+      message: "error while getting note Content , plz try again",
+    });
   }
-};
 
-export const getNote = async (req: any, res: any) => {
-  try {
-    const { subject, topic } = req.params;
-    if (!subject || !topic) throw new Error("subject or topic missing");
+  res.json({ success: true, message: "message", data: note });
+})
 
-    let note = await noteService.getNote(subject, topic);
+export const getNote = asyncHandler(async (req: any, res: any) => {
+  const { subject, topic } = req.params;
+  if (!subject || !topic) throw new Error("subject or topic missing");
 
-    if (!note) {
-      return res.status(400).json({
-        success: false,
-        message: "error while getting note Content , plz try again",
-      });
-    }
+  let note = await noteService.getNote(subject, topic);
 
-    res.json({ success: true, message: "message", data: note });
-  } catch (error) {
-    console.log("Error in note controller --->", error);
+  if (!note) {
+    return res.status(400).json({
+      success: false,
+      message: "error while getting note Content , plz try again",
+    });
   }
-};
+
+  res.json({ success: true, message: "message", data: note });
+})

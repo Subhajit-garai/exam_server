@@ -168,6 +168,22 @@ export class NoteService {
         return subject;
     }
 
+    async deleteTopic(id: string) {
+        let isExist = await prisma.topic.findFirst({
+            where: {
+                id: id,
+            },
+        });
+
+        if (!isExist) throw new Error("Topic is not present ");
+
+        let topic = await prisma.topic.delete({
+            where: {
+                id: id,
+            },
+        });
+        return topic;
+    }
     async deleteSubject(id: string) {
         let isExist = await prisma.subject.findFirst({
             where: {

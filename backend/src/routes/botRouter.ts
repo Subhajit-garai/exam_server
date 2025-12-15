@@ -39,6 +39,7 @@ botRouter.get("/syllabus/exam/get", botauthenticate, getSyllabusDataForExamCreat
 
 
 //questions
+botRouter.post("/question/processing/get/simple", getQuestionViaIdsforProcessing); //remove 
 botRouter.post("/question/processing/get", botauthenticate, getQuestionViaIdsforProcessing);
 botRouter.post("/question/processed/add", botauthenticate, AddProcessingQuestions);
 botRouter.get("/questions/info/get", botauthenticate, getQuestionViaIds);

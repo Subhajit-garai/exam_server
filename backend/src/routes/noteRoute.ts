@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { CreateSubject, CreateTopic, dislike, getTopic, getAllNoteSubjectByExam, getAllNoteTopic, getAllVersionOfNote, getNote, like, UpdateContentOfTopic, DeleteSubject } from "../controllers/note.controller.js";
+import { CreateSubject, CreateTopic, dislike, getTopic, getAllNoteSubjectByExam, getAllNoteTopic, getAllVersionOfNote, getNote, like, UpdateContentOfTopic, DeleteSubject, DeleteTopic } from "../controllers/note.controller.js";
 import { isAdmin } from "@repo/lib/security/auth.js";
 
 export const noteAdminRouter = Router();
@@ -17,8 +17,7 @@ notePublicRouter.get("/readCount") // Is this a valid route handler? It was inco
 // Admin Routes (Protected)
 noteAdminRouter.get("/getversionlist/:subject/:topic", getAllVersionOfNote)
 noteAdminRouter.post("/subject/create", isAdmin, CreateSubject)
-noteAdminRouter.delete("/subject/delete", isAdmin, DeleteSubject)
 noteAdminRouter.post("/topic/create", isAdmin, CreateTopic)
-noteAdminRouter.delete("/topic/delete", isAdmin, CreateTopic)
+noteAdminRouter.delete("/subject/delete", isAdmin, DeleteSubject)
+noteAdminRouter.delete("/topic/delete", isAdmin, DeleteTopic)
 noteAdminRouter.put("/updatecontent", UpdateContentOfTopic)
-

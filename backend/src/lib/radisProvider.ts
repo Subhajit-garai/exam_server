@@ -16,8 +16,7 @@ export class RedisProvider {
 
   private constructor() {
 
-    this.redisClient = new Redis(process.env.REDIS_URL as string);
-
+    this.redisClient = new Redis(process.env.REDIS_URL!);
     this.redisClient.on("error", (err) =>
       console.log("Redis Client Error", err)
     );

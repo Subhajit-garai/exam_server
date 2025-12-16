@@ -21,7 +21,6 @@ export class RedisProvider {
       console.log("Redis Client Error", err)
     );
 
-    // this.redisClient.connect();
   }
 
   getclient(): Redis {

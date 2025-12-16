@@ -1,5 +1,5 @@
 import prisma from "@repo/db/index.js";
-import { purchaseType } from "@repo/prisma/enums";
+import { purchaseType } from "@repo/prisma/enums.js";
 
 export class SubscriptionService {
     async createSubscription(data: any) {

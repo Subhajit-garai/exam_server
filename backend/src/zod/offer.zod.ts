@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { purchaseType } from "@repo/prisma/enums";
+import { purchaseType } from "@repo/prisma/enums.js";
 
 export const offerInputZodSchema = z.object({
     title: z.string().min(1, "Title is required"),

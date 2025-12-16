@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { purchaseType, primeStatus } from "@repo/prisma/enums";
+import { purchaseType, primeStatus } from "@repo/prisma/enums.js";
 
 export const subscriptionInputZodSchema = z.object({
     title: z.string().min(1, "Title is required"),

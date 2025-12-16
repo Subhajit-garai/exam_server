@@ -6,6 +6,8 @@ import { events } from "../types/EventTypes.js";
 import { isAdmin } from "./auth.js";
 import { setCookie } from "../token.js";
 import { debuglog } from "../helper/debugLog.js";
+import { asyncHandler } from "../helper/asyncHandler.js";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
 
 const settingsSchema = z.object({
   status: z.string(),
@@ -92,6 +94,26 @@ export const IsUserSignUpOpen = async (req: any, res: any, next: () => any) => {
     });
   }
 };
+
+export const IsCouponOpen = asyncHandler(async (req: any, res: any, next: () => any) => {
+  let isLoginOpen = await prisma.appConfig.findFirst({
+    where: {
+      feature: "use-coupon",
+    },
+    select: {
+      settings: true,
+    },
+  });
+
+  const parsedSettings = settingsSchema.safeParse(isLoginOpen?.settings);
+
+  if (parsedSettings.success && parsedSettings.data.status === "open") {
+    next();
+  } else {
+    throw new CustomError("Coupon service is closed for now", 401);
+  }
+})
+
 
 export const IsUserLoginOpen = async (req: any, res: any, next: () => any) => {
   try {

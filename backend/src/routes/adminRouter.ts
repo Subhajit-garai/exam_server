@@ -14,6 +14,8 @@ import { examAdminRouter } from "./examRoutes.js";
 import { botQuizConfigAdminRouter } from "./botQuizConfig.routes.js";
 import { offerRouter } from "./offer.routes.js";
 import { subscriptionRouter } from "./subscription.routes.js";
+import { dashboardRouter } from "./dashboard.routes.js";
+import { couponRouter } from "./coupon.routes.js";
 
 
 
@@ -44,3 +46,5 @@ adminRouter.use("/exam", examAdminRouter)
 adminRouter.use("/quizconfig", botQuizConfigAdminRouter)
 adminRouter.use("/offer", offerRouter)
 adminRouter.use("/subscription", subscriptionRouter)
+adminRouter.use("/dashboard", dashboardRouter)
+adminRouter.use("/coupon", couponRouter)

@@ -163,14 +163,14 @@ export class QuestionService {
         }
 
         let {
-            Title,
+            title,
             options,
             ans,
             format,
             category,
             difficulty,
             isMultiple,
-            Explanation,
+            explanation,
             extra,
             subject,
             topic,
@@ -214,7 +214,7 @@ export class QuestionService {
         }
         let question = await prisma.question.create({
             data: {
-                title: Title,
+                title: title,
                 options: options,
                 extra: extra,
                 ans: ans,
@@ -227,7 +227,7 @@ export class QuestionService {
                 ...(status ? { status: status } : { status: "Processing" }),
                 ...(history ? { history: history } : { history: [""] }),
                 ...(links ? { links: links } : { links: [""] }),
-                explanation: Explanation,
+                explanation: explanation,
                 is_multiple_ans: isMultiple,
                 difficulty: difficulty as diffcultlevel,
                 created_by: user.id,

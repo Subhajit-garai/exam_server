@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { isAdmin } from "@repo/lib/security/auth.js";
 import { updateAppConfig, SendAppConfig, getAllbotUser } from "../controllers/settings.controller.js";
 import { addbotToken, createNewBot, setQuizTopic, updateBotWebhook } from "@/controllers/bot/bot.admin.controller.js";
 import { examTimelineAdminRouter } from "./examTimeline.routes.js";
@@ -13,6 +12,8 @@ import { IssueAdminRouter } from "./IssueRouter.js";
 import { noteAdminRouter } from "./noteRoute.js";
 import { examAdminRouter } from "./examRoutes.js";
 import { botQuizConfigAdminRouter } from "./botQuizConfig.routes.js";
+import { offerRouter } from "./offer.routes.js";
+import { subscriptionRouter } from "./subscription.routes.js";
 
 
 
@@ -41,3 +42,5 @@ adminRouter.use("/issue", IssueAdminRouter)
 adminRouter.use("/note", noteAdminRouter)
 adminRouter.use("/exam", examAdminRouter)
 adminRouter.use("/quizconfig", botQuizConfigAdminRouter)
+adminRouter.use("/offer", offerRouter)
+adminRouter.use("/subscription", subscriptionRouter)

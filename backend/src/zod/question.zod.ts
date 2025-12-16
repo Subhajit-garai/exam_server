@@ -3,16 +3,17 @@ import z from "zod";
 
 
 export type questionInput_type = z.infer<typeof questionInputZodSchema>;
+
 export const questionInputZodSchema = z.object({
-  Title: z.string(),
+  title: z.string().min(1, "question title is required"),
   examname: z.string(),
-  Explanation: z.string(),
+  explanation: z.string(),
   options: z.array(z.string()),
   ans: z.array(z.string()),
   isMultiple: z.boolean().default(false),
   category: z.string(),
-  topic: z.string(),
-  subject: z.string(),
+  topic: z.string().min(1, "topic name is required"),
+  subject: z.string().min(1, "subject name is required"),
   history: z.array(z.string()).optional().default([""]), // new
   links: z
     .string()

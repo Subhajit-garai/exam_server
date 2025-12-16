@@ -86,4 +86,6 @@ jobs:
             --env-file /home/ubuntu/deploy/.worker.env \
             $IMAGE
 
+            sleep 20
+
             sudo docker system prune -f

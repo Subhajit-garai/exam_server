@@ -6,6 +6,7 @@ import {
     isUserHavePrime,
     ProvideSubcriptionTouser,
 } from "@repo/lib/helper/payment.js";
+import { couponService } from "@/services/coupon.service.js";
 
 export class PaymentService {
     private async isPaymentProcessed(paymentId: string) {
@@ -17,7 +18,7 @@ export class PaymentService {
         return !!payment; // Return true if payment already processed
     }
 
-    async checkoutSubcription(userId: string, plan: primeStatus, amount: string, type: string) {
+    async checkoutSubcription(userId: string, plan: primeStatus, amount: string, type: string, couponCode?: string) {
         if (type !== "SUBSCRIPTION")
             throw Error("we can not porccesd with wornd plan / payment ");
 
@@ -40,8 +41,27 @@ export class PaymentService {
         });
         if (!tierInfo) throw Error(" We are not provided , given / seleced Plan");
 
+        let { price } = isPlanExist
+
+        console.log("paln price ", price);
+
+        let finalAmount = Number(amount);
+
+        if (finalAmount !== (price * 100)) {
+            throw Error(" Paln value not matched")
+        }
+
+
+        let couponId = undefined;
+
+        if (couponCode) {
+            const couponResult = await couponService.validateAndApplyCoupon(couponCode, userId, finalAmount);
+            finalAmount = couponResult.finalAmount;
+            couponId = couponResult.couponId;
+        }
+
         const options = {
-            amount: Number(amount) * 100,
+            amount: finalAmount,
             currency: "INR",
             notes: {
                 plan: plan,
@@ -58,13 +78,14 @@ export class PaymentService {
                 subcription: plan,
                 type: type,
                 userId: userId,
+                couponId: couponId,
             },
         });
 
         return order;
     }
 
-    async checkoutToken(userId: string, plan: string, amount: string, type: string) {
+    async checkoutToken(userId: string, plan: string, amount: string, type: string, couponCode?: string) {
         if (type !== "TOKEN")
             throw Error("we can not porccesd with wornd plan / payment ");
 
@@ -78,12 +99,27 @@ export class PaymentService {
         if (!isPlanExist)
             throw Error("we can not porccesd with wrong plan / payment ");
 
-        let { token } = isPlanExist;
+        let { token, price } = isPlanExist;
 
         if (!token) throw Error("Invalid token ! , contact admin");
 
+        let finalAmount = Number(amount);
+
+
+        if (finalAmount !== (price * 100)) {
+            throw Error(" Paln value not matched")
+        }
+
+        let couponId = undefined;
+
+        if (couponCode) {
+            const couponResult = await couponService.validateAndApplyCoupon(couponCode, userId, finalAmount);
+            finalAmount = couponResult.finalAmount;
+            couponId = couponResult.couponId;
+        }
+
         const options = {
-            amount: Number(amount) * 100,
+            amount: finalAmount,
             currency: "INR",
             notes: {
                 token: token.toString(),
@@ -98,6 +134,7 @@ export class PaymentService {
                 amount: parseInt(order.amount as string),
                 token: token,
                 userId: userId,
+                couponId: couponId,
             },
         });
 
@@ -146,11 +183,27 @@ export class PaymentService {
                                 select: {
                                     userId: true,
                                     subcription: true,
+                                    couponId: true,
                                 },
                             });
 
                             let userid = user?.userId;
                             let subcription = user?.subcription;
+                            let couponId = user?.couponId;
+
+                            // If coupon was used, record usage
+                            if (couponId) {
+                                await prisma.coupon.update({
+                                    where: { id: couponId },
+                                    data: { usedCount: { increment: 1 } }
+                                });
+                                await prisma.couponUsage.create({
+                                    data: {
+                                        userId: userid,
+                                        couponId: couponId,
+                                    }
+                                });
+                            }
                             // Database update here
 
                             await tx.payment.create({
@@ -181,11 +234,27 @@ export class PaymentService {
                                 select: {
                                     userId: true,
                                     token: true,
+                                    couponId: true,
                                 },
                             });
 
                             let userid = user?.userId;
                             let token = user?.token;
+                            let couponId = user?.couponId;
+
+                            // If coupon was used, record usage
+                            if (couponId) {
+                                await prisma.coupon.update({
+                                    where: { id: couponId },
+                                    data: { usedCount: { increment: 1 } }
+                                });
+                                await prisma.couponUsage.create({
+                                    data: {
+                                        userId: userid,
+                                        couponId: couponId,
+                                    }
+                                });
+                            }
                             // Database update here
 
                             await tx.payment.create({

@@ -1,24 +1,29 @@
 import {
   subcriptionPurchase_zod_schema,
   tokenPurchase_zod_schema,
+  applyCouponZodSchema,
 } from "../zod/payment.zod.js"
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 import { PaymentService } from "../services/payment.service.js";
+import { couponService } from "@/services/coupon.service.js";
 
 const paymentService = new PaymentService();
 
-export const ApplyCupone = async (req: any, res: any) => {
-  try {
-    res.status(200).json({ success: true, message: "success", data: {} });
-  } catch (error) {
-    console.log("error in ApplyCupone ", error);
-    return res.status(400).json({
-      success: false,
-      message: "server Error",
-    });
+export const ApplyCupone = asyncHandler(async (req: any, res: any) => {
+  let processedData = applyCouponZodSchema.safeParse(req.body);
+
+  if (!processedData.success) {
+    throw ZodDataSafeParse(processedData);
   }
-};
+
+  const { couponCode, orderAmount } = processedData.data;
+  const userId = req.user; // Provided by auth middleware
+
+  const result = await couponService.validateAndApplyCoupon(couponCode, userId, orderAmount);
+
+  return res.status(200).json({ success: true, message: "Coupon applied", data: result });
+});
 
 export const checkoutSubcription = asyncHandler(async (req: any, res: any) => {
   // let userid = req.user;
@@ -27,9 +32,9 @@ export const checkoutSubcription = asyncHandler(async (req: any, res: any) => {
   if (!processedData.success) {
     throw ZodDataSafeParse(processedData);
   }
-  let { plan, amount, type } = processedData.data;
+  let { plan, amount, type, couponCode } = processedData.data;
 
-  const order = await paymentService.checkoutSubcription(req.user, plan, amount, type);
+  const order = await paymentService.checkoutSubcription(req.user, plan, amount, type, couponCode);
 
   res.status(200).json({
     success: true,
@@ -44,9 +49,9 @@ export const checkoutToken = asyncHandler(async (req: any, res: any) => {
   if (!processedData.success) {
     throw ZodDataSafeParse(processedData);
   }
-  let { plan, amount, type } = processedData.data;
+  let { plan, amount, type, couponCode } = processedData.data;
 
-  const order = await paymentService.checkoutToken(userid, plan, amount, type);
+  const order = await paymentService.checkoutToken(userid, plan, amount, type, couponCode);
 
   res.status(200).json({
     success: true,

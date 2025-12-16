@@ -10,8 +10,8 @@ model subcriptionOffers {
   target_exam_id String?
   tierId         String?
   time           String? // if subcription
-  offerActive    String[]     @default([])
-  offerInActive  String[]     @default([])
+  offerActive    String[]     @default([]) // explan what included 
+  offerInActive  String[]     @default([]) // it explan what not included
   btncolor       String       @default("")
   created_by     String?
   created_at     DateTime     @default(now())

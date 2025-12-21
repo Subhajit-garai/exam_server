@@ -35,14 +35,14 @@ model QuizProgress {
 
 // New Model: Track individual topic engagement
 model UserTopicProgress {
-    id      String @id @default(cuid())
-    userId  String
-    topicId String
-
+    id         String         @id @default(cuid())
+    userId     String
+    topicId    String
     // Reading metrics
     timeSpent  Int            @default(0) // in seconds
     status     ProgressStatus @default(NOT_STARTED)
     lastReadAt DateTime       @default(now())
+    // Daily Tracking: { "YYYY-MM-DD": seconds }
 
     // Relations
     user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)

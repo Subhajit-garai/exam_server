@@ -110,4 +110,10 @@ Gets all exam categories.
 *   **URL**: `/exam/categorys/get`
 *   **Method**: `GET`
 
+### 18. Progress Tracking
+See [`progress.md`](progress.md) for full details.
+*   **Track Progress**: `POST /api/v1/progress/track`
+*   **Update Status**: `PUT /api/v1/progress/status`
+*   **Get Syllabus Stats**: `GET /api/v1/progress/syllabus/:examYearId`
+
 <!-- Note: Activity and Profile sub-routes are documented separately or inline if small -->

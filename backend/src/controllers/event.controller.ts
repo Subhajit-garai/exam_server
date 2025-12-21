@@ -36,3 +36,23 @@ export const getAllEvents = async (req: any, res: any) => {
     res.status(404).json({ success: false, message: "server error" });
   }
 };
+
+export const updateEvent = asyncHandler(async (req: any, res: any) => {
+  const { id } = req.params;
+  let eventdata = eventSchema.safeParse(req.body);
+
+  if (!eventdata.success) {
+    throw ZodDataSafeParse(eventdata);
+  }
+
+  let responce = await eventService.updateEvent(id, eventdata.data);
+
+  res.json({ success: true, message: "event updated", data: responce });
+});
+
+export const deleteEvent = asyncHandler(async (req: any, res: any) => {
+  const { id } = req.params;
+  let responce = await eventService.deleteEvent(id);
+
+  res.json({ success: true, message: "event deleted", data: responce });
+});

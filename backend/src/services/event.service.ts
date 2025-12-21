@@ -29,4 +29,38 @@ export class EventService {
         }
         return allEvents;
     }
+
+    async updateEvent(id: string, data: any) {
+        const { type, description, conditions, payload, created_by, runs, run_at, isActive } = data;
+
+        const response = await prisma.events.update({
+            where: { id },
+            data: {
+                type,
+                description,
+                conditions,
+                payload,
+                created_by,
+                runs,
+                run_at,
+                isActive
+            },
+        });
+
+        if (!response) {
+            throw Error("server error, event not updated");
+        }
+        return response;
+    }
+
+    async deleteEvent(id: string) {
+        const response = await prisma.events.delete({
+            where: { id },
+        });
+
+        if (!response) {
+            throw Error("server error, event not deleted");
+        }
+        return response;
+    }
 }

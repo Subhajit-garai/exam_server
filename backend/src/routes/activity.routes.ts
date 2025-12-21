@@ -19,5 +19,5 @@ activityRouter.get("/leaderboard", getLeaderboard);
 activityRouter.get("/stats", getUserStats);
 // Recent Activity Routes
 activityRouter.post("/log", logActivity);
-activityRouter.get("/history/recent", getRecentActivities);
+activityRouter.get("/recent", getRecentActivities);
 activityRouter.use("/leaderboard", leaderboardRouter);

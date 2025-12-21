@@ -28,6 +28,7 @@ import { quizRouter } from "./routes/quiz.routes.js";
 import { questionProcessingPublicRouter } from "./routes/questionprocessing.routes.js";
 import { statsRouter } from "./routes/statsRoutes.js";
 import { categoryPublicRouter } from "./routes/category.routes.js";
+import { progressRouter } from "./routes/progress.routes.js";
 
 
 
@@ -100,6 +101,7 @@ app.use("/api/v1/exam", examPublicRouter);
 app.use("/api/v1/question", questionPublicRouter);
 app.use("/api/v1/quiz", quizRouter);
 app.use("/api/v1/question-processing", questionProcessingPublicRouter);
+app.use("/api/v1/progress", progressRouter);
 
 app.use("/api/v1/admin", isAdmin, adminRouter);
 

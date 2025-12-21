@@ -1,4 +1,10 @@
-import { ExamType, SocialPlatform, Visibility, syllabusType } from "@repo/prisma/client.js";
+import {
+    ExamType,
+    SocialPlatform,
+    Visibility,
+    syllabusType,
+} from "@repo/prisma/client.js";
+import { RedisProvider } from "@/lib/radisProvider.js";
 import prisma from "@repo/db/index.js";
 import { ExamManager } from "@repo/lib/manager/examManager.js";
 import { ExamMetaData } from "@repo/lib/types.js";

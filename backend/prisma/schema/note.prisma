@@ -100,6 +100,7 @@ model Topic {
   Question           Question[]
   QuestionProcessing QuestionProcessing[]
   TopicsSubjectMap   TopicsSubjectMap[]
+  UserTopicProgress  UserTopicProgress[]
 
   @@unique([subjectId, order])
   @@index([subjectId])

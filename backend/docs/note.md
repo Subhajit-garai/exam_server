@@ -85,3 +85,8 @@ Updates content of a topic.
 *   **Method**: `PUT`
 *   **Body**: JSON object matching `noteUpdate_schema`.
 *   **Response**: Update status.
+
+## Progress Integration
+Notes/Topics now support progress tracking.
+*   Frontend should call `/api/v1/progress/track` when a user reads a topic.
+*   See [`progress.md`](progress.md) for details.

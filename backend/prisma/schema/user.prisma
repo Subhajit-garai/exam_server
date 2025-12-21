@@ -44,6 +44,7 @@ model User {
   userStreaks                 UserStreak[]
   userBadges                  UserBadge[]
   activityLeaderboards        ActivityLeaderboard[]
+  userTopicProgresses         UserTopicProgress[]
 
   @@index([role])
 }
@@ -69,41 +70,6 @@ model prime {
   expiry      DateTime    @default(now())
   User        User        @relation(fields: [userid], references: [id])
   updatedAt   DateTime    @default(now()) @updatedAt
-}
-
-model ExamProgress {
-  id                      String    @id @default(cuid())
-  userId                  String    @unique
-  attended                Int       @default(0)
-  totalQuestionsAttempted Int       @default(0)
-  totalCorrect            Int       @default(0)
-  accuracy                Float     @default(0.0)
-  lastExamId              String?
-  lastExamDate            DateTime?
-  lastRank                Int       @default(0)
-  bestRank                Int       @default(0)
-  User                    User      @relation(fields: [userId], references: [id])
-}
-
-model DppProgress {
-  id              String    @id @default(cuid())
-  userId          String    @unique
-  solvedCount     Int       @default(0) // Total DPPs fully solved
-  questionsSolved Int       @default(0)
-  lastDppId       String?
-  lastDppDate     DateTime?
-  currentStreak   Int       @default(0) // Specific streak for DPPs if needed
-  User            User      @relation(fields: [userId], references: [id])
-}
-
-model QuizProgress {
-  id           String    @id @default(cuid())
-  userId       String    @unique
-  attended     Int       @default(0)
-  totalScore   Int       @default(0)
-  lastQuizId   String?
-  lastQuizDate DateTime?
-  User         User      @relation(fields: [userId], references: [id])
 }
 
 model balance {
@@ -156,3 +122,5 @@ enum UserRole {
   Tutor // have more privilage than normal user but less than Admin
   Bot
 }
+
+//progress

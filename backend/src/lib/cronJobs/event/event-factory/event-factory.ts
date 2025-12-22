@@ -1,6 +1,7 @@
 import { events } from "@/lib/types/EventTypes.js";
 import { BaseEvent } from "../bace-event.js";
 import { create_exam_event } from "../event_statergis/create-exam-event.js";
+import { create_dpp_event } from "../event_statergis/create-dpp-event.js";
 
 import { send_notification_event } from "../event_statergis/send-notification-event.js";
 import { ActivityLeaderboardEvent } from "../event_statergis/activity-leaderboard-event.js";
@@ -11,6 +12,8 @@ export class EventFactory {
     switch (event.type) {
       case "CREATE_EXAM":
         return new create_exam_event(event);
+      case "CREATE_DPP":
+        return new create_dpp_event(event);
       case "SEND_MESSAGE":
         return new send_notification_event(event);
       case "ACTIVITY_LEADERBOARD_ARCHIVE":

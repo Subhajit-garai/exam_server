@@ -1,0 +1,248 @@
+import { ExamManager } from "@/lib/manager/examManager.js";
+import { BaseEvent } from "../bace-event.js";
+import prisma from "@/db/index.js";
+import { event_exam_data_type } from "@/lib/types/EventTypes.js";
+import dayjs from "dayjs";
+
+export class create_dpp_event extends BaseEvent {
+
+    async push(): Promise<void> {
+        console.log("Running create_dpp_event with data:", this.event.payload);
+
+        try {
+            // here i push task in task queue
+            let {
+                time_limit,
+                count,
+                title,
+                exam_pattern,
+                duration,
+                starttime,
+                jointime,
+                examname,
+                Visibility,
+                category,
+                examtype,
+                gap,
+            } = this.event.payload as event_exam_data_type;
+            // here data in today
+
+            let new_exam_names: string[][] = [];
+            let new_exam_number;
+            let create_exam_count_for_date: number[] = [];
+            let dates: Date[] = [];
+            const em = ExamManager.getInstance();
+
+            console.log("---> creating new DPP");
+
+
+
+            let user = await prisma.user.findFirst({
+                where: {
+                    email: "bot1@exambuddys.in",
+                },
+                select: {
+                    id: true,
+                },
+            });
+
+            // console.log("user: ", user);
+
+            if (time_limit) {
+                let days_count = 0;
+                if (time_limit == "t") {
+                    days_count = 1;
+                } else {
+                    days_count = parseInt(time_limit.split("+")[1]) + 1;
+                }
+
+                let gap_days = 1;
+                if (gap) {
+                    gap_days = parseInt(gap.split(' ')[0]);
+                }
+
+                for (let index = 0; index < days_count; index++) {
+                    let processing_day = index * gap_days;
+                    console.log("processing_day: ", processing_day);
+
+                    let day = dayjs().add(processing_day, "day");
+                    console.log("day: ", day.format("DD-MM-YYYY"));
+
+                    let isExamExaist = await prisma.exam.findMany({
+                        where: {
+                            created_by: user?.id,
+                            examtype: "Dpp",
+                            date: {
+                                gte: day.startOf("day").toDate(), // Start of the day (00:00:00)
+                                lt: day.endOf("day").toDate(), // End of the day (23:59:59)
+                            },
+                        },
+                        select: {
+                            id: true,
+                        },
+                    });
+
+
+                    if (isExamExaist.length > 0) {
+                        // some exam has already been created
+                        if (isExamExaist.length >= parseInt(count)) {
+                            console.log("DPP already exist for this date");
+                        } else {
+                            // some exam has already  created so reduced exam creaction number
+                            let dif = parseInt(count) - isExamExaist.length;
+                            create_exam_count_for_date.push(dif);
+                            dates.push(day.toDate());
+                        }
+                    } else {
+                        // no exam exists for this date create  new ones
+                        create_exam_count_for_date.push(parseInt(count));
+                        dates.push(day.toDate());
+                    }
+
+
+                }
+
+            }
+
+
+            if (!create_exam_count_for_date.length) {
+                return console.log(
+                    "all DPP creation done , no need to create new ones"
+                );
+            }
+
+            let subject = "Unknown"; // Default subject
+
+            if (!exam_pattern) {
+                console.log("invalid exam_pattern id");
+                let get_exam_patterns = await prisma.exam_pattern.findMany({
+                    where: {
+                        title: {
+                            startsWith: "JECA@DPP@PATTERN", // JECA@DPP@PATTERN@OS
+                        },
+                    },
+                    select: {
+                        id: true,
+                        title: true,
+                    },
+                });
+
+                if (get_exam_patterns.length > 0) {
+                    let num = Math.floor(Math.random() * get_exam_patterns.length);
+                    exam_pattern = get_exam_patterns[num].id;
+                    // Extract subject from title: JECA@DPP@PATTERN@OS -> OS
+                    let titleParts = get_exam_patterns[num].title?.split("@");
+                    if (titleParts && titleParts.length >= 4) {
+                        subject = titleParts[3];
+                    }
+                } else {
+                    throw new Error(
+                        "Exam pattern not valid and given exampattern also not valid , add correct name "
+                    );
+                }
+            } else {
+                // Pattern provided, extract subject from it
+                let get_exam_patterns = await prisma.exam_pattern.findFirst({
+                    where: {
+                        id: exam_pattern
+                    },
+                    select: {
+                        id: true,
+                        title: true,
+                    },
+                });
+
+                if (!get_exam_patterns) throw new Error("Exam pattern not found");
+
+                let titleParts = get_exam_patterns.title?.split("@");
+
+                if (titleParts && titleParts.length >= 4) {
+                    subject = titleParts[3];
+                }
+            }
+
+
+
+
+            let lastExam = await prisma.exam.findFirst({
+                where: {
+                    name: {
+                        startsWith: `DPP@${subject}@`,
+                    },
+                },
+                orderBy: {
+                    created_at: "desc",
+                },
+                select: {
+                    name: true,
+                    created_at: true,
+                    created_by: true,
+                },
+                take: 1,
+            });
+
+
+            if (title === "autoincrement") {
+                let new_exam_number_str = lastExam?.name?.split("@")[2]; // DPP@OS@1 -> 1
+                if (!new_exam_number_str) {
+                    new_exam_number_str = "0";
+                }
+                new_exam_number = parseInt(new_exam_number_str as string) + 1;
+                for (
+                    let index = 0;
+                    index < create_exam_count_for_date.length;
+                    index++
+                ) {
+                    let temp_name_array: string[] = [];
+                    for (let idx = 0; idx < create_exam_count_for_date[index]; idx++) {
+                        temp_name_array.push(`DPP@${subject}@${new_exam_number}`);
+                        new_exam_number++;
+                    }
+                    new_exam_names.push(temp_name_array);
+                }
+            }
+
+            for (let index = 0; index < create_exam_count_for_date.length; index++) {
+                for (let idx = 0; idx < create_exam_count_for_date[index]; idx++) {
+                    let response = await prisma.exam.create({
+                        data: {
+                            name: new_exam_names[index][idx],
+
+                            Visibility: Visibility,
+                            examtype: examtype,
+                            starttime: starttime ? starttime[idx] : "08:00 am",
+                            jointime: jointime ? jointime : "00:15 m",
+                            duration: duration ? duration : "02:00 h",
+                            date: dates[index],
+                            exam_pattern: {
+                                connect: { id: exam_pattern },
+                            },
+                            User: {
+                                connect: { id: user?.id }, // createdby
+                            },
+                            ContestRegister: {
+                                create: {},
+                            },
+                        },
+                    });
+
+                    //   // send it into queue to process question
+                    let { id } = response;
+                    let Notifystatus = await em.getRedisClient().push({
+                        type: "CREATE_EXAM",
+                        id: id,
+                        payload: {
+                            examid: id,
+                            userid: user?.id as string,
+                            examtype: response.examtype,
+                        },
+                        category: "JECA",
+                        variant: response.examtype,
+                    });
+                }
+            }
+        } catch (error) {
+            console.log("error in task manager handleAns ", error);
+        }
+    }
+}

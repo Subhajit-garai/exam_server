@@ -3,44 +3,47 @@ import { RedisProvider } from "@/lib/radisProvider";
 import { network } from "@/utils/network";
 import { runWorker } from "./tasks/worker-runner";
 
-let CREATE_EXAM_TASK: Task = {
-  type: "CREATE_EXAM",
-  id: "cmjgn8tmd000bn8buxruxtn1v",
-  payload: {
-    examid: "cmjgn8tmd000bn8buxruxtn1v",
-    userid: "cmiumcgir0001jwbukh9xs97h",
-    examtype: "Test",
-  },
-  variant: "Test",
-  category: "JECA",
-};
+// demo structure of tasks
 
-let CREATE_SCORE: Task = {
-  type: "CREATE_SCORE",
-  id: "cmjgn8tmd000bn8buxruxtn1v",
-  payload: {
-    examid: "cmjgn8tmd000bn8buxruxtn1v",
-    userid: "cmiumcgir0001jwbukh9xs97h",
-  },
-};
+// let CREATE_EXAM_TASK: Task = {
+//   type: "CREATE_EXAM",
+//   id: "cmjgn8tmd000bn8buxruxtn1v",
+//   payload: {
+//     examid: "cmjgn8tmd000bn8buxruxtn1v",
+//     userid: "cmiumcgir0001jwbukh9xs97h",
+//     examtype: "Test",
+//   },
+//   variant: "Test",
+//   category: "JECA",
+// };
 
-let PROCESS_Ans: Task = {
-  type: "ANS_PROCESSING",
-  id: "cmhq265in0000buu0esuysjc8",
-  payload: {
-    examid: "cmhq265in0000buu0esuysjc8",
-    userid: "cmhlkoklm0005bubkzmbxyks7",
-    part: "part1",
-    ans: ["3"],
-    ismultiple: false,
-    number: "1",
-  },
-};
+// let CREATE_SCORE: Task = {
+//   type: "CREATE_SCORE",
+//   id: "cmjgn8tmd000bn8buxruxtn1v",
+//   payload: {
+//     examid: "cmjgn8tmd000bn8buxruxtn1v",
+//     userid: "cmiumcgir0001jwbukh9xs97h",
+//   },
+// };
+
+// let PROCESS_Ans: Task = {
+//   type: "ANS_PROCESSING",
+//   id: "cmhq265in0000buu0esuysjc8",
+//   payload: {
+//     examid: "cmhq265in0000buu0esuysjc8",
+//     userid: "cmhlkoklm0005bubkzmbxyks7",
+//     part: "part1",
+//     ans: ["3"],
+//     ismultiple: false,
+//     number: "1",
+//   },
+// };
 
 const main = async () => {
   try {
     let redisClient = RedisProvider.getInstance();
     // await redisClient.push(CREATE_SCORE); // added testing
+    
     while (true) {
       let data = await redisClient.pop();
       if (!data) {

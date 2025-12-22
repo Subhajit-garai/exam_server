@@ -2,6 +2,7 @@ import { Task } from "@/lib/types/types";
 import { BaseWorkerTask } from "./base-task";
 import { examAnsManager } from "@/lib/ExamAnsProcessor";
 import { question_ans_db_save_formt } from "@/lib/types/ans-prossing-types";
+import { logger } from "@/utils/logger";
 
 // src/workers/ans-processing-task.ts
 export class AnsProcessingTask extends BaseWorkerTask {
@@ -17,11 +18,11 @@ export class AnsProcessingTask extends BaseWorkerTask {
 
       let key = `examquestion:${examid}:${part}:${number}`;
 
-      let question_data = await AnsManager.getQuestionInfoFromCatch(key);
+      let question_data = await AnsManager.getQuestionInfoFromCatch(key);   
 
       if (!question_data) throw Error("question Data not found");
 
-      console.log("----> data -->", question_data);
+      // console.log("----> data -->", question_data);
 
       //  {
       //       type: "AnsProcessing";

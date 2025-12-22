@@ -6,6 +6,7 @@ import {
 import { IExamCreator } from "../base-exam";
 import { exam_pattern } from "@/lib/types/types";
 import { Network } from "@/utils/network";
+import { logger } from "@/utils/logger";
 
 export class JecaTestExam implements IExamCreator {
   constructor(private payload: any) {}
@@ -39,6 +40,9 @@ export class JecaTestExam implements IExamCreator {
 
       let syllabus_data: (string | null)[] =
         await newtWorkClient.getSyllabusDataForExamCreattion(syllabusid);
+
+      
+      logger.info(syllabus_data)
 
       syllabus_data.map((subject) => {
         if (subject) {

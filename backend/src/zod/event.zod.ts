@@ -34,6 +34,7 @@ export const exam_create_event_data_schema = z.object({
   time_limit: z.string(),
   difficulty: z.nativeEnum(diffcultlevel),
   examtype: z.nativeEnum(ExamType),
+  gap: z.string().optional(),
 });
 
 export const quiz_create_event_data_schema = z.object({

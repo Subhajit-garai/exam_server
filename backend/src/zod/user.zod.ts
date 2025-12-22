@@ -87,6 +87,10 @@ export const ExampatternInputZodSchema = z.object({
   neg_values: z.array(z.number()),
 });
 
+export const ExampatternUpdateZodSchema = ExampatternInputZodSchema.partial().extend({
+  id: z.string(),
+});
+
 // export const ExamCreateInputeSchema = z.object({
 //   name: z.string(),
 //   examname: z.string(),

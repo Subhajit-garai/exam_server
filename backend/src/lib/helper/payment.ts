@@ -1,6 +1,7 @@
 import { ExamType, primeStatus, purchaseType } from "@repo/prisma/client.js";
 import prisma from "@repo/db/index.js";
 import dayjs from "dayjs";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
 
 // price is merketpricce
 export const getFinalPrice = (markedPrice: number, discountPercent: number) => {
@@ -38,7 +39,7 @@ export const getSubcriptionBenifits = async (
     });
 
     if (!user) {
-      throw new Error("user information not found");
+      throw new CustomError("user information not found");
     }
     let user_tier = user?.prime?.status;
 
@@ -49,7 +50,7 @@ export const getSubcriptionBenifits = async (
     });
 
     if (!tier) {
-      throw new Error("tier information not found");
+      throw new CustomError("tier information not found");
     }
 
     let tierbenifit = await tx.tierBenefit.findFirst({
@@ -60,7 +61,7 @@ export const getSubcriptionBenifits = async (
     });
 
     if (!tierbenifit) {
-      throw new Error("tierbenifit information not found");
+      throw new CustomError("tierbenifit information not found");
     }
 
     // console.log("user info =>", user);
@@ -100,7 +101,7 @@ export const isUserHavePrime = async (userid: string) => {
   let isExist = dayjs().isAfter(dayjs(status?.expiry));
 
   if (!isExist) {
-    throw new Error("Already have a subscription");
+    throw new CustomError("Already have a subscription");
   }
 };
 
@@ -128,7 +129,7 @@ export const ProvideSubcriptionTouser = async (
       parseInt(getSubcriptionDetails?.time?.split(" ")[0] as string) ?? 3;
     let timeUnit = getSubcriptionDetails?.time?.split(" ")[1].toLowerCase();
 
-    if (timeUnit !== "month") throw new Error("time unit not valid");
+    if (timeUnit !== "month") throw new CustomError("time unit not valid");
 
     console.log("timeUnit", timeUnit, time);
 
@@ -211,7 +212,7 @@ export const TokenDeduction = async (
 
     // deduction process
 
-    // console.log("charge -- >", charge);
+    console.log("charge -- >", charge);
 
     if (!charge && typeof charge != "number") {
       throw new Error("invalid  balance");
@@ -220,7 +221,7 @@ export const TokenDeduction = async (
     const userdata = await tx.user.findUnique({
       where: { id: userid },
       select: {
-        blance: {
+        balance: {
           select: {
             amount: true,
           },
@@ -228,15 +229,15 @@ export const TokenDeduction = async (
       },
     });
 
-    if (!userdata?.blance) {
-      throw new Error("userdata not found");
+    if (!userdata?.balance) {
+      throw new CustomError("userdata not found");
     }
     // Step 2: Check if the balance is sufficient
-    if (userdata?.blance.amount < charge) {
-      throw new Error("Insufficient balance");
+    if (userdata?.balance.amount < charge) {
+      throw new CustomError("Insufficient balance");
     }
 
-    let user_blance = await tx.blance.update({
+    let user_balance = await tx.balance.update({
       where: {
         userid: userid,
       },
@@ -250,7 +251,7 @@ export const TokenDeduction = async (
       },
     });
 
-    if (user_blance) {
+    if (user_balance) {
       return true;
     }
 

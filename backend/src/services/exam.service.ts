@@ -4,7 +4,6 @@ import {
     Visibility,
     syllabusType,
 } from "@repo/prisma/client.js";
-import { RedisProvider } from "@/lib/radisProvider.js";
 import prisma from "@repo/db/index.js";
 import { ExamManager } from "@repo/lib/manager/examManager.js";
 import { ExamMetaData } from "@repo/lib/types.js";
@@ -14,6 +13,8 @@ import timezone from "dayjs/plugin/timezone.js";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
 import { getServiceCharge, TokenDeduction } from "@repo/lib/helper/payment.js";
 import { ConvertInSlug } from "@/lib/slug.js";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
+import { ProgressService } from "./progress.service.js";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -225,81 +226,13 @@ export class ExamService {
     async finalsubmitExam(userId: string, examId: string) {
         let status = await em.submitExam(examId, userId);
 
-        // Update progress with accuracy
         try {
-            const exam = await prisma.exam.findUnique({
-                where: { id: examId },
-                select: { examtype: true }
-            });
-
-            // Fetch score to calculate accuracy
-            const scoreEntry = await prisma.score.findFirst({
-                where: { exam_id: examId, user_id: userId },
-                select: { result: true }
-            });
-
-            let right = 0;
-            let wrong = 0;
-            if (scoreEntry?.result) {
-                const result = scoreEntry.result as any;
-                Object.keys(result).forEach((key) => {
-                    right += result[key].Right || 0;
-                    wrong += result[key].Wrong || 0;
-                });
-            }
-            const totalAttemptedInThisExam = right + wrong;
-
-            if (exam) {
-                if (exam.examtype === "Dpp") {
-                    await prisma.dppProgress.update({
-                        where: { userId: userId },
-                        data: {
-                            solvedCount: { increment: 1 },
-                            questionsSolved: { increment: right },
-                            lastDppId: examId,
-                            lastDppDate: new Date()
-                        }
-                    });
-                } else if (exam.examtype === "Quiz") {
-                    await prisma.quizProgress.update({
-                        where: { userId: userId },
-                        data: {
-                            attended: { increment: 1 },
-                            totalScore: { increment: right * 4 }, // Assuming 4 marks, or just track correct answers
-                            lastQuizId: examId,
-                            lastQuizDate: new Date()
-                        }
-                    });
-                } else {
-                    // Update ExamProgress with accuracy recalculation
-                    // We need to fetch current stats to update accuracy accurately or use a weighted average
-                    // For simplicity, we increment totals and then update accuracy based on new totals
-
-                    // 1. Increment totals
-                    const updatedProgress = await prisma.examProgress.update({
-                        where: { userId: userId },
-                        data: {
-                            attended: { increment: 1 },
-                            totalCorrect: { increment: right },
-                            totalQuestionsAttempted: { increment: totalAttemptedInThisExam },
-                            lastExamId: examId,
-                            lastExamDate: new Date()
-                        }
-                    });
-
-                    // 2. Recalculate accuracy
-                    if (updatedProgress.totalQuestionsAttempted > 0) {
-                        const newAccuracy = (updatedProgress.totalCorrect / updatedProgress.totalQuestionsAttempted) * 100;
-                        await prisma.examProgress.update({
-                            where: { userId: userId },
-                            data: { accuracy: newAccuracy }
-                        });
-                    }
-                }
-            }
+            const progressService = new ProgressService();
+            await progressService.updateExamProgress(userId, examId);
         } catch (error) {
             console.error("Failed to update user progress:", error);
         }
+
 
         return status;
     }
@@ -307,11 +240,11 @@ export class ExamService {
     async joinedExamData(
         userId: string,
         examId: string,
-        type: string,
+        type: "pre" | "next" | "current",
         number: number,
         part: string
     ) {
-        let question = await em.getQuestion("current", examId, userId, part, number);
+        let question = await em.getQuestion(type, examId, userId, part, number);
         return question;
     }
 
@@ -338,7 +271,7 @@ export class ExamService {
                 istelegramVerified?.isVerified
             )
         ) {
-            throw new Error(
+            throw new CustomError(
                 "The user needs to verify their account to take the given exam"
             );
         }
@@ -368,13 +301,13 @@ export class ExamService {
         });
 
         if (!exam) {
-            throw new Error("Can not find any exam");
+            throw new CustomError("Can not find any exam");
         }
 
         if (exam.creationstatus === "Done") {
             if (exam.examtype !== "Mock" && exam.examtype !== "PYQ") {
                 if (isUserGivenThisExam && isUserGivenThisExam.id) {
-                    throw new Error(
+                    throw new CustomError(
                         "You have already taken this exam. Please join the next one."
                     );
                 }
@@ -414,19 +347,19 @@ export class ExamService {
                             let isExamJoinTimeExecd = currentISTTime.isAfter(joinTimeLimit);
 
                             if (isExamJoinTimeExecd) {
-                                throw new Error("Exam Joining Time is over");
+                                throw new CustomError("Exam Joining Time is over");
                             }
                         } else {
                             let remainingTime = Math.max(
                                 startTime.diff(currentISTTime, "minutes"),
                                 0
                             );
-                            throw new Error(
+                            throw new CustomError(
                                 `Exam not started yet , remining time is ${remainingTime} m`
                             );
                         }
                     } else {
-                        throw new Error("Exam Joining Time is over/not started");
+                        throw new CustomError("Exam Joining Time is over/not started");
                     }
                 }
             }
@@ -711,6 +644,9 @@ export class ExamService {
             select: {
                 id: true,
                 title: true,
+                examname: true,
+                difficulty: true,
+                format: true,
             },
         });
 
@@ -900,6 +836,68 @@ export class ExamService {
             console.log(`${examtype} Created ....`);
         }
 
+        return response;
+    }
+
+
+    async getExamPatternById(id: string) {
+        let response = await prisma.exam_pattern.findUnique({
+            where: { id: id },
+            include: {
+                Category: true
+            }
+        });
+        if (!response) throw new Error("Exam Pattern not found");
+        return response;
+    }
+
+    async updateExamPattern(data: any, userId: string) {
+        let { id, ...updateData } = data;
+
+        // Remove fields that shouldn't be updated or transform them if needed
+        if (updateData.checkbox && !updateData.syllabus) {
+            // If checkbox is enabling syllabus but syllabus not provided, we might need logic here
+            // but schema validation should handle it.
+            // For now, pass all data.
+        }
+
+        // Logic similar to create for syllabus mapping if needed
+        let syllabusData;
+        if (updateData.checkbox && updateData.syllabus && updateData.examname && updateData.examyear) {
+            let examYearData = await prisma.examYear.findFirst({
+                where: {
+                    targetExam: { name: updateData.examname },
+                    year: parseInt(updateData.examyear),
+                },
+            });
+            if (examYearData) {
+                syllabusData = await prisma.syllabus.findFirst({
+                    where: { exam_year_id: examYearData.id, title: updateData.syllabus },
+                });
+            }
+        }
+
+        let response = await prisma.exam_pattern.update({
+            where: { id: id },
+            data: {
+                ...updateData,
+                ...(syllabusData && { syllabusid: syllabusData.id }),
+                // userId not updated usually, or track last updated by?
+            }
+        });
+        return response;
+    }
+
+    async deleteExamPattern(id: string) {
+        // Check if used in any Exam
+        let usage = await prisma.exam.findFirst({
+            where: { exam_pattern_id: id }
+        });
+        if (usage) throw new Error("Cannot delete pattern: It is used in one or more Exams.");
+
+        let response = await prisma.exam_pattern.delete({
+            where: { id: id }
+        });
         return response;
     }
 }

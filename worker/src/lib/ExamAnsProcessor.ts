@@ -10,6 +10,8 @@ import { RedisProvider } from "./radisProvider";
 import { debuglog } from "../utils/debugLog";
 import { Network } from "@/utils/network";
 import { exam_question_format_type } from "./types/ans-prossing-types";
+import { logger } from "@/utils/logger";
+import { log } from "util";
 
 export class examAnsManager {
   AnsStore: AnsStoreType;
@@ -174,7 +176,7 @@ export class examAnsManager {
   }
 
   async getQuestionInfoFromCatch(key: string) {
-    const question = await this.ansclient.getclient().get(`question:${key}`);
+    const question = await this.ansclient.getclient().get(key);
     return question ? JSON.parse(question) : null;
   }
 
@@ -183,7 +185,7 @@ export class examAnsManager {
     userid: string,
     part: string
   ) {
-    let key = `${"question:examquestion"}:${examid}:${part}:*`;
+    let key = `${"examquestion"}:${examid}:${part}:*`;
 
     let keys = await this.ansclient.scanKeys(key);
     const question_arr = await this.ansclient.getclient().mget(keys);
@@ -192,13 +194,13 @@ export class examAnsManager {
 
     type question_Formated_type = Record<string, exam_question_format_type>;
 
-    let question_Formated: question_Formated_type={}
+    let question_Formated: question_Formated_type = {};
 
     question_arr.map((question) => {
       if (!question) throw Error("question not forund");
-      let question_json:exam_question_format_type = JSON.parse(question);
+      let question_json: exam_question_format_type = JSON.parse(question);
 
-      question_Formated[question_json.number] = question_json
+      question_Formated[question_json.number] = question_json;
     });
     return question_Formated;
   }
@@ -208,10 +210,9 @@ export class examAnsManager {
     let keys = await this.ansclient.scanKeys(key);
 
     if (keys.length > 0) {
+    
       const values = await this.ansclient.getclient().mget(keys);
-
       /* [ { number: { ans: null, part: 'part1' } ]*/
-
       const ans_array = keys.map((key, index) => {
         let keyArr = key.split(":");
         let questionNumber = keyArr[4];
@@ -220,7 +221,7 @@ export class examAnsManager {
         return {
           [questionNumber]: { ans: ans, part: part },
         };
-      });      
+      });
       /*  { cm5nywh32003gbu5gbivsjwfk: { ans: null, part: 'part1' } , {} }*/
 
       const ans = keys.reduce<Record<string, { ans: string; part: string }>>(

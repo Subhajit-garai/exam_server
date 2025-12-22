@@ -25,6 +25,7 @@ export class create_exam_event extends BaseEvent {
         Visibility,
         category,
         examtype,
+        gap,
       } = this.event.payload as event_exam_data_type;
       // here data in today
 
@@ -72,9 +73,17 @@ export class create_exam_event extends BaseEvent {
           days_count = parseInt(time_limit.split("+")[1]) + 1;
         }
 
-        for (let index = 0; index < days_count; index++) {
-          let day = dayjs().add(index, "day");
+        let gap_days = 1;
+        if (gap) {
+          gap_days = parseInt(gap.split(' ')[0]);
+        }
 
+        for (let index = 0; index < days_count; index++) {
+          let processing_day = index * gap_days;
+          console.log("processing_day: ", processing_day);
+
+          let day = dayjs().add(processing_day, "day");
+          console.log("day: ", day.format("DD-MM-YYYY"));
 
           let isExamExaist = await prisma.exam.findMany({
             where: {
@@ -89,10 +98,6 @@ export class create_exam_event extends BaseEvent {
               id: true,
             },
           });
-
-
-          console.log("----> exams -> ", isExamExaist);
-
 
 
           if (isExamExaist.length > 0) {

@@ -204,6 +204,9 @@ export const joinedExamData = asyncHandler(async (req: any, res: any) => {
   let part = req.query.part;
   let userid = req.user;
 
+  console.log("--> ", req.query);
+
+
   let question = await examService.joinedExamData(userid, examid, type, number, part);
 
   if (!question) {
@@ -224,21 +227,13 @@ export const examJoinRequestProcess = asyncHandler(
   async (req: any, res: any) => {
     let examid = req.query.id;
     let userid = req.user;
+    await examService.examJoinRequestProcess(userid, examid);
 
-    try {
-      await examService.examJoinRequestProcess(userid, examid);
-
-      return res.json({
-        success: true,
-        message: `Exam setup Successfull ...`,
-        data: "no data",
-      });
-    } catch (error: any) {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
+    return res.json({
+      success: true,
+      message: `Exam setup Successfull ...`,
+      data: "no data",
+    });
   }
 );
 
@@ -340,3 +335,33 @@ export const getAvalibleExamPattern = asyncHandler(
     });
   }
 );
+
+export const getExamPatternById = asyncHandler(async (req: any, res: any) => {
+  let { id } = req.params;
+  let response = await examService.getExamPatternById(id);
+  res.json({
+    success: true,
+    message: "Exam Pattern fetched successfully",
+    data: response,
+  });
+});
+
+export const updateExamPattern = asyncHandler(async (req: any, res: any) => {
+  let { id } = req.body;
+  let response = await examService.updateExamPattern(req.body, req.user);
+  res.json({
+    success: true,
+    message: "Exam Pattern updated successfully",
+    data: response,
+  });
+});
+
+export const deleteExamPattern = asyncHandler(async (req: any, res: any) => {
+  let { id } = req.params;
+  let response = await examService.deleteExamPattern(id);
+  res.json({
+    success: true,
+    message: "Exam Pattern deleted successfully",
+    data: response,
+  });
+});

@@ -5,10 +5,10 @@ import { runWorker } from "./tasks/worker-runner";
 
 let CREATE_EXAM_TASK: Task = {
   type: "CREATE_EXAM",
-  id: "cmiebk9nz005gbuz45k4km3oi",
+  id: "cmjgn8tmd000bn8buxruxtn1v",
   payload: {
-    examid: "cmiebk9nz005gbuz45k4km3oi",
-    userid: "cmicprsee000abue43mtu3dwg",
+    examid: "cmjgn8tmd000bn8buxruxtn1v",
+    userid: "cmiumcgir0001jwbukh9xs97h",
     examtype: "Test",
   },
   variant: "Test",
@@ -17,10 +17,10 @@ let CREATE_EXAM_TASK: Task = {
 
 let CREATE_SCORE: Task = {
   type: "CREATE_SCORE",
-  id: "cmhuo1jia0002buh43og57hek",
+  id: "cmjgn8tmd000bn8buxruxtn1v",
   payload: {
-    examid: "cmhuo1jia0002buh43og57hek",
-    userid: "cmhsr86zy0005buro0pgdp9lf",
+    examid: "cmjgn8tmd000bn8buxruxtn1v",
+    userid: "cmiumcgir0001jwbukh9xs97h",
   },
 };
 
@@ -40,7 +40,7 @@ let PROCESS_Ans: Task = {
 const main = async () => {
   try {
     let redisClient = RedisProvider.getInstance();
-    // await redisClient.push(CREATE_EXAM_TASK); // added testing
+    // await redisClient.push(CREATE_SCORE); // added testing
     while (true) {
       let data = await redisClient.pop();
       if (!data) {

@@ -1,6 +1,0 @@
-Loaded Prisma config from prisma.config.ts.
-
-Prisma schema loaded from prisma\schema
-
-✔ Generated Prisma Client (7.0.1) to .\prisma\generated\prisma in 312ms
-

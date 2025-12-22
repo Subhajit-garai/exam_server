@@ -19,8 +19,12 @@ import {
   getExamYearInfo,
   fetch_targeted_exam_by_id,
   getCategoryName,
+  getExamPatternById,
+  updateExamPattern,
+  deleteExamPattern,
 } from "../controllers/exam.controller.js";
 import { create_targeted_exam, create_targeted_exam_year, CreateExam, CreateNewExamPattern } from "@/controllers/exam/exam.create.controller.js";
+
 
 export const examAdminRouter = Router();
 export const examPublicRouter = Router();
@@ -51,3 +55,8 @@ examAdminRouter.post("/create", CreateExam);
 examAdminRouter.post("/create/target/exam", create_targeted_exam);
 examAdminRouter.post("/create/target/examyear", create_targeted_exam_year);
 examAdminRouter.put("/update/target/examyear/info", update_targeted_exam_year);
+
+// Exam Pattern CRUD
+examAdminRouter.get("/pattern/get/:id", getExamPatternById);
+examAdminRouter.put("/pattern/update", updateExamPattern);
+examAdminRouter.delete("/pattern/delete/:id", deleteExamPattern);

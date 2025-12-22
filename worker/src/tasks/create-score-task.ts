@@ -5,6 +5,7 @@ import { BaseWorkerTask } from "./base-task";
 import { ansType, Right_Wrong_set_type, Task } from "@/lib/types/types";
 import { examAnsManager } from "@/lib/ExamAnsProcessor";
 import { exam_question_format_type } from "@/lib/types/ans-prossing-types";
+import { logger } from "@/utils/logger";
 
 export function validateOption(
   ans: string[],

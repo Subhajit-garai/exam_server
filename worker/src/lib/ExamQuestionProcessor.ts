@@ -208,6 +208,7 @@ export class examQuestionManger {
 
       let questionset = this.selecteQuestionsNumber(totalQusestions, subject); //questionset  { OS: 2, DBMS: 2, UNIX: 1 }
 
+      logger.info(questionset)
       this.count = 0; //debug  how many loop it takes to get the result
       let selectedElements: SelectQuestion_type = {};
       let selectedNormal: any[] = [];

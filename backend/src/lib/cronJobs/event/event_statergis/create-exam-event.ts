@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 
 
 export class create_exam_event extends BaseEvent {
+
   async push(): Promise<void> {
     console.log("Running create_exam_event with data:", this.event.payload);
 
@@ -40,7 +41,7 @@ export class create_exam_event extends BaseEvent {
       let lastExam = await prisma.exam.findFirst({
         where: {
           name: {
-            startsWith: "Exam@",
+            startsWith: "Test@",
           },
         },
         orderBy: {
@@ -142,7 +143,7 @@ export class create_exam_event extends BaseEvent {
         ) {
           let temp_name_array: string[] = [];
           for (let idx = 0; idx < create_exam_count_for_date[index]; idx++) {
-            temp_name_array.push(`Exam@${new_exam_number}`);
+            temp_name_array.push(`Test@${new_exam_number}`);
             new_exam_number++;
           }
           new_exam_names.push(temp_name_array);

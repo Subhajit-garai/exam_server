@@ -75,11 +75,11 @@ jobs:
           
             IMAGE=${WORKER_IMAGE}:${{ needs.build-worker.outputs.imagetag }}
             sudo docker pull $IMAGE
-            sudo docker stop worker || true
-            sudo docker rm worker || true
+            sudo docker stop exam_worker || true
+            sudo docker rm exam_worker || true
 
             sudo docker run -d \
-            --name worker \
+            --name exam_worker \
             --network ${{ secrets.DOCKER_NETWORK}} \
             --network-alias worker \
             -p 5000:5000 \

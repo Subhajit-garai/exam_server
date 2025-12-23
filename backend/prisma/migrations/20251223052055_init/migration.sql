@@ -8,6 +8,9 @@ CREATE TYPE "BadgeRule" AS ENUM ('ACTIVITY_COUNT', 'STREAK_COUNT', 'XP_THRESHOLD
 CREATE TYPE "Platform" AS ENUM ('NONE', 'WEBAPP', 'ANDROIDAPP', 'TELEGRAM', 'WHATSAPP');
 
 -- CreateEnum
+CREATE TYPE "SocialPlatform" AS ENUM ('email', 'telegram', 'whatsApp', 'linkedIn', 'gitHub', 'twitter', 'instagram', 'facebook', 'website');
+
+-- CreateEnum
 CREATE TYPE "eventType" AS ENUM ('RUN_NEW_QUIZ', 'CREATE_QUIZ_CONTEST', 'SEND_MESSAGE', 'CREATE_DPP', 'CREATE_EXAM', 'CLEAR_BOT_CACHE', 'ACTIVITY_LEADERBOARD_ARCHIVE');
 
 -- CreateEnum
@@ -36,6 +39,9 @@ CREATE TYPE "OfferPlan" AS ENUM ('BASIC', 'STANDARD', 'PREMIUM', 'PLATINUM');
 
 -- CreateEnum
 CREATE TYPE "purchaseType" AS ENUM ('SUBSCRIPTION', 'TOKEN');
+
+-- CreateEnum
+CREATE TYPE "ProgressStatus" AS ENUM ('NOT_STARTED', 'IN_PROGRESS', 'COMPLETED');
 
 -- CreateEnum
 CREATE TYPE "ProcessingStatus" AS ENUM ('Pending', 'Approved', 'Rejected');
@@ -167,7 +173,7 @@ CREATE TABLE "botQuizConfig" (
     "title" TEXT,
     "chatId" TEXT,
     "platform" "Platform" NOT NULL DEFAULT 'NONE',
-    "check" "check",
+    "check" "check" DEFAULT 'Normal',
     "syllabusid" TEXT,
     "syllabus" "syllabusType" NOT NULL DEFAULT 'Syllabus',
     "topics" TEXT[],
@@ -475,6 +481,7 @@ CREATE TABLE "Order" (
     "type" "purchaseType" NOT NULL DEFAULT 'TOKEN',
     "token" INTEGER DEFAULT 0,
     "subcription" "primeStatus" DEFAULT 'None',
+    "couponId" TEXT,
     "status" TEXT NOT NULL DEFAULT 'pending',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -496,6 +503,59 @@ CREATE TABLE "payment" (
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "payment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ExamProgress" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "attended" INTEGER NOT NULL DEFAULT 0,
+    "totalQuestionsAttempted" INTEGER NOT NULL DEFAULT 0,
+    "totalCorrect" INTEGER NOT NULL DEFAULT 0,
+    "accuracy" DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    "lastExamId" TEXT,
+    "lastExamDate" TIMESTAMP(3),
+    "lastRank" INTEGER NOT NULL DEFAULT 0,
+    "bestRank" INTEGER NOT NULL DEFAULT 0,
+
+    CONSTRAINT "ExamProgress_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DppProgress" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "solvedCount" INTEGER NOT NULL DEFAULT 0,
+    "questionsSolved" INTEGER NOT NULL DEFAULT 0,
+    "lastDppId" TEXT,
+    "lastDppDate" TIMESTAMP(3),
+    "currentStreak" INTEGER NOT NULL DEFAULT 0,
+
+    CONSTRAINT "DppProgress_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "QuizProgress" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "attended" INTEGER NOT NULL DEFAULT 0,
+    "totalScore" INTEGER NOT NULL DEFAULT 0,
+    "lastQuizId" TEXT,
+    "lastQuizDate" TIMESTAMP(3),
+
+    CONSTRAINT "QuizProgress_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserTopicProgress" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "topicId" TEXT NOT NULL,
+    "timeSpent" INTEGER NOT NULL DEFAULT 0,
+    "status" "ProgressStatus" NOT NULL DEFAULT 'NOT_STARTED',
+    "lastReadAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UserTopicProgress_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -819,7 +879,6 @@ CREATE TABLE "User" (
     "school" TEXT,
     "standard" TEXT,
     "stream" TEXT,
-    "socialId" TEXT,
     "role" "UserRole" NOT NULL DEFAULT 'User',
     "join_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "forgotpasswordToken" TEXT,
@@ -834,25 +893,11 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "Social" (
     "id" TEXT NOT NULL,
-    "userid" TEXT,
-    "telegram" TEXT DEFAULT '0000000000',
-    "whatsapp" TEXT,
-    "linkedin" TEXT,
-    "github" TEXT,
-    "twitter" TEXT,
-    "instagram" TEXT,
-    "facebook" TEXT,
-    "website" TEXT,
-    "isContactVerified" BOOLEAN NOT NULL DEFAULT false,
-    "isEmailVerified" BOOLEAN NOT NULL DEFAULT false,
-    "isTelegramVerified" BOOLEAN NOT NULL DEFAULT false,
-    "isWhatsappVerified" BOOLEAN NOT NULL DEFAULT false,
-    "isGithubVerified" BOOLEAN NOT NULL DEFAULT false,
-    "isLinkedinVerified" BOOLEAN NOT NULL DEFAULT false,
-    "isInstagramVerified" BOOLEAN NOT NULL DEFAULT false,
-    "isFacebookVerified" BOOLEAN NOT NULL DEFAULT false,
-    "isTwitterVerified" BOOLEAN NOT NULL DEFAULT false,
-    "last_update" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+    "platform" "SocialPlatform" NOT NULL,
+    "link" TEXT NOT NULL,
+    "isVerified" BOOLEAN NOT NULL DEFAULT false,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Social_pkey" PRIMARY KEY ("id")
 );
@@ -867,47 +912,6 @@ CREATE TABLE "prime" (
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "prime_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "ExamProgress" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "attended" INTEGER NOT NULL DEFAULT 0,
-    "totalQuestionsAttempted" INTEGER NOT NULL DEFAULT 0,
-    "totalCorrect" INTEGER NOT NULL DEFAULT 0,
-    "accuracy" DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-    "lastExamId" TEXT,
-    "lastExamDate" TIMESTAMP(3),
-    "lastRank" INTEGER NOT NULL DEFAULT 0,
-    "bestRank" INTEGER NOT NULL DEFAULT 0,
-
-    CONSTRAINT "ExamProgress_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "DppProgress" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "solvedCount" INTEGER NOT NULL DEFAULT 0,
-    "questionsSolved" INTEGER NOT NULL DEFAULT 0,
-    "lastDppId" TEXT,
-    "lastDppDate" TIMESTAMP(3),
-    "currentStreak" INTEGER NOT NULL DEFAULT 0,
-
-    CONSTRAINT "DppProgress_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "QuizProgress" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "attended" INTEGER NOT NULL DEFAULT 0,
-    "totalScore" INTEGER NOT NULL DEFAULT 0,
-    "lastQuizId" TEXT,
-    "lastQuizDate" TIMESTAMP(3),
-
-    CONSTRAINT "QuizProgress_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -1099,6 +1103,21 @@ CREATE UNIQUE INDEX "payment_razorpay_order_id_key" ON "payment"("razorpay_order
 CREATE UNIQUE INDEX "payment_razorpay_payment_id_key" ON "payment"("razorpay_payment_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "ExamProgress_userId_key" ON "ExamProgress"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "DppProgress_userId_key" ON "DppProgress"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "QuizProgress_userId_key" ON "QuizProgress"("userId");
+
+-- CreateIndex
+CREATE INDEX "UserTopicProgress_userId_idx" ON "UserTopicProgress"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserTopicProgress_userId_topicId_key" ON "UserTopicProgress"("userId", "topicId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Question_id_key" ON "Question"("id");
 
 -- CreateIndex
@@ -1222,28 +1241,19 @@ CREATE UNIQUE INDEX "User_id_key" ON "User"("id");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_socialId_key" ON "User"("socialId");
-
--- CreateIndex
 CREATE INDEX "User_role_idx" ON "User"("role");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Social_id_key" ON "Social"("id");
+CREATE UNIQUE INDEX "Social_userId_platform_key" ON "Social"("userId", "platform");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Social_platform_link_key" ON "Social"("platform", "link");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "prime_id_key" ON "prime"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "prime_userid_key" ON "prime"("userid");
-
--- CreateIndex
-CREATE UNIQUE INDEX "ExamProgress_userId_key" ON "ExamProgress"("userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "DppProgress_userId_key" ON "DppProgress"("userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "QuizProgress_userId_key" ON "QuizProgress"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "balance_id_key" ON "balance"("id");
@@ -1342,6 +1352,21 @@ ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") RE
 ALTER TABLE "payment" ADD CONSTRAINT "payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "ExamProgress" ADD CONSTRAINT "ExamProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DppProgress" ADD CONSTRAINT "DppProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "QuizProgress" ADD CONSTRAINT "QuizProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserTopicProgress" ADD CONSTRAINT "UserTopicProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserTopicProgress" ADD CONSTRAINT "UserTopicProgress_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "Topic"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Question" ADD CONSTRAINT "Question_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -1417,19 +1442,10 @@ ALTER TABLE "telegramGroupTopic" ADD CONSTRAINT "telegramGroupTopic_groupId_fkey
 ALTER TABLE "TierBenefit" ADD CONSTRAINT "TierBenefit_tierId_fkey" FOREIGN KEY ("tierId") REFERENCES "Tier"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_socialId_fkey" FOREIGN KEY ("socialId") REFERENCES "Social"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Social" ADD CONSTRAINT "Social_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "prime" ADD CONSTRAINT "prime_userid_fkey" FOREIGN KEY ("userid") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ExamProgress" ADD CONSTRAINT "ExamProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "DppProgress" ADD CONSTRAINT "DppProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "QuizProgress" ADD CONSTRAINT "QuizProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "balance" ADD CONSTRAINT "balance_userid_fkey" FOREIGN KEY ("userid") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

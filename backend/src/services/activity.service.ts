@@ -163,4 +163,31 @@ export class ActivityService {
     }
 
 
+    /**
+     * Get aggregated activity data for heatmap.
+     * Returns an array of { date: string, count: number, level: number }
+     */
+    async getActivityHeatmap(userId: string) {
+        const activities = await prisma.userActivity.groupBy({
+            by: ['date'],
+            where: { userId },
+            _count: { id: true },
+            orderBy: { date: 'asc' }
+        });
+
+        return activities.map(entry => ({
+            date: entry.date.toISOString().split('T')[0], // YYYY-MM-DD
+            count: entry._count.id,
+            level: this.calculateHeatmapLevel(entry._count.id)
+        }));
+    }
+
+    // Helper for intensity
+    private calculateHeatmapLevel(count: number): number {
+        if (count === 0) return 0;
+        if (count <= 2) return 1;
+        if (count <= 5) return 2;
+        if (count <= 10) return 3;
+        return 4;
+    }
 }

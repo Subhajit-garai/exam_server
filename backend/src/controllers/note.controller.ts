@@ -236,9 +236,10 @@ export const getTopic = asyncHandler(async (req: any, res: any) => {
 
 export const getNote = asyncHandler(async (req: any, res: any) => {
   const { subject, topic } = req.params;
+  let userId = req.user;
   if (!subject || !topic) throw new Error("subject or topic missing");
 
-  let note = await noteService.getNote(subject, topic);
+  let note = await noteService.getNote(subject, topic, userId);
 
   if (!note) {
     return res.status(400).json({

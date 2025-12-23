@@ -428,4 +428,37 @@ export class ProgressService {
 
 
     }
+    async getUserTopicsProgress(userId: string) {
+
+        const progressList = await prisma.userTopicProgress.findMany({
+            where: {
+                userId: userId
+            },
+            include: {
+                topic: {
+                    select: {
+                        name: true,
+                        estimatedReadTime: true
+                    }
+                }
+            }
+        })
+
+        return progressList.map(progress => {
+            const estimatedMinutes = progress.topic.estimatedReadTime || 10;
+            const estimatedSeconds = estimatedMinutes * 60;
+            const percentage = Math.min(
+                (progress.timeSpent / estimatedSeconds) * 100,
+                100
+            );
+
+            return {
+                topicId: progress.topicId,
+                topicName: progress.topic.name,
+                percentage: Math.round(percentage),
+                timeSpent: progress.timeSpent,
+                status: progress.status
+            };
+        });
+    }
 }

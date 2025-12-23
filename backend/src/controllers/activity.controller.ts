@@ -144,3 +144,18 @@ export const getUserRewards = asyncHandler(async (req: any, res: Response) => {
         message: "User rewards fetched successfully",
     });
 });
+
+export const getActivityHeatmap = asyncHandler(async (req: any, res: Response) => {
+    const userId = req.user;
+    if (!userId) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+    }
+
+    const heatmap = await activityService.getActivityHeatmap(userId);
+    res.status(200).json({
+        success: true,
+        data: heatmap,
+        message: "Activity heatmap fetched successfully",
+    });
+});

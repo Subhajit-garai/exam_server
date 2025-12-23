@@ -7,7 +7,8 @@ import {
     getStudyHours,
     getTestsAttempted,
     getAvgScore,
-    getAccuracy
+    getAccuracy,
+    getUserTopicsProgress
 } from "../controllers/progress.controller.js";
 import { userauthenticate } from "@repo/lib/security/auth.js";
 
@@ -21,12 +22,12 @@ progressRouter.put("/status", userauthenticate, updateTopicStatus);
 
 // Get syllabus progress - GET /api/v1/progress/syllabus/:examYearId
 progressRouter.get("/syllabus/:examYearId", getSyllabusProgress);
-
 // Combined Stats (Legacy/All-in-one)
 progressRouter.get("/dashboard-stats", getDashboardStats);
-
 // Separate Stats Endpoints
 progressRouter.get("/stats/study-hours", getStudyHours);
 progressRouter.get("/stats/tests-attempted", getTestsAttempted);
 progressRouter.get("/stats/avg-score", getAvgScore);
 progressRouter.get("/stats/accuracy", getAccuracy);
+// User Topic Progress List
+progressRouter.get("/user/topics", getUserTopicsProgress);

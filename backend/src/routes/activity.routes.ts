@@ -7,6 +7,7 @@ import {
     getUserStats,
     logActivity,
     getRecentActivities,
+    getActivityHeatmap,
 } from "../controllers/activity.controller.js";
 import { leaderboardRouter } from "./activity/leaderboard.routes.js";
 
@@ -20,4 +21,5 @@ activityRouter.get("/stats", getUserStats);
 // Recent Activity Routes
 activityRouter.post("/log", logActivity);
 activityRouter.get("/recent", getRecentActivities);
+activityRouter.get("/heatmap", getActivityHeatmap);
 activityRouter.use("/leaderboard", leaderboardRouter);

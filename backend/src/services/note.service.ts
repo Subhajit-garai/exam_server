@@ -381,7 +381,7 @@ export class NoteService {
         return note;
     }
 
-    async getNote(subjectSlug: string, topicSlug: string) {
+    async getNote(subjectSlug: string, topicSlug: string, userId: string) {
         let note = await prisma.topic.findFirst({
             where: {
                 slug: topicSlug,
@@ -390,6 +390,7 @@ export class NoteService {
                 },
             },
             select: {
+                id: true,
                 content: true,
                 name: true,
                 order: true,
@@ -406,6 +407,28 @@ export class NoteService {
                 status: true,
             },
         });
+
+        if (!note) throw new Error("Note not found");
+
+        // start topic progress
+        const topicProgress = await prisma.userTopicProgress.findFirst({
+            where: {
+                topicId: note.id,
+                userId: userId
+            },
+        });
+
+        if (!topicProgress) {
+            await prisma.userTopicProgress.create({
+                data: {
+                    topicId: note.id,
+                    userId: userId,
+                    status: "IN_PROGRESS"
+                },
+            });
+        }
+
+
         return note;
     }
 }

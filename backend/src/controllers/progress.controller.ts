@@ -85,3 +85,9 @@ export const getAccuracy = asyncHandler(async (req: any, res: any) => {
     const result = await progressService.getAccuracy(req.user);
     res.json({ success: true, data: result });
 });
+
+export const getUserTopicsProgress = asyncHandler(async (req: any, res: any) => {
+    const userId = req.user;
+    const result = await progressService.getUserTopicsProgress(userId);
+    res.json({ success: true, data: result });
+});

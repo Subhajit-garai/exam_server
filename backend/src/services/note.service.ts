@@ -310,6 +310,23 @@ export class NoteService {
         let subjectdatas = await prisma.subject.findMany({});
         return subjectdatas;
     }
+    async getAllNoteSubjectByCategory(category?: string) {
+        if (category) {
+
+            let subjectdatas = await prisma.subject.findMany({
+                where: {
+                    Category: {
+                        name: category
+                    }
+                },
+            })
+
+            return subjectdatas;
+        }
+
+        let subjectdatas = await prisma.subject.findMany({});
+        return subjectdatas;
+    }
     async getAllNoteSubjectByExam(exam?: string) {
         if (exam) {
             const targetExam = await prisma.targetExam.findFirst({

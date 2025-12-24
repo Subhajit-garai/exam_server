@@ -15,6 +15,7 @@ import { getServiceCharge, TokenDeduction } from "@repo/lib/helper/payment.js";
 import { ConvertInSlug } from "@/lib/slug.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { ProgressService } from "./progress.service.js";
+import { ExampatternInputType } from "@/zod/user.zod.js";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -657,7 +658,7 @@ export class ExamService {
         return response;
     }
 
-    async createExamPattern(data: any, userId: string) {
+    async createExamPattern(data: ExampatternInputType, userId: string) {
         let {
             title,
             checkbox,
@@ -669,7 +670,7 @@ export class ExamService {
             part,
             part_Count,
             total_questions,
-            check,
+            checktype,
             marks_values,
             neg_values,
             examyear,
@@ -716,9 +717,9 @@ export class ExamService {
                 topics,
                 difficulty,
                 part,
-                part_Count,
+                part_Count: parseInt(part_Count),
                 total_questions,
-                check,
+                check: checktype,
                 checkbox,
                 marks_values,
                 neg_values,

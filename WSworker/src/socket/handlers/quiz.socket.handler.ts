@@ -1,6 +1,6 @@
 import { BaseSocketHandler } from "./base.socket.handler.js";
 import { WebSocket } from "ws";
-import { QuizManager } from "../../common/quizManager.js";
+import { QuizManager } from "../../common/manager/quizManager.js";
 
 
 type QuizHandlerType = "JOIN_QUIZ" | "LEAVE_QUIZ" | "START_QUIZ" | "END_QUIZ" | "SUBMIT_ANSWER";

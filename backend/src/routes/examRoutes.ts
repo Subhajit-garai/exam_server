@@ -1,7 +1,5 @@
 import { Router } from "express";
 import {
-  getAvalibleExamPattern,
-  // CreateContest,
   deletexams,
   getExams,
   examJoinRequestProcess,
@@ -19,11 +17,8 @@ import {
   getExamYearInfo,
   fetch_targeted_exam_by_id,
   getCategoryName,
-  getExamPatternById,
-  updateExamPattern,
-  deleteExamPattern,
 } from "../controllers/exam.controller.js";
-import { create_targeted_exam, create_targeted_exam_year, CreateExam, CreateNewExamPattern } from "@/controllers/exam/exam.create.controller.js";
+import { create_targeted_exam, create_targeted_exam_year, CreateExam } from "@/controllers/exam/exam.create.controller.js";
 
 
 export const examAdminRouter = Router();
@@ -43,20 +38,13 @@ examPublicRouter.get("/usermetadataforanexam", getUserMetaDataforAnExam)
 examPublicRouter.get("/examattemptquestiondata", ExamAttemptQuestionMetaData)
 examPublicRouter.get("/getuseransset", getUserAnsSetOfAnExam)
 examPublicRouter.get("/avalible/targeted/exam", getAvalibletargetExam);
-examPublicRouter.get("/avalibleExamPattern", getAvalibleExamPattern);
 examPublicRouter.get("/avalible/targeted/exam/all", getAvalibletargetExamAll);
 
 // Admin Routes (Protected)
 examAdminRouter.post("/get/target/exam/id", fetch_targeted_exam_by_id);
 
 examAdminRouter.get("/deletexams", deletexams);
-examAdminRouter.post("/createpattern", CreateNewExamPattern);
 examAdminRouter.post("/create", CreateExam);
 examAdminRouter.post("/create/target/exam", create_targeted_exam);
 examAdminRouter.post("/create/target/examyear", create_targeted_exam_year);
 examAdminRouter.put("/update/target/examyear/info", update_targeted_exam_year);
-
-// Exam Pattern CRUD
-examAdminRouter.get("/pattern/get/:id", getExamPatternById);
-examAdminRouter.put("/pattern/update", updateExamPattern);
-examAdminRouter.delete("/pattern/delete/:id", deleteExamPattern);

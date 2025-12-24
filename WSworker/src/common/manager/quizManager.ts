@@ -1,8 +1,8 @@
-import { RedisProvider } from "./redisProvider.js";
+import { RedisProvider } from "../redisProvider.js";
 import {
     exam_question_format_for_ui_type,
     exam_question_format_type,
-} from "./questionTypes.js";
+} from "../questionTypes.js";
 
 interface QuizMetaData {
     id: string;

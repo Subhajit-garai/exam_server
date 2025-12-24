@@ -69,6 +69,7 @@ export const forgotpasswordVerifyZodSchema = z.object({
 });
 
 
+export type ExampatternInputType = z.infer<typeof ExampatternInputZodSchema>;
 export const ExampatternInputZodSchema = z.object({
   title: z.string(),
   format: z.enum(["Text", "Image"]),
@@ -80,9 +81,9 @@ export const ExampatternInputZodSchema = z.object({
   difficulty: z.enum(["Easy", "Medium", "Hard"]),
   part: z.boolean(),
   checkbox: z.boolean(),
-  part_Count: z.number(),
+  part_Count: z.string(),
   total_questions: z.array(z.number()),
-  check: z.enum(["Normal", "Hybrid"]), // confush
+  checktype: z.enum(["Normal", "Hybrid"]), // confush
   marks_values: z.array(z.number()),
   neg_values: z.array(z.number()),
 });

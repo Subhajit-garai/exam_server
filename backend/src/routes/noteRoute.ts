@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { CreateSubject, CreateTopic, dislike, getTopic, getAllNoteSubjectByExam, getAllNoteTopic, getAllVersionOfNote, getNote, like, UpdateContentOfTopic, DeleteSubject, DeleteTopic } from "../controllers/note.controller.js";
+import { CreateSubject, CreateTopic, dislike, getTopic, getAllNoteSubjectByExam, getAllNoteTopic, getAllVersionOfNote, getNote, like, UpdateContentOfTopic, DeleteSubject, DeleteTopic, getAllNoteSubjectByCategory } from "../controllers/note.controller.js";
 import { isAdmin } from "@repo/lib/security/auth.js";
 
 export const noteAdminRouter = Router();
@@ -9,6 +9,7 @@ export const notePublicRouter = Router();
 notePublicRouter.get("/getnote/:subject/:topic", getNote)
 notePublicRouter.get("/gettopic", getTopic)
 notePublicRouter.get("/allsubject", getAllNoteSubjectByExam)
+notePublicRouter.get("/allsubject/:category", getAllNoteSubjectByCategory)
 notePublicRouter.get("/alltopic/:slug", getAllNoteTopic)
 notePublicRouter.post("/like", like)
 notePublicRouter.post("/dislike", dislike)

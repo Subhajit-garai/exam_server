@@ -15,12 +15,7 @@ const examService = new ExamService();
 export const CreateNewExamPattern = asyncHandler(async (req: any, res: any) => {
   let data = ExampatternInputZodSchema.safeParse(req.body);
   if (!data.success) {
-    console.log("data error", data.error);
-
-    return res.status(401).json({
-      success: false,
-      message: "given credential/input   invalid ",
-    });
+    throw ZodDataSafeParse(data, true);
   }
 
   await examService.createExamPattern(data.data, req.user);

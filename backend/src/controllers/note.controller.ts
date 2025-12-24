@@ -178,6 +178,20 @@ export const getAllNoteTopic = asyncHandler(async (req: any, res: any) => {
   res.json({ success: true, message: "Topics", data: topicdatas });
 })
 
+export const getAllNoteSubjectByCategory = asyncHandler(async (req: any, res: any) => {
+  const { category } = req.params;
+
+  let subjectdatas = await noteService.getAllNoteSubjectByCategory(category as string);
+
+  if (!subjectdatas) {
+    return res.status(400).json({
+      success: false,
+      message: "error while getting Subject , plz try again",
+    });
+  }
+
+  res.json({ success: true, message: "Subjects", data: subjectdatas });
+})
 export const getAllNoteSubjectByExam = asyncHandler(async (req: any, res: any) => {
   const { exam } = req.query;
 

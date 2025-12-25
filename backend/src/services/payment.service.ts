@@ -9,6 +9,7 @@ import {
 import { couponService } from "@/services/coupon.service.js";
 
 export class PaymentService {
+
     private async isPaymentProcessed(paymentId: string) {
         const payment = await prisma.payment.findUnique({
             where: {
@@ -69,7 +70,15 @@ export class PaymentService {
             },
         };
 
-        const order = await razerpayinstance.orders.create(options);
+        let order;
+        try {
+            order = await razerpayinstance.orders.create(options);
+
+        } catch (error: any) {
+            throw Error("order not created", error);
+        }
+
+        if (!order) throw Error("order not created");
 
         await prisma.order.create({
             data: {

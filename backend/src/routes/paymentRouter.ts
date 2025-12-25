@@ -12,6 +12,3 @@ paymentRouter.get("/offer", getSubcriptionAndOffer)
 paymentRouter.post("/checkout/tocken", IsPurchasesOpen, checkoutToken);
 paymentRouter.post("/checkout/subscription", IsPurchasesOpen, checkoutSubcription);
 paymentRouter.post("/apply-coupon", IsPurchasesOpen, IsCouponOpen, ApplyCupone);
-
-
-

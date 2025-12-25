@@ -6,7 +6,7 @@ import prisma from "@repo/db/index.js";
 export const userauthenticate = asyncHandler(async (req: any, res: any, next: () => any) => {
   let token = req.cookies.token;
   if (!token) {
-    throw new Error("Authentication required");
+    throw new Error("Authentication token required");
   }
 
   let user = verifyToken(token);
@@ -40,32 +40,7 @@ export const isAdmin = async (
   next: () => any,
   message: string = "Admin can access it!"
 ) => {
-  // with token
-  // let user: any
 
-  // if (req.user) {
-  //   user = await prisma.user.findFirst({
-  //     where: {
-  //       id: req.user,
-  //     },
-  //     select: {
-  //       id: true,
-  //       role: true,
-  //     },
-  //   });
-
-  // } else {
-  //   user = await prisma.user.findFirst({
-  //     where: {
-  //       email: req.body.email,
-  //     },
-  //     select: {
-  //       id: true,
-  //       role: true,
-  //     },
-  //   });
-
-  // }
   try {
     if (req.userRole == "Admin") {
       next();

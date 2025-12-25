@@ -114,14 +114,6 @@ export class CouponService {
 
 
         const finalAmount = (orderAmountInPisa - discountAmount);
-
-        // console.log("orderAmount3", orderAmount);
-        // console.log("orderAmountInPisa4", orderAmountInPisa);
-        // console.log("discountAmount", discountAmount);
-        // console.log("coupon.discountValue", coupon.discountValue);
-        // console.log("finalAmount", finalAmount);
-
-
         return {
             couponId: coupon.id,
             code: coupon.code,

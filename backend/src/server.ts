@@ -36,8 +36,8 @@ import { progressRouter } from "./routes/progress.routes.js";
 
 
 export const razerpayinstance = new Razorpay({
-  key_id: process.env.RAZERPAY_API_KEY as string,
-  key_secret: process.env.RAZERPAY_API_SECRET,
+  key_id: process.env.RAZERPAY_API_KEY!,
+  key_secret: process.env.RAZERPAY_API_SECRET!,
 });
 
 export const app = express();

@@ -6,7 +6,7 @@ export interface verifyToken extends JwtPayload {
     extra?: string;
 }
 
-let jwtSecret = process.env.Jwt_secret as string
+let jwtSecret = process.env.Jwt_secret?.trim() as string
 
 let expiredIn = 1000 * 60 * 60 * 24 * 3 // 3 days
 

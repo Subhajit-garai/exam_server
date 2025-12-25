@@ -6,7 +6,7 @@ export const paymentRouter = Router();
 
 
 paymentRouter.get("/getkey", IsPurchasesOpen, (req: any, res: any) =>
-  res.status(200).json({ key: process.env.RAZORPAY_KEY_ID })
+  res.status(200).json({ key: process.env.RAZORPAY_KEY_ID?.trim() })
 );
 paymentRouter.get("/offer", getSubcriptionAndOffer)
 paymentRouter.post("/checkout/token", IsPurchasesOpen, checkoutToken);

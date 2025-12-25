@@ -4,15 +4,15 @@ class Mailer {
   private transporter: Transporter;
 
   constructor() {
-    
+
     this.transporter = nodemailer.createTransport({
       service: "Gmail",
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
       auth: {
-        user: process.env.EMAIL_USER as string, // Ensure it's a string
-        pass: process.env.EMAIL_PASS as string,
+        user: process.env.EMAIL_USER?.trim() as string, // Ensure it's a string
+        pass: process.env.EMAIL_PASS?.trim() as string,
       },
     });
   }
@@ -20,7 +20,7 @@ class Mailer {
   async sendMail(to: string, subject: string, text: string): Promise<void> {
     try {
       const mailOptions = {
-        from: process.env.EMAIL_USER as string,
+        from: process.env.EMAIL_USER?.trim() as string,
         to,
         subject,
         text,

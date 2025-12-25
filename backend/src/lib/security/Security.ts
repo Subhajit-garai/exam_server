@@ -150,7 +150,7 @@ export const IsRazorpayTestAccessOpen = async (
   try {
     let { email, password } = req.body;
 
-    if (email === process.env.RAZORPAY_TESTACCESS_USER_EMAIL) {
+    if (email === process.env.RAZORPAY_TESTACCESS_USER_EMAIL?.trim()) {
       logger.info("razorpay accessing ....")
 
       let settings = await prisma.appConfig.findFirst({
@@ -162,7 +162,7 @@ export const IsRazorpayTestAccessOpen = async (
       const parsedSettings = settingsSchema.safeParse(settings?.settings);
 
       if (parsedSettings.success && parsedSettings.data.status === "open") {
-        if (password === process.env.RAZORPAY_TESTACCESS_PASSWORD) {
+        if (password === process.env.RAZORPAY_TESTACCESS_PASSWORD?.trim()) {
           let User = await prisma.user.findUnique({
             where: {
               email: email,

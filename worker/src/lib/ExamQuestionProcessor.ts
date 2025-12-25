@@ -7,7 +7,7 @@ export type SelectQuestionNumber_type = Record<string, number>;
 export type SelectQuestion_type = Record<string, string[]>;
 
 interface QuestionsId {
-  old_topic: string;
+  subject_name: string;
   ids: string[];
 }
 // export type QuestionsIDS_type = QuestionsId[];
@@ -51,11 +51,8 @@ export class examQuestionManger {
   private async updateQuestionIds() {
     try {
       logger.info("Updating questions ids...");
-
       let responce = await this.Network.getQuestionsIds();
-
       logger.info("request send");
-
       if (responce) {
         logger.success("Question ids info recived ");
       } else {
@@ -110,6 +107,7 @@ export class examQuestionManger {
   ): SelectQuestionNumber_type => {
     logger.info("Selecting Questions Number");
 
+    // init
     let takenQuestion: SelectQuestionNumber_type = {};
     let totaltakenQuestion: number = 0;
     let remainingQuestion: number = totalQusestions;
@@ -118,6 +116,8 @@ export class examQuestionManger {
       totalQusestions > 17
         ? 17
         : this.dreawArandomNumber(4, Math.floor(totalQusestions / 2));
+
+    // end init
 
     subject.forEach((sub) => {
       takenQuestion[`${sub}`] = 0;
@@ -204,11 +204,10 @@ export class examQuestionManger {
   ): Promise<SelectQuestion_type | null> => {
     try {
       logger.info("Selecting Questions");
-      subject = subject.map((sub: string) => sub.toUpperCase());
-
+      subject = subject.map((sub: string) => sub);
       let questionset = this.selecteQuestionsNumber(totalQusestions, subject); //questionset  { OS: 2, DBMS: 2, UNIX: 1 }
+      logger.info("questionset -->", questionset)
 
-      logger.info(questionset)
       this.count = 0; //debug  how many loop it takes to get the result
       let selectedElements: SelectQuestion_type = {};
       let selectedNormal: any[] = [];
@@ -245,6 +244,7 @@ export class examQuestionManger {
         let Questions = this.Questions.multipleAns; // multiple ans  questions
         let singleAns_Questions = this.Questions.normal; // normal ans  questions for varience
         if (Object.keys(questionset).length <= singleAns_Questions.length) {
+
           if (
             Object.keys(questionset).length <= Questions.length ||
             Object.keys(questionset).length <= singleAns_Questions.length
@@ -252,9 +252,11 @@ export class examQuestionManger {
             // here topic changed into old_topic , in new archi tecture we saprate subjcet , topic tables for note
             Questions.forEach((topic) => {
               singleAns_Questions.forEach((singleTopic) => {
-                if (topic.old_topic == singleTopic.old_topic) {
+
+
+                if (topic.subject_name == singleTopic.subject_name) {
                   Object.keys(questionset).map((selectedTopic) => {
-                    if (topic.old_topic == selectedTopic) {
+                    if (topic.subject_name == selectedTopic) {
                       let normalShuffled = [...singleTopic.ids].sort(
                         () => Math.random() - 0.5
                       ); // Shuffle elements
@@ -269,9 +271,9 @@ export class examQuestionManger {
 
                       while (
                         select_normal_question_number + topic.ids.length <
-                        questionset[topic.old_topic]
+                        questionset[topic.subject_name]
                       ) {
-                        select_normal_question_number +=5;
+                        select_normal_question_number += 5;
                       }
 
                       selectedNormal = [
@@ -279,7 +281,7 @@ export class examQuestionManger {
                           0,
                           select_normal_question_number
                         ),
-                      ];                      
+                      ];
                       let shuffled = [...topic.ids].sort(
                         () => Math.random() - 0.5
                       ); // Shuffle elements
@@ -288,8 +290,8 @@ export class examQuestionManger {
                         () => Math.random() - 0.5
                       ); // merge ans shuffle normal and multiple
 
-                      selectedElements[topic.old_topic] = [
-                        ...shuffled.slice(0, questionset[topic.old_topic]),
+                      selectedElements[topic.subject_name] = [
+                        ...shuffled.slice(0, questionset[topic.subject_name]),
                       ];
                     }
                   });
@@ -297,6 +299,8 @@ export class examQuestionManger {
               });
             });
           }
+
+
         } else {
           throw new Error(
             "Given some Subject isn't Supported  in multiple_ans question selection"
@@ -304,17 +308,18 @@ export class examQuestionManger {
         }
       } else {
         let Questions = this.Questions.normal; // normal ans  questions
-
         if (Object.keys(questionset).length <= Questions.length) {
+
           Questions.forEach((topic) => {
+
             Object.keys(questionset).map((selectedTopic) => {
-              if (topic.old_topic == selectedTopic) {
+              if (topic.subject_name == selectedTopic) {
                 let shuffled = [...topic.ids].sort(() => Math.random() - 0.5); // Shuffle elements
                 shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
                 shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
 
-                selectedElements[topic.old_topic] = [
-                  ...shuffled.slice(0, questionset[topic.old_topic]),
+                selectedElements[topic.subject_name] = [
+                  ...shuffled.slice(0, questionset[topic.subject_name]),
                 ];
               }
             });
@@ -325,6 +330,8 @@ export class examQuestionManger {
           );
         }
       }
+
+      // logger.success(selectedElements)
       return selectedElements;
     } catch (error) {
       console.log("Error in selecteQuestionsNumber fn", error);

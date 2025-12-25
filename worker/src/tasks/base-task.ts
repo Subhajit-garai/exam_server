@@ -2,9 +2,9 @@
 import { Task } from "@repo/lib/types/types";
 
 export abstract class BaseWorkerTask {
-  protected maxRetries = 3;
+  protected maxRetries = 1; // 3
 
-  constructor(protected task: Task) {}
+  constructor(protected task: Task) { }
 
   // Each subclass must implement this
   abstract execute(): Promise<void>;

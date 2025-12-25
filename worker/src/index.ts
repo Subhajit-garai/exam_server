@@ -5,6 +5,25 @@ import { runWorker } from "./tasks/worker-runner";
 
 // demo structure of tasks
 
+
+
+
+//  {
+//   examid: 'cmjhf8pjm0003robu9zwvpa3b',
+//   userid: 'cmiumchq20009jwbuf2mbvusw',
+//   examtype: 'Dpp'
+// }
+let CREATE_DPP_TASK: Task = {
+  type: "CREATE_EXAM",
+  id: "cmjlipcn40001eobuf369rmxp",
+  payload: {
+    examid: 'cmjlipcn40001eobuf369rmxp',
+    userid: 'cmiumchq20009jwbuf2mbvusw',
+    examtype: 'Dpp'
+  },
+  variant: "Dpp",
+  category: "JECA",
+};
 // let CREATE_EXAM_TASK: Task = {
 //   type: "CREATE_EXAM",
 //   id: "cmjgn8tmd000bn8buxruxtn1v",
@@ -42,8 +61,8 @@ import { runWorker } from "./tasks/worker-runner";
 const main = async () => {
   try {
     let redisClient = RedisProvider.getInstance();
-    // await redisClient.push(CREATE_SCORE); // added testing
-    
+    await redisClient.push(CREATE_DPP_TASK); // added testing
+
     while (true) {
       let data = await redisClient.pop();
       if (!data) {

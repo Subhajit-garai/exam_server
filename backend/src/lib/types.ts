@@ -28,6 +28,7 @@ export type TaskType =
   | "CREATE_EXAM"
   | "CREATE_SCORE"
   | "ANS_PROCESSING"
+  | "SEND_NOFTIFICATION"
   | "SEND_QUIZ_DATA";
 
 export interface Task {
@@ -39,56 +40,3 @@ export interface Task {
   retries?: number;
 }
 
-// export type Task =
-//   | {
-//       type: "CreateExam";
-//       examid: string;
-//       userid: string;
-//       examtype: ExamType;
-//     }
-
-
-//   | {
-//       type: "CreateScore";
-//       examid: string;
-//       userid: string;
-//     }
-//   | {
-//       type: "Notify";
-//       // id:string,
-//       status: boolean;
-//       data: object;
-//       message: string;
-//     }
-//   | {
-//       type: "AnsProcessing";
-//       examid: string;
-//       userid: string;
-//       part: string;
-//       ans: string[];
-//       number: string; // remove later
-//       ismultiple: boolean;
-//     }
-//   | {
-//       type: "MockSetProcessing";
-//       mockid: string;
-//       action: string;
-//       // status: string;
-//     }
-//   | {
-//       type: "createQuiz";
-//       cburl: string;
-//       platfrom: Platform;
-//       chat_type: telegramgroupType;
-//       chatid: number;
-//       userid: number;
-//       // topics: string[];
-//       // totalQuetions: number;
-//       // nextQuestionTime: number;
-//       // quizOpenFor: number;
-//     }
-//   | {
-//       type: "CreateDpp";
-//       topics: string[];
-//       totalQuetions: number;
-//     };

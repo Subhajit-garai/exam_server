@@ -189,8 +189,8 @@ export class BotExamService {
 
     // ### Question Logic
     async getQuestionsIds() {
-        const topicNormalAnsQuestions = await prisma.$queryRawUnsafe(`SELECT old_topic, ARRAY_AGG(id) AS ids FROM "Question"  WHERE is_multiple_ans = false AND status = 'Done' GROUP BY old_topic;`);
-        const topicMultiplaAnsQuestions = await prisma.$queryRawUnsafe(`SELECT old_topic, ARRAY_AGG(id) AS ids FROM "Question"  WHERE is_multiple_ans = true AND status = 'Done' GROUP BY old_topic;`);
+        const topicNormalAnsQuestions = await prisma.$queryRawUnsafe(`SELECT  s.name AS subject_name, ARRAY_AGG(q.id) AS ids FROM "Question" q JOIN "Subject" s ON q.subject_id = s.id  WHERE is_multiple_ans = false AND status = 'Done' GROUP BY s.name;`);
+        const topicMultiplaAnsQuestions = await prisma.$queryRawUnsafe(`SELECT  s.name AS subject_name, ARRAY_AGG(q.id) AS ids FROM "Question" q JOIN "Subject" s ON q.subject_id = s.id  WHERE is_multiple_ans = true AND status = 'Done' GROUP BY s.name;`);
         return { topicNormalAnsQuestions, topicMultiplaAnsQuestions };
     }
 

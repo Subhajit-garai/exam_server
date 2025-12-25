@@ -6,6 +6,9 @@ import { JecaQuizExam } from "./jeca/quiz-exam";
 import { JecaTestExam } from "./jeca/test-exam";
 export class JecaExamFactory {
   static create(variant: string, payload: any): IExamCreator {
+
+    console.log(variant.toUpperCase());
+
     switch (variant.toUpperCase()) {
       case "TEST":
         return new JecaTestExam(payload);

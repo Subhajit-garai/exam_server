@@ -49,6 +49,7 @@ export type ExamCategory = "JECA" | "GATE";
 export type ExamVariant = "Test" | "Contest" | "Mock" | "PYQ" | "Subject" | "Dpp" | "Quiz"
 
 export type TaskType =
+
   | "CREATE_EXAM"
   | "CREATE_SCORE"
   | "ANS_PROCESSING"

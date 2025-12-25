@@ -41,8 +41,8 @@ console.log("process.env.RAZORPAY_KEY_ID", process.env.RAZORPAY_KEY_ID);
 console.log("process.env.RAZORPAY_KEY_SECRET", process.env.RAZORPAY_KEY_SECRET);
 
 export const razorpayInstance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+  key_id: process.env.RAZORPAY_KEY_ID?.trim() || "",
+  key_secret: process.env.RAZORPAY_KEY_SECRET?.trim() || "",
 });
 
 export const app = express();

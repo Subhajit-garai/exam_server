@@ -8,6 +8,7 @@ import { setCookie } from "../token.js";
 import { debuglog } from "../helper/debugLog.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
+import { logger } from "../helper/logger.js";
 
 const settingsSchema = z.object({
   status: z.string(),
@@ -141,7 +142,7 @@ export const IsUserLoginOpen = async (req: any, res: any, next: () => any) => {
     });
   }
 };
-export const IsrazerpayTestAccessOpen = async (
+export const IsRazorpayTestAccessOpen = async (
   req: any,
   res: any,
   next: () => any
@@ -149,19 +150,19 @@ export const IsrazerpayTestAccessOpen = async (
   try {
     let { email, password } = req.body;
 
-    if (email === process.env.RAZERPAY_TESTACCESS_USER_EMAIL) {
-      debuglog("razerpay accessing ....")
+    if (email === process.env.RAZORPAY_TESTACCESS_USER_EMAIL) {
+      logger.info("razorpay accessing ....")
 
       let settings = await prisma.appConfig.findFirst({
         where: {
-          feature: "razerpay-testaccess",
+          feature: "razorpay-testaccess",
         },
       });
 
       const parsedSettings = settingsSchema.safeParse(settings?.settings);
 
       if (parsedSettings.success && parsedSettings.data.status === "open") {
-        if (password === process.env.RAZERPAY_TESTACCESS_PASSWORD) {
+        if (password === process.env.RAZORPAY_TESTACCESS_PASSWORD) {
           let User = await prisma.user.findUnique({
             where: {
               email: email,

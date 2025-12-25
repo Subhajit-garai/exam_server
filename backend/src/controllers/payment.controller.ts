@@ -10,7 +10,7 @@ import { couponService } from "@/services/coupon.service.js";
 
 const paymentService = new PaymentService();
 
-export const ApplyCupone = asyncHandler(async (req: any, res: any) => {
+export const ApplyCoupon = asyncHandler(async (req: any, res: any) => {
   let processedData = applyCouponZodSchema.safeParse(req.body);
 
   if (!processedData.success) {

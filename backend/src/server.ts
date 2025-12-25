@@ -37,9 +37,12 @@ if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
   throw new Error("❌ Razorpay keys missing in environment variables");
 }
 
-export const razerpayinstance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+console.log("process.env.RAZORPAY_KEY_ID", process.env.RAZORPAY_KEY_ID);
+console.log("process.env.RAZORPAY_KEY_SECRET", process.env.RAZORPAY_KEY_SECRET);
+
+export const razorpayInstance = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
 });
 
 export const app = express();
@@ -114,5 +117,5 @@ app.use("/api/v1/admin", isAdmin, adminRouter);
 app.use(errorHandler);
 
 server.listen(PORT, () => {
-  console.log(`surver is listening on ${PORT}`);
+  console.log(`server is listening on ${PORT}`);
 });

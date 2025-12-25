@@ -1,4 +1,4 @@
-import { razerpayinstance } from "../server.js";
+import { razorpayInstance } from "../server.js";
 import crypto from "crypto";
 import prisma from "@repo/db/index.js";
 import { primeStatus, purchaseType } from "@repo/prisma/client.js";
@@ -21,7 +21,7 @@ export class PaymentService {
 
     async checkoutSubcription(userId: string, plan: primeStatus, amount: string, type: string, couponCode?: string) {
         if (type !== "SUBSCRIPTION")
-            throw Error("we can not porccesd with wornd plan / payment ");
+            throw Error("we can not proceed with wrong plan / payment ");
 
         let isPlanExist = await prisma.subcriptionOffers.findFirst({
             where: {
@@ -31,7 +31,7 @@ export class PaymentService {
         });
 
         if (!isPlanExist)
-            throw Error("we can not porccesd with wrong plan / payment ");
+            throw Error("we can not proceed with wrong plan / payment ");
 
         await isUserHavePrime(userId);
 
@@ -40,16 +40,16 @@ export class PaymentService {
                 name: plan,
             },
         });
-        if (!tierInfo) throw Error(" We are not provided , given / seleced Plan");
+        if (!tierInfo) throw Error(" We are not provided , given / selected Plan");
 
         let { price } = isPlanExist
 
-        console.log("paln price ", price);
+        console.log("plan price ", price);
 
         let finalAmount = Number(amount);
 
         if (finalAmount !== (price * 100)) {
-            throw Error(" Paln value not matched")
+            throw Error(" Plan value not matched")
         }
 
 
@@ -73,7 +73,7 @@ export class PaymentService {
         let order;
 
         try {
-            order = await razerpayinstance.orders.create(options);
+            order = await razorpayInstance.orders.create(options);
         } catch (error: any) {
             console.error("Razorpay Order Error:", error);
         }
@@ -96,7 +96,7 @@ export class PaymentService {
 
     async checkoutToken(userId: string, plan: string, amount: string, type: string, couponCode?: string) {
         if (type !== "TOKEN")
-            throw Error("we can not porccesd with wornd plan / payment ");
+            throw Error("we can not proceed with wrong plan / payment ");
 
         let isPlanExist = await prisma.subcriptionOffers.findFirst({
             where: {
@@ -106,7 +106,7 @@ export class PaymentService {
         });
 
         if (!isPlanExist)
-            throw Error("we can not porccesd with wrong plan / payment ");
+            throw Error("we can not proceed with wrong plan / payment ");
 
         let { token, price } = isPlanExist;
 
@@ -116,7 +116,7 @@ export class PaymentService {
 
 
         if (finalAmount !== (price * 100)) {
-            throw Error(" Paln value not matched")
+            throw Error(" Plan value not matched")
         }
 
         let couponId = undefined;
@@ -135,7 +135,7 @@ export class PaymentService {
                 type: purchaseType.TOKEN,
             },
         };
-        const order = await razerpayinstance.orders.create(options);
+        const order = await razorpayInstance.orders.create(options);
 
         await prisma.order.create({
             data: {
@@ -159,21 +159,21 @@ export class PaymentService {
             const body = razorpay_order_id + "|" + razorpay_payment_id;
 
             const expectedSignature = crypto
-                .createHmac("sha256", process.env.RAZERPAY_API_SECRET as string)
+                .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET as string)
                 .update(body.toString())
                 .digest("hex");
 
             const isAuthentic = expectedSignature === razorpay_signature;
 
             if (isAuthentic) {
-                const orderDetails = await razerpayinstance.orders.fetch(
+                const orderDetails = await razorpayInstance.orders.fetch(
                     razorpay_order_id
                 );
 
                 // check is it token or subcription
                 let { amount, status, notes } = orderDetails;
 
-                if (!notes) throw Error("payment issue occere ");
+                if (!notes) throw Error("payment issue occurred ");
 
                 let { type } = notes;
 

@@ -22,8 +22,9 @@ export const userauthenticate = asyncHandler(async (req: any, res: any, next: ()
       targeted_exam_id: true,
     },
   })
+
   if (!userInfo) {
-    throw new Error("Authentication required");
+    throw new Error("Authentication required ->");
   }
 
 

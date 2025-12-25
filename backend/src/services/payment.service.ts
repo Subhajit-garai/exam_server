@@ -70,15 +70,12 @@ export class PaymentService {
             },
         };
 
-        console.log("options ", options);
-
         let order;
 
         try {
             order = await razerpayinstance.orders.create(options);
         } catch (error: any) {
             console.error("Razorpay Order Error:", error);
-            throw Error("---> order not created");
         }
 
         if (!order) throw Error("order not created");

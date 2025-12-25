@@ -33,11 +33,13 @@ import { progressRouter } from "./routes/progress.routes.js";
 
 
 
-
+if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+  throw new Error("❌ Razorpay keys missing in environment variables");
+}
 
 export const razerpayinstance = new Razorpay({
-  key_id: process.env.RAZERPAY_API_KEY!,
-  key_secret: process.env.RAZERPAY_API_SECRET!,
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
 export const app = express();

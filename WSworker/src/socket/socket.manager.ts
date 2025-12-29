@@ -82,8 +82,6 @@ export class SocketManager {
                 //     return;
                 // }
 
-                console.log(`User connected: ${userData.id}`);
-
                 // Store user mapping
                 let user = this.users.get(userData.id);
                 if (!user) {
@@ -94,7 +92,7 @@ export class SocketManager {
                 }
 
                 // 2. Initialize Handlers
-                const quizHandler = new QuizSocketHandler(ws, userData);
+                const quizHandler = new QuizSocketHandler(ws, user);
 
                 this.clients.set(ws, [quizHandler]);
 
@@ -123,9 +121,6 @@ export class SocketManager {
                 });
 
                 ws.on("close", (code, reason) => {
-
-                    console.log(" connection close reason ---> ", reason);
-
                     console.log(`User disconnected: ${userData.id}`);
                     this.clients.delete(ws);
 
@@ -147,7 +142,17 @@ export class SocketManager {
         console.log("WebSocket Server Initialized");
     }
 
+
+
+
     public broadcast(userIds: string[], type: string, payload: any) {
+        if (payload && payload.quizId) {
+            const room = this.rooms.get(payload.quizId);
+            if (room) {
+                room.broadcast(type, payload);
+                return; // We handled it via Room
+            }
+        }
         userIds.forEach(userId => {
             const user = this.users.get(userId);
             if (user) {
@@ -156,20 +161,26 @@ export class SocketManager {
         });
     }
 
-    public getRoom(roomId: string): Room | undefined {
-        return this.rooms.get(roomId);
-    }
-
-    public createRoom(roomId: string): Room {
+    public joinRoom(roomId: string, user: User) {
         let room = this.rooms.get(roomId);
         if (!room) {
             room = new Room(roomId);
             this.rooms.set(roomId, room);
+            console.log(`[ROOM_CREATE] Created room ${roomId}`);
         }
-        return room;
+        room.addUser(user);
+        console.log(`[ROOM_JOIN] User ${user.id} joined room ${roomId}`);
     }
 
-    public deleteRoom(roomId: string) {
-        this.rooms.delete(roomId);
+    public leaveRoom(roomId: string, user: User) {
+        const room = this.rooms.get(roomId);
+        if (room) {
+            room.removeUser(user);
+            console.log(`[ROOM_LEAVE] User ${user.id} left room ${roomId}`);
+            if (room.getUserCount() === 0) {
+                this.rooms.delete(roomId);
+                console.log(`[ROOM_DELETE] Deleted empty room ${roomId}`);
+            }
+        }
     }
 }

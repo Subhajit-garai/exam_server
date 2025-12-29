@@ -1,7 +1,5 @@
-import { exam_question_map_format, Task } from "./types/types";
-import axios from "axios";
+import { exam_question_map_format } from "./types/types";
 import { Network } from "../utils/network";
-import { debuglog } from "../utils/debugLog";
 import { logger } from "@/utils/logger";
 export type SelectQuestionNumber_type = Record<string, number>;
 export type SelectQuestion_type = Record<string, string[]>;
@@ -358,4 +356,7 @@ export class examQuestionManger {
     let res = await this.Network.AddQuestions(examid, formated_questions);
     return res ? res : false;
   }
+
+
+
 }

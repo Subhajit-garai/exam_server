@@ -13,17 +13,19 @@ import { runWorker } from "./tasks/worker-runner";
 //   userid: 'cmiumchq20009jwbuf2mbvusw',
 //   examtype: 'Dpp'
 // }
-let CREATE_DPP_TASK: Task = {
-  type: "CREATE_EXAM",
-  id: "cmjlipcn40001eobuf369rmxp",
-  payload: {
-    examid: 'cmjlipcn40001eobuf369rmxp',
-    userid: 'cmiumchq20009jwbuf2mbvusw',
-    examtype: 'Dpp'
-  },
-  variant: "Dpp",
-  category: "JECA",
-};
+// let CREATE_QUIZ_TASK: Task = {
+//   type: "CREATE_QUIZ",
+//   id: "b9437e1a-5483-4893-831a-98fb018839a6",
+//   payload: {
+//     quizId: 'b9437e1a-5483-4893-831a-98fb018839a6',
+//     userid: 'cmiumcgir0001jwbukh9xs97h',
+//     examtype: 'Quiz'
+//   },
+//   variant: "Quiz",
+//   category: "JECA",
+// };
+
+
 // let CREATE_EXAM_TASK: Task = {
 //   type: "CREATE_EXAM",
 //   id: "cmjgn8tmd000bn8buxruxtn1v",
@@ -61,7 +63,7 @@ let CREATE_DPP_TASK: Task = {
 const main = async () => {
   try {
     let redisClient = RedisProvider.getInstance();
-    await redisClient.push(CREATE_DPP_TASK); // added testing
+    // await redisClient.push(CREATE_QUIZ_TASK); // added testing
 
     while (true) {
       let data = await redisClient.pop();

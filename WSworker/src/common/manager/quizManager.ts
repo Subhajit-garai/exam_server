@@ -3,6 +3,9 @@ import {
     exam_question_format_for_ui_type,
     exam_question_format_type,
 } from "../questionTypes.js";
+import { logger } from "src/utils/logger.js";
+import { WsMessage, StartQuizPayload, QuestionPayload, EndQuizPayload } from "../types/ws.types.js";
+import { shuffleArraySeeded } from "../../utils/shuffle.js";
 
 interface QuizMetaData {
     id: string;
@@ -18,7 +21,9 @@ interface User {
     id: string;
 }
 
+
 export class QuizManager {
+
     private static instance: QuizManager;
     private redisProvider: RedisProvider;
     private redis: any; // Direct ioredis client
@@ -45,30 +50,26 @@ export class QuizManager {
         const meta = await this.getQuizMetaData(quizId);
         if (!meta) throw new Error("Quiz not found");
 
-        const count = await this.redis.scard(`quiz:users:${quizId}`);
-
-        // Check if user is already in (to avoid double counting if rejoining)
         const isMember = await this.redis.sismember(`quiz:users:${quizId}`, userId);
-
-        if (!isMember && count >= meta.limit) {
-            // Quiz is full, start the quiz
-            await this.redis.sadd(`quiz:users:${quizId}`, userId);
-            console.log(`User ${userId} added to quiz ${quizId}. Quiz full, starting...`);
-            await this.startQuiz(quizId);
+        if (isMember) {
+            logger.info(`[QUIZ_ADD_USER] User ${userId} already in quiz ${quizId}`);
             return;
-        } else {
-            console.log(" user already in quiz ");
         }
-        // Check again if we hit the limit after adding
-        const newCount = await this.redis.scard(`quiz:users:${quizId}`);
-        if (newCount >= meta.limit) {
+        await this.redis.sadd(`quiz:users:${quizId}`, userId);
+        logger.success(`[QUIZ_ADD_USER] User ${userId} added to quiz ${quizId}`);
+
+        const count = await this.redis.scard(`quiz:users:${quizId}`);
+        logger.info(`[QUIZ_ADD_USER] Quiz ${quizId} count: ${count}/${meta.limit}`);
+
+        if (count >= meta.limit) {
+            logger.success(`[QUIZ_START] Quiz ${quizId} limit reached (${count} users). Starting...`);
             await this.startQuiz(quizId);
         }
     }
 
     async removeUser(quizId: string, userId: string) {
         await this.redis.srem(`quiz:users:${quizId}`, userId);
-        console.log(`User ${userId} removed from quiz ${quizId}`);
+        logger.info(`[QUIZ_REMOVE_USER] User ${userId} removed from quiz ${quizId}`);
     }
 
     async isUserExist(quizId: string, userId: string): Promise<boolean> {
@@ -84,28 +85,137 @@ export class QuizManager {
     async removeQuiz(quizId: string) {
         await this.redis.del(`quiz:data:${quizId}`);
         await this.redis.del(`quiz:users:${quizId}`);
-        console.log(`Quiz ${quizId} removed`);
+        await this.redis.del(`quiz:active_loop:${quizId}`);
+        await this.redis.del(`quiz:startTime:${quizId}`);
+        await this.redis.del(`quiz:leaderboard:${quizId}`);
+        // Consider deleting all question start/end times if possible, or let them expire via TTL
+        logger.info(`[QUIZ_REMOVE] Quiz ${quizId} removed`);
     }
 
     async startQuiz(quizId: string) {
-        // 1. Get all users
-        const users = await this.redis.smembers(`quiz:users:${quizId}`);
-        if (users.length === 0) return;
+        // 1. Get count (optional, just for logging/validation)
+        const count = await this.redis.scard(`quiz:users:${quizId}`);
+        if (count === 0) return;
 
-        // 2. Publish start message to Redis (so WS Worker can pick it up)
-        const message = JSON.stringify({
-            userIds: users,
+        // Prevent duplicate loops
+        const lockKey = `quiz:active_loop:${quizId}`;
+        const acquired = await this.redis.setnx(lockKey, "LOCKED");
+        if (acquired === 0) {
+            logger.info(`[QUIZ_START] Quiz ${quizId} loop already active.`);
+            return;
+        }
+        // Auto-expire lock after 2 hours (just in case)
+        await this.redis.expire(lockKey, 7200);
+
+        // Set Quiz Start Time (Expire in 2 hours)
+        await this.redis.set(`quiz:startTime:${quizId}`, new Date().toISOString(), "EX", 7200);
+
+        const message: WsMessage<StartQuizPayload> = {
+            userIds: [],
             type: "QUIZ_STARTED",
             payload: {
                 quizId,
                 startTime: new Date(),
                 message: "Quiz started! Good luck."
             }
-        });
+        };
 
-        await this.redis.publish("WS_BROADCAST", message);
+        await this.redis.publish("WS_BROADCAST", JSON.stringify(message));
+        logger.success(`[QUIZ_START] Quiz ${quizId} started for ${count} users.`);
 
-        console.log(`Quiz ${quizId} started for ${users.length} users.`);
+        // Start the Question Loop
+        this.runQuestionLoop(quizId, 1);
+    }
+
+    async runQuestionLoop(quizId: string, questionNumber: number) {
+        const meta = await this.getQuizMetaData(quizId);
+        if (!meta) {
+            logger.error(`[QUIZ_LOOP] Meta not found for ${quizId}`);
+            return;
+        }
+
+        // Check if we are done
+        if (questionNumber > meta.total_questions) {
+            await this.endQuizBroadcast(quizId);
+            return;
+        }
+
+        const durationMs = meta.nextQuestionTime * 1000;
+        // Ensure duration is reasonable, default to 30s if missing/zero to prevent infinite fast loops
+        const safeDuration = durationMs > 0 ? durationMs : 30000;
+
+        const startTime = new Date();
+        const endTime = new Date(startTime.getTime() + safeDuration);
+
+        // Send the question
+        await this.sendQuestionToRoom(quizId, questionNumber, startTime, endTime);
+
+        // Schedule next question
+        logger.info(`[QUIZ_LOOP] Scheduling question ${questionNumber + 1} for ${quizId} in ${safeDuration}ms`);
+        setTimeout(() => {
+            this.runQuestionLoop(quizId, questionNumber + 1);
+        }, safeDuration);
+    }
+
+    async endQuizBroadcast(quizId: string) {
+        const message: WsMessage<EndQuizPayload> = {
+            userIds: [],
+            type: "QUIZ_ENDED",
+            payload: {
+                quizId
+            }
+        };
+        await this.redis.publish("WS_BROADCAST", JSON.stringify(message));
+        logger.success(`[QUIZ_END] Auto-ended quiz ${quizId}`);
+
+        // Optional: Clean up or persist final state
+        await this.removeQuiz(quizId);
+    }
+
+    async sendQuestionToRoom(quizId: string, questionNumber: number, startTime?: Date, endTime?: Date) {
+        const questionStr = await this.redis.get(`quizquestion:${quizId}:part1:${questionNumber}`);
+        if (!questionStr) {
+            logger.error(`[QUESTION_SEND_FAIL] Question not found: ${quizId} # ${questionNumber}`);
+            return;
+        }
+
+        const question: exam_question_format_type = JSON.parse(questionStr);
+        if (!question.question) throw Error("Question content missing");
+
+        const data: exam_question_format_for_ui_type = {
+            number: question.number,
+            part: question.part,
+            question: {
+                questionid: question.question.id,
+                title: question.question.title,
+                options: question.question.options, // WARNING: Not shuffled here if they were supposed to be
+                extra: question.question.extra,
+                format: question.question.format,
+                is_multiple_ans: question.question.is_multiple_ans,
+            },
+        };
+
+        // If times are provided, Use them. If not (manual call?), use current time.
+        const sTime = startTime || new Date();
+        const eTime = endTime || new Date(sTime.getTime() + 30000); // Default 30s if not loop-driven
+
+        // Store start time for validation (Expire in 5 mins)
+        await this.redis.set(`quiz:question:startTime:${quizId}:${questionNumber}`, sTime.toISOString(), "EX", 300);
+        await this.redis.set(`quiz:question:endTime:${quizId}:${questionNumber}`, eTime.toISOString(), "EX", 300);
+
+        const message: WsMessage<QuestionPayload> = {
+            userIds: [],
+            type: "QUESTION",
+            payload: {
+                quizId,
+                question: data,
+                startTime: sTime.toISOString(),
+                endTime: eTime.toISOString()
+            }
+        };
+
+        await this.redis.publish("WS_BROADCAST", JSON.stringify(message));
+        logger.success(`[QUESTION_SENT] Question ${questionNumber} sent to quiz ${quizId}`);
     }
     // --- Question Management ---
 
@@ -113,7 +223,8 @@ export class QuizManager {
         type: "pre" | "next" | "current",
         quizId: string,
         userId: string,
-        currentNumber: number
+        currentNumber: number,
+        shouldShuffle: boolean = true
     ) {
         const isValidUser = await this.isUserExist(quizId, userId);
         if (!isValidUser) return null;
@@ -138,7 +249,7 @@ export class QuizManager {
         }
 
         if (number > 0) {
-            const questionStr = await this.redis.get(`quizquestion:${quizId}:${number}`);
+            const questionStr = await this.redis.get(`quizquestion:${quizId}:part1:${number}`);
             if (!questionStr) throw Error("Question data not found");
 
             const question: exam_question_format_type = JSON.parse(questionStr);
@@ -157,6 +268,13 @@ export class QuizManager {
                     is_multiple_ans: question.question.is_multiple_ans,
                 },
             };
+
+            if (shouldShuffle && data.question.options && data.question.options.length > 0) {
+                const seed = `${quizId}:${userId}:${number}`;
+                const { shuffled } = shuffleArraySeeded(data.question.options, seed);
+                data.question.options = shuffled;
+            }
+
             return data;
         }
         return null;
@@ -176,7 +294,7 @@ export class QuizManager {
     }
 
     async getQuestionAnswer(quizId: string, number: number) {
-        const questionStr = await this.redis.get(`quizquestionans:${quizId}:${number}`);
+        const questionStr = await this.redis.get(`quizquestionans:${quizId}:part1:${number}`);
         if (!questionStr) throw Error("Question data not found");
         const question = JSON.parse(questionStr);
         return question;
@@ -188,13 +306,35 @@ export class QuizManager {
         ans: string[],
         number: number,
         isMultiple: boolean,
-        time: string
+        submissionTimeIso: string
     ) {
+        // 1. Time Validation & Calculation
+        let timeTaken = 0;
+        const questionStartTimeStr = await this.redis.get(`quiz:question:startTime:${quizId}:${number}`);
+        const questionEndTimeStr = await this.redis.get(`quiz:question:endTime:${quizId}:${number}`);
+
+        if (questionEndTimeStr && questionStartTimeStr) {
+            const allowedEndTime = new Date(questionEndTimeStr).getTime();
+            const startTimestamp = new Date(questionStartTimeStr).getTime();
+            const submissionTime = new Date(submissionTimeIso).getTime();
+
+            // Calculate time taken in seconds
+            timeTaken = (submissionTime - startTimestamp) / 1000;
+            if (timeTaken < 0) timeTaken = 0; // Should not happen but safety first
+
+            // Add a small buffer (e.g., 5 seconds) for network latency
+            const bufferMs = 5000;
+
+            if (submissionTime > allowedEndTime + bufferMs) {
+                logger.error(`[LATE_SUBMISSION] User ${userId} submitted late for Q${number} in ${quizId}`);
+                throw new Error("Submission rejected: Time is up");
+            }
+        }
 
         let questionAnsData = await this.getQuestionAnswer(quizId, number); // not shuffle options
-        let questionData = await this.getQuestion("current", quizId, userId, number); // shuffle options
+        let questionData = await this.getQuestion("current", quizId, userId, number, false); // DO NOT shuffle options for validation
 
-        if (!questionData || !questionAnsData) throw Error("Question data not found");
+        if (!questionData || !questionAnsData) throw Error("Answer processing failed");
 
         let score = 0;
         if (isMultiple) {
@@ -203,14 +343,36 @@ export class QuizManager {
             score = ans[0] === questionData.question.options[0] ? 1 : 0;
         }
 
-        // add score to redis
+        // 2. Store Detailed Submission
+        const submissionData = {
+            questionId: questionData.question.questionid,
+            questionNumber: number,
+            userAnswer: ans,
+            correct: score > 0, // Simplified correct check
+            score,
+            timeTaken,
+            timestamp: submissionTimeIso
+        };
+
+        // Store in a Hash for this user: Key = quiz:submissions:{quizId}:{userId}, Field = questionNumber
+        await this.redis.hset(
+            `quiz:submissions:${quizId}:${userId}`,
+            number.toString(),
+            JSON.stringify(submissionData)
+        );
+        // Expiry for submission data (24h)
+        await this.redis.expire(`quiz:submissions:${quizId}:${userId}`, 86400);
+        // 3. Update Leaderboard (Score)
+
+        console.log("score ---> ", score);
+
+
 
         await this.incrementScore(quizId, userId, score);
-        await this.CalculateTime(time);
 
-
-
+        logger.info(`[ANSWER_STORED] User ${userId} scored ${score} in ${timeTaken}s for Q${number}`);
     }
+
 
     async CalculateTime(time: string) {
         // let quizdata = await this.getQuizMetaData(time);
@@ -218,7 +380,14 @@ export class QuizManager {
     }
 
     async incrementScore(quizId: string, userId: string, score: number) {
+        // Use ZINCRBY for Sorted Set Leaderboard
 
-        return this.redis.hincrby(`quiz:users:${quizId}`, userId, score);
+
+        console.log(" userid", userId, "score ---> ", score);
+
+        const key = `quiz:leaderboard:${quizId}`;
+        await this.redis.zincrby(key, score, userId);
+        // Ensure 24h TTL
+        await this.redis.expire(key, 86400);
     }
 }

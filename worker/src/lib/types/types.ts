@@ -47,10 +47,12 @@ export type Right_Wrong_set_type = {
 // src/types.ts
 export type ExamCategory = "JECA" | "GATE";
 export type ExamVariant = "Test" | "Contest" | "Mock" | "PYQ" | "Subject" | "Dpp" | "Quiz"
+export type CreationTypes = "Created" | "Updated" | "Processing" | "Done" | "Suspended"
 
 export type TaskType =
 
   | "CREATE_EXAM"
+  | "CREATE_QUIZ"
   | "CREATE_SCORE"
   | "ANS_PROCESSING"
   | "SEND_QUIZ_DATA"

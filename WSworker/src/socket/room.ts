@@ -1,4 +1,5 @@
 import { User } from "./user.js";
+import { shuffleArraySeeded } from "../utils/shuffle.js";
 
 export class Room {
     public id: string;
@@ -23,7 +24,26 @@ export class Room {
     public broadcast(type: string, payload: any, excludeUser?: User) {
         this.users.forEach(user => {
             if (user !== excludeUser) {
-                user.send(type, payload);
+                let msgPayload = payload;
+
+                if (type === "QUESTION" && payload.question && payload.question.options) {
+                    // Clone payload to avoid side effects
+                    // Shallow clone of payload, then deep clone needs for question and options
+                    const newPayload = {
+                        ...payload,
+                        question: {
+                            ...payload.question,
+                            options: [...payload.question.options]
+                        }
+                    };
+
+                    const seed = `${newPayload.quizId}:${user.id}:${newPayload.question.number}`;
+                    const { shuffled } = shuffleArraySeeded(newPayload.question.options, seed);
+                    newPayload.question.options = shuffled;
+                    msgPayload = newPayload;
+                }
+
+                user.send(type, msgPayload);
             }
         });
     }

@@ -24,10 +24,10 @@ userRouter.post("/validate/telegramid", otpLimiter, usertelegramidValidationToke
 userRouter.post("/verify/telegramid", otpLimiter, usertetegramidValidationTokenVerify);
 //purchases 
 userRouter.get("/purchases", userPurchases);
-userRouter.use("/activity", activityRouter)
-// timeline get 
 userRouter.get("/timeline", getUserTimeline);
-userRouter.use("/profile", profileRouter);
 userRouter.get("/subscription/tiers", getUserSubscriptionDetails);
 userRouter.get("/rewards", getUserRewards);
+
+userRouter.use("/activity", activityRouter)
+userRouter.use("/profile", profileRouter);
 userRouter.use("/quizconfig", botQuizConfigUserRouter);

@@ -1,7 +1,8 @@
 import prisma from "@repo/db/index.js";
 import { QuizeSetupFunction } from "@/lib/helper/TelegramQuiz.js";
 import { QuizManager } from "@/lib/manager/quizManager.js";
-
+import { activity_quiz_create_data_type } from "@/zod/quiz.zod";
+const qm = QuizManager.getInstance();
 export class QuizService {
 
     async getQuizConfig(chatid: string) {
@@ -26,20 +27,20 @@ export class QuizService {
         return notifyStatus;
     }
 
-    async createQuiz(userid: string, userRole: string, data: any) {
+    async joinQuiz(id: string, userid: string) {
+        const notifyStatus = await qm.joinQuiz(id, userid);
+        return notifyStatus;
+    }
+
+    async createQuiz(userid: string, userRole: string, data: activity_quiz_create_data_type) {
 
         // user quiz creation
-        const qm = QuizManager.getInstance();
         const quiz = await qm.CreateQuiz(userid, userRole, data);
         return quiz;
-
-
         //admin
-
     }
 
     async getAvailableQuizzes() {
-        const qm = QuizManager.getInstance();
         const cachedQuizzes = await qm.getAllActiveQuizzes();
         return cachedQuizzes;
     }

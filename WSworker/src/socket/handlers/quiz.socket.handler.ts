@@ -1,9 +1,18 @@
 import { BaseSocketHandler } from "./base.socket.handler.js";
 import { WebSocket } from "ws";
 import { QuizManager } from "../../common/manager/quizManager.js";
+import { logger } from "src/utils/logger.js";
+import { catchAsyncSocket } from "../../utils/socketAsyncWrapper.js";
+import {
+    QuizHandlerType,
+    JoinQuizPayload,
+    LeaveQuizPayload,
+    EndQuizPayload,
+    SubmitAnswerPayload,
+    QuestionPayload
+} from "../../common/types/ws.types.js";
+import { SocketManager } from "../socket.manager.js";
 
-
-type QuizHandlerType = "JOIN_QUIZ" | "LEAVE_QUIZ" | "START_QUIZ" | "END_QUIZ" | "SUBMIT_ANSWER";
 
 export class QuizSocketHandler extends BaseSocketHandler {
     private quizManager: QuizManager;
@@ -16,96 +25,98 @@ export class QuizSocketHandler extends BaseSocketHandler {
     async handleMessage(type: QuizHandlerType, payload: any): Promise<void> {
         switch (type) {
             case "JOIN_QUIZ":
-                await this.handleJoinQuiz(payload);
+                await this.handleJoinQuiz(payload as JoinQuizPayload);
                 break;
             case "LEAVE_QUIZ":
-                await this.handleLeaveQuiz(payload);
+                await this.handleLeaveQuiz(payload as LeaveQuizPayload);
                 break;
-            case "START_QUIZ":
-                await this.handleStartQuiz(payload);
-                break;
-            case "END_QUIZ":
-                await this.handleEndQuiz(payload);
-                break;
+            // case "END_QUIZ":
+            //     await this.handleEndQuiz(payload as EndQuizPayload);
+            // break;
             case "SUBMIT_ANSWER":
-                await this.handleSubmitAnswer(payload);
+                await this.handleSubmitAnswer(payload as SubmitAnswerPayload);
                 break;
             default:
-                console.warn(`Unknown message type for QuizHandler: ${type}`);
+                logger.error(`[UNKNOWN_TYPE] Unknown message type for QuizHandler: ${type}`);
         }
     }
 
-    private async handleJoinQuiz(payload: any) {
+
+    @catchAsyncSocket
+    private async handleJoinQuiz(payload: JoinQuizPayload) {
         const { quizId } = payload;
-        console.log(" QuizHandler: handleJoinQuiz ", payload);
+        logger.info(`[JOIN_QUIZ] Handler processing for quiz ${quizId}`, payload);
+
+        // Add to local room FIRST
+        let socketManager = (global as any).socketManager;
+        if (!socketManager) {
+            socketManager = SocketManager.getInstance();
+        }
+        socketManager.joinRoom(quizId, this.user);
 
         try {
             await this.quizManager.addUser(quizId, this.user.id);
-            console.log(`User ${this.user.id} joining quiz ${quizId}`);
             this.send("QUIZ_JOINED", { quizId, message: "Successfully joined quiz" });
         } catch (error) {
-            this.error("Failed to join quiz");
+            // Rollback if Redis add fails
+            socketManager.leaveRoom(quizId, this.user);
+            throw error;
         }
     }
 
-    private async handleLeaveQuiz(payload: any) {
-        console.log(" QuizHandler: handleLeaveQuiz ", payload);
+    @catchAsyncSocket
+    private async handleLeaveQuiz(payload: LeaveQuizPayload) {
         const { quizId } = payload;
-        try {
-            await this.quizManager.removeUser(quizId, this.user.id);
-            console.log(`User ${this.user.id} leaving quiz ${quizId}`);
-            this.send("QUIZ_LEFT", { quizId, message: "Successfully left quiz" });
-        } catch (error) {
-            this.error("Failed to leave quiz");
+        logger.info(`[LEAVE_QUIZ] Handler processing for quiz ${quizId}`, payload);
+
+        await this.quizManager.removeUser(quizId, this.user.id);
+
+        // Remove from local room
+        let socketManager = (global as any).socketManager;
+        if (!socketManager) {
+            socketManager = SocketManager.getInstance();
         }
+        socketManager.leaveRoom(quizId, this.user);
+
+        logger.success(`[LEAVE_QUIZ] User ${this.user.id} left quiz ${quizId}`);
+        this.send("QUIZ_LEFT", { quizId, message: "Successfully left quiz" });
     }
 
-    private async handleStartQuiz(payload: any) {
-        console.log(" QuizHandler: handleStartQuiz ", payload);
+    @catchAsyncSocket
+    private async handleEndQuiz(payload: EndQuizPayload) {
         const { quizId } = payload;
-        try {
-            const isUserInQuiz = await this.quizManager.isUserExist(quizId, this.user.id);
-            if (!isUserInQuiz) {
-                this.error("User not in quiz");
-                return;
-            }
-            console.log(`User ${this.user.id} starting quiz ${quizId}`);
-            this.send("QUIZ_STARTED", { quizId, startTime: new Date() });
+        logger.info(`[END_QUIZ] Handler processing for quiz ${quizId}`, payload);
 
-            // Send first question
-            const question = await this.quizManager.getQuestion("current", quizId, this.user.id, 1);
-            if (question) {
-                this.send("NEW_QUESTION", { quizId, question });
-            }
-        } catch (error) {
-            this.error("Failed to start quiz");
+        const isUserInQuiz = await this.quizManager.isUserExist(quizId, this.user.id);
+        if (!isUserInQuiz) {
+            logger.error(`[END_QUIZ] User ${this.user.id} tried to end quiz ${quizId} but is not a member`);
+            this.error("User not in quiz");
+            return;
         }
+        logger.success(`[QUIZ_ENDED] User ${this.user.id} ending quiz ${quizId}`);
+        this.send("QUIZ_ENDED", { quizId, endTime: new Date() });
     }
 
-    private async handleEndQuiz(payload: any) {
-        console.log(" QuizHandler: handleEndQuiz ", payload);
-        const { quizId } = payload;
-        try {
-            const isUserInQuiz = await this.quizManager.isUserExist(quizId, this.user.id);
-            if (!isUserInQuiz) {
-                this.error("User not in quiz");
-                return;
-            }
-            console.log(`User ${this.user.id} ending quiz ${quizId}`);
-            this.send("QUIZ_ENDED", { quizId, endTime: new Date() });
-        } catch (error) {
-            this.error("Failed to end quiz");
-        }
-    }
-
-    private async handleSubmitAnswer(payload: any) {
+    @catchAsyncSocket
+    private async handleSubmitAnswer(payload: SubmitAnswerPayload) {
         const { quizId, questionId, answer, number, isMultiple } = payload;
-        try {
-            // await this.quizManager.submitAnswer(quizId, this.user.id, answer, number, isMultiple);
-            console.log(`User ${this.user.id} submitted answer for ${questionId} in ${quizId}`);
-            this.send("ANSWER_SUBMITTED", { questionId, message: "Answer received" });
-        } catch (error) {
-            this.error("Failed to submit answer");
-        }
+        logger.info(`[SUBMIT_ANSWER] Handler processing for quiz ${quizId}, question ${questionId}`);
+
+        // Pass the time if provided, or use current time string
+        const submissionTime = new Date().toISOString();
+
+        console.log("-----> ", payload);
+
+        await this.quizManager.submitAnswer(
+            quizId,
+            this.user.id,
+            answer,
+            number,
+            isMultiple,
+            submissionTime
+        );
+
+        logger.info(`[ANSWER_SUBMITTED] User ${this.user.id} submitted answer for ${questionId} in ${quizId}`);
+        this.send("ANSWER_SUBMITTED", { questionId, message: "Answer received" });
     }
 }

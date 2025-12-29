@@ -1,5 +1,5 @@
 import { CreationTypes, ExamStage, ExamStatus, quiz_type } from "@repo/prisma/client.js"
-import z, { date } from "zod";
+import z from "zod";
 
 
 export const create_quiz_data_ZodSchema = z.object({
@@ -21,4 +21,15 @@ export const create_quiz_data_ZodSchema = z.object({
 
 });
 
+export const activity_quiz_create_data_ZodSchema = z.object({
+  total_questions: z.string().optional(),
+  nextQuestionTime: z.string().optional(),
+  quizOpenFor: z.string().optional(),
+  topic: z.string(),
+  subject: z.string(),
+  mode: z.string()
+})
+
+
+export type activity_quiz_create_data_type = z.infer<typeof activity_quiz_create_data_ZodSchema>
 export type createQuizType = z.infer<typeof create_quiz_data_ZodSchema>

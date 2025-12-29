@@ -43,6 +43,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
             console.log("supergroup chat");
 
             let groupData = await newtWorkClient.telegramgroupinfo(chatid);
+
             if (!groupData) {
               throw new Error(
                 `No group data found or it may be banned",${chatid}`
@@ -50,7 +51,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
             }
 
             console.log("is topic ", groupData.isTopic);
-            
+
 
             if (groupData.isTopic) {
               let topicData: {
@@ -90,7 +91,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
         platform,
         userid
       );
-      
+
 
       let {
         total_questions,
@@ -114,6 +115,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
             Question_array.push(ele);
           });
       });
+
 
       let finalquestions = await newtWorkClient.getQuestions_byIds(
         Question_array

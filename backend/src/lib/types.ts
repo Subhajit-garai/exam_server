@@ -26,6 +26,7 @@ export type ExamCategory = "JECA" | "GATE";
 
 export type TaskType =
   | "CREATE_EXAM"
+  | "CREATE_QUIZ"
   | "CREATE_SCORE"
   | "ANS_PROCESSING"
   | "SEND_NOFTIFICATION"

@@ -1,21 +1,18 @@
 import { RedisProvider } from "../radisProvider.js";
-import prisma from "@repo/db/index.js";
-import {
-    exam_question_format_for_ui_type,
-    exam_question_format_type,
-} from "../types/questionTypes.js";
-import { shuffleArraySeeded } from "../helper/shuffle.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { v4 as uuidv4 } from "uuid";
+import { activity_quiz_create_data_type } from "@/zod/quiz.zod.js";
+import { CreationTypes } from "@repo/prisma/enums.js";
 
 interface QuizMetaData {
     id: string;
     total_questions: number;
     nextQuestionTime: number;
-    quizOpenFor: number;
-    topics: string[];
-    subjects: string[];
+    quizOpenFor: number;  // it is in hours that indicate quiz present in cache in how many hours
+    topic: string | "All";
+    subject: string;
     limit: number;
+    status: CreationTypes;
     created_by?: string;
     creator_role?: string;
 }
@@ -84,10 +81,37 @@ export class QuizManager {
         const exists = await this.redis.sismember(`quiz:users:${quizId}`, userId);
         return exists === 1;
     }
-    // --- Quiz Metadata (Redis Hashes) ---
-    async CreateQuiz(userid: string, userRole: string, data: any) {
 
-        let { topic, subject, mode } = data;
+    async joinQuiz(quizId: string, userId: string) {
+        const meta = await this.getQuizMetaData(quizId);
+        if (!meta) throw new Error("Quiz not found");
+
+        const count = await this.redis.scard(`quiz:users:${quizId}`);
+
+        // Check if user is already in (to avoid double counting if rejoining)
+        const isMember = await this.redis.sismember(`quiz:users:${quizId}`, userId);
+
+        if (!isMember && count >= meta.limit) {
+            // Quiz is full, start the quiz
+            await this.redis.sadd(`quiz:users:${quizId}`, userId);
+            console.log(`User ${userId} added to quiz ${quizId}. Quiz full, starting...`);
+            await this.startQuiz(quizId);
+            return;
+        }
+
+        await this.redis.sadd(`quiz:users:${quizId}`, userId);
+        console.log(`User ${userId} added to quiz ${quizId}`);
+
+        // Check again if we hit the limit after adding
+        const newCount = await this.redis.scard(`quiz:users:${quizId}`);
+        if (newCount >= meta.limit) {
+            await this.startQuiz(quizId);
+        }
+    }
+    // --- Quiz Metadata (Redis Hashes) ---
+    async CreateQuiz(userid: string, userRole: string, data: activity_quiz_create_data_type) {
+
+        let { mode } = data;
 
         let limit = 1;
         let quizId = uuidv4();
@@ -114,21 +138,34 @@ export class QuizManager {
 
         let quizdata: QuizMetaData = {
             id: quizId,
-            total_questions: 10,
-            nextQuestionTime: 60,
-            quizOpenFor: 50,
-            subjects: subject,
-            topics: topic,
+            ...data,
             limit: limit,
             created_by: userid,
-            creator_role: userRole
-
+            creator_role: userRole,
+            total_questions: data.total_questions ? parseInt(data.total_questions) : 10,
+            nextQuestionTime: data.nextQuestionTime ? parseInt(data.nextQuestionTime) : 60,
+            quizOpenFor: data.quizOpenFor ? parseInt(data.quizOpenFor) : 24,
+            status: "Created"
         }
 
 
 
         // Store as JSON string in Redis
-        await this.redis.set(`quiz:data:${quizId}`, JSON.stringify(quizdata));
+        await this.redis.set(`quiz:data:${quizId}`, JSON.stringify(quizdata), 'EX', 60 * 60 * 24);
+
+        // send task to worker to fetch questions
+        await this.redis.publish("FETCH_QUESTIONS", JSON.stringify({ quizId }));
+        await this.redisProvider.push({
+            type: "CREATE_QUIZ",
+            id: quizId,
+            payload: {
+                quizId: quizId,
+                userid: userid,
+                examtype: "Quiz",
+            },
+            variant: "Quiz",
+            category: "JECA",
+        });
 
     }
 

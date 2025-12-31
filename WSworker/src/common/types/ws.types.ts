@@ -7,6 +7,8 @@ export type QuizHandlerType =
     | "LEAVE_QUIZ"
     | "END_QUIZ"
     | "SUBMIT_ANSWER"
+    | "QUIZ_RESULT"
+    | "QUIZ_LEADERBOARD"
     | "QUIZ_STARTED"
     | "NEW_QUESTION"
     | "QUIZ_JOINED"
@@ -18,6 +20,7 @@ export interface WsMessage<T = any> {
     type: QuizHandlerType;
     payload: T;
     userIds?: string[];
+    rooms?: string[];
 }
 
 export interface JoinQuizPayload {
@@ -36,6 +39,10 @@ export interface StartQuizPayload {
     quizId: string;
     startTime: Date;
     message?: string;
+}
+export interface QuizLeaderboardPayload {
+    quizId: string;
+    leaderboard: { user: { name: string; avater?: string }; score: string }[];
 }
 
 export interface QuestionPayload {

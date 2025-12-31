@@ -1,11 +1,15 @@
 import { WebSocket } from "ws";
 
+export type user_data = {
+    avatar?: string,
+    name: string
+}
 export class User {
     public id: string;
-    public data: any;
+    public data: user_data;
     private sockets: WebSocket[] = [];
 
-    constructor(id: string, data: any, ws: WebSocket) {
+    constructor(id: string, data: user_data, ws: WebSocket) {
         this.id = id;
         this.data = data;
         this.sockets.push(ws);

@@ -2,7 +2,7 @@ import prisma from "@repo/db/index.js";
 import { CompleteActivityInput, CreateActivityInput } from "../zod/activity.zod.js";
 import { ActivityChallengeService } from "./activity/activity.challenge.service.js";
 import { ActivityStreakService } from "./activity/activity.streak.service.js";
-import { ActivityLeaderboardService } from "./activity/activity.leaderboard.service.js";
+import { activity_time_range, ActivityLeaderboardService } from "./activity/activity.leaderboard.service.js";
 import { ActivityBadgeService } from "./activity/activity.badge.service.js";
 import { ActivityType } from "@repo/prisma/enums.js";
 
@@ -83,9 +83,6 @@ export class ActivityService {
         return { message: "Activity completed", xpEarned: finalXP, baseXP: xpEarned };
     }
 
-    async getLeaderboard(type: 'weekly' | 'global' = 'weekly', limit: number = 10) {
-        return this.leaderboard.getLeaderboard(type, limit);
-    }
 
     async getUserStats(userId: string) {
         const streakData = await this.streak.getUserStreak(userId);

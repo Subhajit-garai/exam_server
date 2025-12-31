@@ -15,6 +15,17 @@ export const test = asyncHandler(async (req: any, res: any) => {
 })
 
 
+export const getLeaderboard = asyncHandler(async (req: any, res: any) => {
+
+  let id = req.query.id;
+
+  let leaderboard = await quizService.getLeaderboard(id);
+
+  res.json({ success: true, message: "message", data: leaderboard });
+
+})
+
+
 export const joinQuiz = asyncHandler(async (req: any, res: any) => {
   let id = req.query.id;
 

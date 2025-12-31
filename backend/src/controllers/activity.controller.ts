@@ -2,8 +2,10 @@ import { Request, Response } from "express";
 import { ActivityService } from "../services/activity.service.js";
 import { CompleteActivitySchema, createActivitySchema } from "../zod/activity.zod.js";
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
+import { activity_time_range, ActivityLeaderboardService } from "@/services/activity/activity.leaderboard.service.js";
 
 const activityService = new ActivityService();
+const leaderboardService = new ActivityLeaderboardService();
 
 export const getDailyChallenge = asyncHandler(async (req: Request, res: Response) => {
 
@@ -44,19 +46,6 @@ export const completeDailyChallenge = asyncHandler(async (req: Request, res: Res
         message: "Activity completed successfully",
     });
 
-});
-
-export const getLeaderboard = asyncHandler(async (req: Request, res: Response) => {
-
-    const type = req.query.type === 'global' ? 'global' : 'weekly';
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
-
-    const leaderboard = await activityService.getLeaderboard(type, limit);
-    res.status(200).json({
-        success: true,
-        data: leaderboard,
-        message: "Leaderboard fetched successfully",
-    });
 });
 
 export const getUserStats = asyncHandler(async (req: any, res: Response) => {

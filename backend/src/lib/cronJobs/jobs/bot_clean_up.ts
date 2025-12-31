@@ -1,5 +1,5 @@
 import axios from "axios";
-import { webhook_type } from "../types/botTypes.js";
+import { webhook_type } from "../../types/botTypes.js";
 
 export const clean_up = async (webhook: webhook_type) => {
   console.log("Clearing bot cache...");

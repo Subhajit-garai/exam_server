@@ -44,8 +44,7 @@ import { runWorker } from "./tasks/worker-runner";
 //   payload: {
 //     examid: "cmjgn8tmd000bn8buxruxtn1v",
 //     userid: "cmiumcgir0001jwbukh9xs97h",
-//   },
-// };
+// }
 
 // let PROCESS_Ans: Task = {
 //   type: "ANS_PROCESSING",
@@ -63,7 +62,7 @@ import { runWorker } from "./tasks/worker-runner";
 const main = async () => {
   try {
     let redisClient = RedisProvider.getInstance();
-    // await redisClient.push(CREATE_QUIZ_TASK); // added testing
+    // await redisClient.push(); // added testing
 
     while (true) {
       let data = await redisClient.pop();

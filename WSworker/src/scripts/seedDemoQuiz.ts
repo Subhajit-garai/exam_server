@@ -35,12 +35,13 @@ async function seedQuiz(id: string, limit: number = 2) {
     // 1. Metadata
     const metadata = {
         id,
-        total_questions: 5,
+        total_questions: 2,
         nextQuestionTime: 60,
         quizOpenFor: 24,
         topics: ["Demo Topic"],
         subjects: ["Demo Subject"],
-        limit: limit
+        limit: limit,
+        countDown: 10
     };
 
     await deleteKeysByPattern(`quiz:users:${id}`);

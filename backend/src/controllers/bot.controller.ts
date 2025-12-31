@@ -12,6 +12,22 @@ export class BotController {
     res.json({ success: true, message: "message", data: "data" });
   });
 
+  public getUserdata = asyncHandler(async (req: Request, res: Response) => {
+    let id = req.params.id
+    let userdata = await prisma.user.findFirst({
+      where: {
+        id: id
+      },
+      select: {
+        name: true,
+        avater: true
+      }
+    })
+
+    if (!userdata) throw Error("user not found")
+    res.json({ success: true, message: "user info", data: userdata });
+  });
+
   /**
    * Checks if all questions are added to the exam and marks it as Done.
    */
@@ -131,6 +147,7 @@ export class BotController {
 const controller = new BotController();
 
 export const test = controller.test;
+export const getUserdata = controller.getUserdata;
 export const examQuestionAddedCompletionStatusCheck = controller.examQuestionAddedCompletionStatusCheck;
 export const getSyllabusDataForExamCreattion = controller.getSyllabusDataForExamCreattion;
 export const getQuestionViaIds = controller.getQuestionViaIds;

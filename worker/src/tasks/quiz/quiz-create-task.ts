@@ -82,7 +82,7 @@ export class QuizCreateTask extends BaseWorkerTask {
 
     try {
       // also add question ans
-      //  await redis.set(`quizquestionans:${id}:part1:${i}`, "1");
+      //  await this.redisporvider.getclient().set(`quizquestionans:${quizData.id}:part1:${i}`, "1");
       await this.addQuestionsToRedis(quizData.id, finalquestions);
       this.changeQuizDataStatus(quizData, "Done");
     } catch (error) {

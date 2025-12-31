@@ -1,68 +1,75 @@
 import { Router } from "express";
-// import { SelectQuestion } from "../controllers/question.controller";
-import { botauthenticate } from "../middleware/botauth.js";
-import { AddProcessingQuestions, examQuestionAddedCompletionStatusCheck, getExamDetails, getQuestionViaIds, getQuestionViaIdsforProcessing, getSyllabusDataForExamCreattion, processNotification, setUserProgress } from "@/controllers/bot.controller.js";
+import { AddProcessingQuestions, examQuestionAddedCompletionStatusCheck, getExamDetails, getQuestionViaIds, getQuestionViaIdsforProcessing, getSyllabusDataForExamCreattion, getUserdata, processNotification, setUserProgress } from "@/controllers/bot.controller.js";
 import { getUserScore, setUserScore } from "@/controllers/bot/bot.score.controller.js";
 import { getExamAns, getUserans, SetUserans } from "@/controllers/bot/bot.ans.controller.js";
 import { getExamPattern, getExamPatternId, getMockSetExamPattern, updatExamCrationStatus } from "@/controllers/bot/bot.exampattern.controller.js";
 import { addQuestions, getQuestions, getQuestionsByids, getQuestionsIds } from "@/controllers/bot/bot.question.controller.js";
 import { getQuizConfigdData, getQuizTopic, sentQuizData } from "@/controllers/bot/bot.quiz.controller.js";
 import { AllUserData, bot_login, isGroupJoinable, IsprimeUser, sendAlluser, sendGroupinfo, sendGroupTopicinfo, sendValidchatids } from "@/controllers/bot/bot.telegram.controller.js";
+import { botauthenticate } from "@/middleware/botauth.js";
 
 export const botRouter = Router();
+export const botSecureRouter = Router();
 
-botRouter.get("/auth", botauthenticate, (req, res) => {
+botRouter.get("/auth", (req, res) => {
   res.json({ success: true, message: "bot validate successfully" });
 });
 
+botRouter.post("/login", bot_login);
 
-
-
+botRouter.use("/", botauthenticate, botSecureRouter);
 // user
-botRouter.post("/user/progress/set", botauthenticate, setUserProgress);
-botRouter.post("/user/score/set", botauthenticate, setUserScore);
-botRouter.get("/user/score/get", botauthenticate, getUserScore);
-botRouter.post("/user/ans/set", botauthenticate, SetUserans);
-botRouter.get("/user/ans/get", botauthenticate, getUserans);
+botSecureRouter.get("/user/info/:id", getUserdata);
+botSecureRouter.post("/user/progress/set", setUserProgress);
+botSecureRouter.post("/user/score/set", setUserScore);
+botSecureRouter.get("/user/score/get", getUserScore);
+botSecureRouter.post("/user/ans/set", SetUserans);
+botSecureRouter.get("/user/ans/get", getUserans);
 
 // exam
-botRouter.get("/exam/patternid/get/:examid", botauthenticate, getExamPatternId);
-botRouter.get("/exam/update/creation/status/:examid", botauthenticate, updatExamCrationStatus); // call is to update , no data
-botRouter.get("/exampattern/get/:exampatternid", botauthenticate, getExamPattern);
-botRouter.get("/exam/details/get/:examid", botauthenticate, getExamDetails);
-botRouter.get("/mock/exampattern/details/get", botauthenticate, getMockSetExamPattern);
-botRouter.get("/exam/questions/add/status/:examid", botauthenticate, examQuestionAddedCompletionStatusCheck);
+botSecureRouter.get("/exam/patternid/get/:examid", getExamPatternId);
+botSecureRouter.get("/exam/update/creation/status/:examid", updatExamCrationStatus); // call is to update , no data
+botSecureRouter.get("/exampattern/get/:exampatternid", getExamPattern);
+botSecureRouter.get("/exam/details/get/:examid", getExamDetails);
+botSecureRouter.get("/mock/exampattern/details/get", getMockSetExamPattern);
+botSecureRouter.get("/exam/questions/add/status/:examid", examQuestionAddedCompletionStatusCheck);
 
 //syllabus
-botRouter.get("/syllabus/exam/get", botauthenticate, getSyllabusDataForExamCreattion);
+botSecureRouter.get("/syllabus/exam/get", getSyllabusDataForExamCreattion);
 
 
 
 //questions
-botRouter.post("/question/processing/get/simple", getQuestionViaIdsforProcessing); //remove 
-botRouter.post("/question/processing/get", botauthenticate, getQuestionViaIdsforProcessing);
-botRouter.post("/question/processed/add", botauthenticate, AddProcessingQuestions);
-botRouter.get("/questions/info/get", botauthenticate, getQuestionViaIds);
-botRouter.get("/questions/ans/get/:examid", botauthenticate, getExamAns);
-botRouter.get("/questions/ids", botauthenticate, getQuestionsIds);
-botRouter.get("/questions/get", botauthenticate, getQuestions);
-botRouter.post("/questions/get/byids", botauthenticate, getQuestionsByids);
-botRouter.post("/questions/add/:examid", botauthenticate, addQuestions);
+botSecureRouter.post("/question/processing/get/simple", getQuestionViaIdsforProcessing); //remove 
+botSecureRouter.post("/question/processing/get", getQuestionViaIdsforProcessing);
+botSecureRouter.post("/question/processed/add", AddProcessingQuestions);
+botSecureRouter.get("/questions/info/get", getQuestionViaIds);
+botSecureRouter.get("/questions/ans/get/:examid", getExamAns);
+botSecureRouter.get("/questions/ids", getQuestionsIds);
+botSecureRouter.get("/questions/get", getQuestions);
+botSecureRouter.post("/questions/get/byids", getQuestionsByids);
+botSecureRouter.post("/questions/add/:examid", addQuestions);
 
 
 //quiz
-botRouter.get("/getquiztopic", botauthenticate, getQuizTopic);
-botRouter.get("/get/quiz/config", botauthenticate, getQuizConfigdData);
-botRouter.post("/getquestionsset", botauthenticate, sentQuizData);  //  auto / daily quiz set
-botRouter.get("/isprimeuser", botauthenticate, IsprimeUser)
-botRouter.get("/allusers", botauthenticate, sendAlluser) // -- > can be remove 
+botSecureRouter.get("/getquiztopic", getQuizTopic);
+botSecureRouter.get("/get/quiz/config", getQuizConfigdData);
+botSecureRouter.post("/getquestionsset", sentQuizData);  //  auto / daily quiz set
+botSecureRouter.get("/isprimeuser", IsprimeUser)
+botSecureRouter.get("/allusers", sendAlluser) // -- > can be remove 
 
 // telegram group
-botRouter.get("/group/info", botauthenticate, sendGroupinfo)
-botRouter.get("/group/topic/info/get", botauthenticate, sendGroupTopicinfo)
-botRouter.get("/validchatids", botauthenticate, sendValidchatids)
-botRouter.get("/isgroupjoinable", botauthenticate, isGroupJoinable)
-botRouter.get("/getusersdata", botauthenticate, AllUserData)
-botRouter.post("/notification", botauthenticate, processNotification)
-botRouter.post("/login", bot_login);
+botSecureRouter.get("/group/info", sendGroupinfo)
+botSecureRouter.get("/group/topic/info/get", sendGroupTopicinfo)
+botSecureRouter.get("/validchatids", sendValidchatids)
+botSecureRouter.get("/isgroupjoinable", isGroupJoinable)
+botSecureRouter.get("/getusersdata", AllUserData)
+botSecureRouter.post("/notification", processNotification)
+
+
+// Fallback for unmatched bot routes to prevent falling through to user auth
+botRouter.use((req, res) => {
+  res.status(404).json({ success: false, message: "Bot route not found" });
+});
+
 

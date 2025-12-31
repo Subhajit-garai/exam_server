@@ -1,6 +1,6 @@
 
 import { CronJob } from "cron";
-import { SystemStateService } from "../../services/system-state.service.js";
+import { SystemStateService } from "../../../services/system-state.service.js";
 
 const systemStateService = new SystemStateService();
 

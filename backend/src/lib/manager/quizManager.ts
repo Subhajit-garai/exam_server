@@ -3,8 +3,9 @@ import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { v4 as uuidv4 } from "uuid";
 import { activity_quiz_create_data_type } from "@/zod/quiz.zod.js";
 import { CreationTypes } from "@repo/prisma/enums.js";
+import { logger } from "../helper/logger.js";
 
-interface QuizMetaData {
+export interface QuizMetaData {
     id: string;
     total_questions: number;
     nextQuestionTime: number;
@@ -19,6 +20,10 @@ interface QuizMetaData {
 
 interface User {
     id: string;
+}
+export type user_data = {
+    avatar?: string,
+    name: string
 }
 
 export class QuizManager {
@@ -219,5 +224,44 @@ export class QuizManager {
         await this.redis.publish("WS_BROADCAST", message);
 
         console.log(`Quiz ${quizId} started`);
+    }
+
+    async sendQuizLeaderboard(quizId: string) {
+        const key = `quiz:leaderboard:${quizId}`;
+        const data = await this.redis.zrevrange(key, 0, -1, "WITHSCORES"); // Use zrevrange for high scores first
+
+        if (!data || data.length === 0) {
+            logger.error(`[LEADERBOARD] No data found for ${quizId}`);
+            return;
+        }
+
+        const leaderboard: { user: user_data, score: string }[] = [];
+        for (let i = 0; i < data.length; i += 2) {
+
+            const userId = data[i];
+            const score = data[i + 1];
+
+            // Fetch user details from global profile
+            const userDetailsStr = await this.redis.get(`user:profile:${userId}`);
+            let userDetails: user_data = { name: "Unknown", avatar: "" };
+
+            if (userDetailsStr) {
+                try {
+                    userDetails = JSON.parse(userDetailsStr);
+                } catch (e) {
+                    logger.error(`[LEADERBOARD] Failed to parse user details for ${userId}`);
+                }
+            }
+
+            leaderboard.push({
+                user: {
+                    name: userDetails.name,
+                    avatar: userDetails.avatar
+                },
+                score: score
+            });
+        }
+
+        logger.success(`[LEADERBOARD] Sent leaderboard for ${quizId}`);
     }
 }

@@ -30,6 +30,7 @@ import { questionProcessingPublicRouter } from "./routes/questionprocessing.rout
 import { statsRouter } from "./routes/statsRoutes.js";
 import { categoryPublicRouter } from "./routes/category.routes.js";
 import { progressRouter } from "./routes/progress.routes.js";
+import { botauthenticate } from "./middleware/botauth.js";
 
 
 
@@ -89,8 +90,8 @@ app.post("/api/v1/payment/paymentverification", paymentVerification);
 
 
 app.use("/api/v1/stats", statsRouter);
-app.use("/api/v1/user", CommonuserRoutes);
 app.use("/api/v1/bot", botRouter);
+app.use("/api/v1/user", CommonuserRoutes);
 app.use("/api/v1/category", categoryPublicRouter);
 
 app.use(userauthenticate);

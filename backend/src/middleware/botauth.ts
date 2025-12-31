@@ -24,7 +24,6 @@ export const botauthenticate = async (req: any, res: any, next: () => any) => {
 
   let token = req.headers.authorization;
 
-
   if (!token) {
     return res
       .status(401)

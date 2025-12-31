@@ -54,6 +54,8 @@ export class QuizProcessingTask extends BaseWorkerTask {
 
 
             if (groupData.isTopic) {
+
+
               let topicData: {
                 id: string;
                 groupId: string;

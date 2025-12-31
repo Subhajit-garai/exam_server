@@ -1,6 +1,5 @@
 import { Router } from "express";
-import * as leaderboardController from "../../controllers/activity/leaderboard.controller.js";
-import { userauthenticate } from "@repo/lib/security/auth.js";
+import { getQuizLeaderboard, getStreakLeaderboard, getXPLeaderboard } from "@/controllers/activity/leaderboard.controller.js";
 
 export const leaderboardRouter = Router();
 
@@ -10,7 +9,7 @@ export const leaderboardRouter = Router();
 // The user request didn't specify, but usually "get data" is public or protected.
 // I'll add verifyJWT as a safe default if the app is generally authenticated.
 
-leaderboardRouter.get("/quiz", userauthenticate, leaderboardController.getQuizLeaderboard);
-leaderboardRouter.get("/xp", userauthenticate, leaderboardController.getXPLeaderboard);
-leaderboardRouter.get("/streak", userauthenticate, leaderboardController.getStreakLeaderboard);
+leaderboardRouter.get("/quiz", getQuizLeaderboard);
+leaderboardRouter.get("/xp", getXPLeaderboard);
+leaderboardRouter.get("/streak", getStreakLeaderboard);
 

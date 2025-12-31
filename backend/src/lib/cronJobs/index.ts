@@ -13,9 +13,9 @@ import {
   timeToCronMonthly,
 } from "./cronHelper.js";
 import { events } from "../types/EventTypes.js";
-import { eventRunner } from "./event/event-runner.js";
-import { resetWeeklyLeaderboard } from "./activity.cron.js";
-import { updateSystemStats, initSystemStats } from "./stats.cron.js";
+import { eventRunner } from "./jobs/event/event-runner.js";
+import { resetWeeklyLeaderboard } from "./jobs/activity.cron.js";
+import { updateSystemStats, initSystemStats } from "./jobs/stats.cron.js";
 import { SocialPlatform } from "@repo/prisma/enums.js";
 
 const pgClient = new Client({ connectionString: process.env.DATABASE_URL });
@@ -40,7 +40,7 @@ pgClient.connect().then(async () => {
               if (scheduledJobs[event.id]) {
                 scheduledJobs[event.id].stop(); // Stop old one if exists
               }
-              if (event) scheduleJob(event);
+              if (event.isActive) scheduleJob(event);
             }
           }
           break;
@@ -185,7 +185,11 @@ async function loadAndScheduleAllEvents() {
   try {
     console.log("Loading and scheduling all events...");
 
-    const eventsFromDb = await prisma.events.findMany();
+    const eventsFromDb = await prisma.events.findMany({
+      where: {
+        isActive: true,
+      },
+    });
 
     for (const event of eventsFromDb) {
       if (scheduledJobs[event.id]) {

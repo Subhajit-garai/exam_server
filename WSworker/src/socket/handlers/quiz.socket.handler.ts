@@ -9,7 +9,6 @@ import {
     LeaveQuizPayload,
     EndQuizPayload,
     SubmitAnswerPayload,
-    QuestionPayload
 } from "../../common/types/ws.types.js";
 import { SocketManager } from "../socket.manager.js";
 
@@ -55,7 +54,12 @@ export class QuizSocketHandler extends BaseSocketHandler {
         socketManager.joinRoom(quizId, this.user);
 
         try {
-            await this.quizManager.addUser(quizId, this.user.id);
+            await this.quizManager.addUser(
+                quizId,
+                this.user.id,
+                this.user.data.name,
+                this.user.data.avater
+            );
             this.send("QUIZ_JOINED", { quizId, message: "Successfully joined quiz" });
         } catch (error) {
             // Rollback if Redis add fails
@@ -104,8 +108,6 @@ export class QuizSocketHandler extends BaseSocketHandler {
 
         // Pass the time if provided, or use current time string
         const submissionTime = new Date().toISOString();
-
-        console.log("-----> ", payload);
 
         await this.quizManager.submitAnswer(
             quizId,

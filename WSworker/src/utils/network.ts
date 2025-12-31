@@ -2,6 +2,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 import { botPlatform } from "../lib/types/types.js";
 import { logger } from "./logger.js";
+import { user_data } from "src/socket/user.js";
 dotenv.config();
 
 export type CreationTypes =
@@ -78,7 +79,6 @@ export class Network {
       if (!this.botauthtoken) {
         await this.login();
       }
-
       let header = {
         Authorization: this.botauthtoken,
       };
@@ -164,6 +164,12 @@ export class Network {
   }
 
 
+  async getuserInfo(userid: string): Promise<user_data> {
+    let url = this.getUrl(`/user/info/${userid}`);
+    return await this.getRequest(url, true)
+  }
+
+
   async getExamQuestionsAns(examid: string) {
     try {
       let url = this.getUrl(`/questions/ans/get/${examid}`);
@@ -223,8 +229,6 @@ export class Network {
       throw new Error("Error from getExamDetails / Network ");
     }
   }
-
-
   async getExamPatternId(examid: string) {
     try {
       let url = this.getUrl(`/exam/patternid/get/${examid}`);
@@ -233,7 +237,6 @@ export class Network {
       throw new Error("Error from getExamPatternId / Network ");
     }
   }
-
   async getExamPattern(exampatternid: string) {
     try {
       let url = this.getUrl(`/exampattern/get/${exampatternid}`);

@@ -1,6 +1,5 @@
 import { asyncHandler } from "../helper/asyncHandler.js";
 import { verifyToken } from "../token.js";
-// import prisma from  "@repo/db/index";
 import prisma from "@repo/db/index.js";
 
 export const userauthenticate = asyncHandler(async (req: any, res: any, next: () => any) => {

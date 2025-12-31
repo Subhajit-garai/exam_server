@@ -10,7 +10,7 @@ model Question {
   extra Json? // { "code":{void main (0) {}}}
 
   ans        String[]
-  topic_id   String // create an record for unknown topic
+  topic_id   String? // create an record for unknown topic
   subject_id String // create an record for unknown subject
 
   format          examformat    @default(Text)
@@ -31,7 +31,7 @@ model Question {
   User       User     @relation(fields: [created_by], references: [id])
 
   Subject           Subject             @relation(fields: [subject_id], references: [id])
-  Topic             Topic               @relation(fields: [topic_id], references: [id])
+  Topic             Topic?              @relation(fields: [topic_id], references: [id])
   Catagory          Category?           @relation(fields: [categoryid], references: [id])
   quiz_question_map quiz_question_map[]
   question_map      question_map[]

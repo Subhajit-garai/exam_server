@@ -1,6 +1,7 @@
 import prisma from "@repo/db/index.js";
 import { RedisProvider } from "../../lib/radisProvider.js";
 
+export type activity_time_range = "today" | 'weekly' | 'global'
 export class ActivityLeaderboardService {
     private redis = RedisProvider.getInstance().getclient();
 
@@ -16,7 +17,6 @@ export class ActivityLeaderboardService {
     async updateLeaderboard(userId: string, xp: number) {
         return this.updateXPLeaderboard(userId, xp);
     }
-
     async updateQuizLeaderboard(userId: string, score: number) {
         // Weekly Quiz Leaderboard
         await this.redis.zincrby("leaderboard:quiz:weekly", score, userId);
@@ -52,22 +52,22 @@ export class ActivityLeaderboardService {
         return leaderboard;
     }
 
-    async getXPLeaderboard(type: 'weekly' | 'global' = 'weekly', limit: number = 10) {
+    async getXPLeaderboard(type: activity_time_range = 'weekly', limit: number = 10) {
         return this.fetchLeaderboard(`leaderboard:xp:${type}`, limit);
     }
 
-    async getQuizLeaderboard(type: 'weekly' | 'global' = 'weekly', limit: number = 10) {
+    async getQuizLeaderboard(type: activity_time_range = 'weekly', limit: number = 10) {
         return this.fetchLeaderboard(`leaderboard:quiz:${type}`, limit);
     }
 
-    async getStreakLeaderboard(limit: number = 10) {
+    async getStreakLeaderboard(type: activity_time_range = 'weekly', limit: number = 10) {
         return this.fetchLeaderboard("leaderboard:streak", limit);
     }
 
-    // Deprecated or mapped to XP
-    async getLeaderboard(type: 'weekly' | 'global' = 'weekly', limit: number = 10) {
-        return this.getXPLeaderboard(type, limit);
-    }
+    // // Deprecated or mapped to XP
+    // async getLeaderboard(type: activity_time_range = 'weekly', limit: number = 10) {
+    //     return this.getXPLeaderboard(type, limit);
+    // }
 
     async getUserXP(userId: string): Promise<number> {
         const globalScore = await this.redis.zscore("leaderboard:xp:global", userId);

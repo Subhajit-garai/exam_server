@@ -1,5 +1,5 @@
 import { CronJob } from "cron";
-import { RedisProvider } from "../radisProvider.js";
+import { RedisProvider } from "../../radisProvider.js";
 
 const redis = RedisProvider.getInstance().getclient();
 

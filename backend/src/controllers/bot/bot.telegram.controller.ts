@@ -25,6 +25,7 @@ export const sendGroupTopicinfo = asyncHandler(async (req: any, res: any) => {
 
   const { groupId, name } = req.query;
   const groupTopicInfo = await botService.telegram.getGroupTopicInfo(groupId, name);
+
   return res.json({
     success: true,
     message: "message",
@@ -67,7 +68,6 @@ export const IsprimeUser = asyncHandler(async (req: any, res: any) => {
 })
 
 export const bot_login = asyncHandler(async (req: any, res: any) => {
-
   const newToken = await botService.admin.botLogin(req.body);
   res.json({ success: true, message: "successful", data: newToken });
 })

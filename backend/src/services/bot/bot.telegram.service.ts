@@ -104,10 +104,16 @@ export class BotTelegramService {
     }
 
     async getGroupTopicInfo(groupId: string, name: string) {
+
         const info = await prisma.telegramGroupTopic.findFirst({
-            where: { id: groupId, name },
+            where: {
+                group: {
+                    groupid: groupId
+                },
+                name: name
+            }
         });
-        if (!info) throw new Error("Group topic info not available");
+        if (!info) throw new Error("Group topic info not available for that given  name or group id");
         return info;
     }
 

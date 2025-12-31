@@ -6,6 +6,8 @@ import { BaseSocketHandler } from "./handlers/base.socket.handler.js";
 import { RedisProvider } from "../common/redisProvider.js";
 import { User } from "./user.js";
 import { Room } from "./room.js";
+import { Network } from "src/utils/network.js";
+
 
 export class SocketManager {
     private static instance: SocketManager;
@@ -32,8 +34,8 @@ export class SocketManager {
         this.redisSub.on("message", (channel: string, message: string) => {
             if (channel === "WS_BROADCAST") {
                 try {
-                    const { userIds, type, payload } = JSON.parse(message);
-                    this.broadcast(userIds, type, payload);
+                    const { userIds, type, payload, rooms } = JSON.parse(message);
+                    this.broadcast(userIds, type, payload, rooms);
                 } catch (error) {
                     console.error("Error processing Redis message:", error);
                 }
@@ -62,31 +64,31 @@ export class SocketManager {
                     console.log("Token required");
                     return;
                 }
-
-                let userData: any = {
-                    id: token
-                }
+                let userinfo: any
 
                 // auth 
 
-                // try {
-                //     userData = verifyToken(token);
-
-                //     if (typeof userData === 'string') {
-                //         console.log("Invalid token payload");
-                //         throw new Error("Invalid token payload");
-                //     }
-                // } catch (e) {
-                //     console.log(" error ---> ", e);
-                //     ws.close(1008, "Invalid token");
-                //     return;
-                // }
+                try {
+                    userinfo = verifyToken(token);
+                    if (typeof userinfo === 'string') {
+                        console.log("Invalid token payload");
+                        throw new Error("Invalid token payload");
+                    }
+                } catch (e) {
+                    console.log(" error ---> ", e);
+                    ws.close(1008, "Invalid token");
+                    return;
+                }
 
                 // Store user mapping
-                let user = this.users.get(userData.id);
+                let user = this.users.get(userinfo.id);
                 if (!user) {
-                    user = new User(userData.id, userData, ws);
-                    this.users.set(userData.id, user);
+
+                    let network = Network.getInstance()
+                    let responce = await network.getuserInfo(userinfo.id)
+                    user = new User(userinfo.id, responce, ws);
+
+                    this.users.set(userinfo.id, user);
                 } else {
                     user.addSocket(ws);
                 }
@@ -121,14 +123,14 @@ export class SocketManager {
                 });
 
                 ws.on("close", (code, reason) => {
-                    console.log(`User disconnected: ${userData.id}`);
+                    console.log(`User disconnected: ${userinfo.id}`);
                     this.clients.delete(ws);
 
                     // Remove from user
                     if (user) {
                         user.removeSocket(ws);
                         if (user.getSocketCount() === 0) {
-                            this.users.delete(userData.id);
+                            this.users.delete(userinfo.id);
                         }
                     }
                 });
@@ -145,14 +147,43 @@ export class SocketManager {
 
 
 
-    public broadcast(userIds: string[], type: string, payload: any) {
+    public broadcast(userIds: string[], type: string, payload: any, rooms?: string[]) {
+        let handled = false;
+
+        // Support explicit rooms array (Top Level)
+        if (rooms && Array.isArray(rooms)) {
+            rooms.forEach((roomId: string) => {
+                const room = this.rooms.get(roomId);
+                if (room) {
+                    room.broadcast(type, payload);
+                    handled = true;
+                }
+            });
+        }
+
+        // Support explicit rooms array (In Payload - Legacy support if needed, but top level is preferred now)
+        if (payload && Array.isArray(payload.rooms)) {
+            payload.rooms.forEach((roomId: string) => {
+                const room = this.rooms.get(roomId);
+                if (room) {
+                    room.broadcast(type, payload);
+                    handled = true;
+                }
+            });
+        }
+
+        // Support implicit room via quizId (Legacy/Convenience)
         if (payload && payload.quizId) {
             const room = this.rooms.get(payload.quizId);
             if (room) {
                 room.broadcast(type, payload);
-                return; // We handled it via Room
+                handled = true;
             }
         }
+
+        // If handled via room, do we still want to send to individual userIds? 
+        if (handled) return;
+
         userIds.forEach(userId => {
             const user = this.users.get(userId);
             if (user) {

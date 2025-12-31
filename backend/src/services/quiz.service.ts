@@ -1,8 +1,11 @@
 import prisma from "@repo/db/index.js";
 import { QuizeSetupFunction } from "@/lib/helper/TelegramQuiz.js";
-import { QuizManager } from "@/lib/manager/quizManager.js";
+import { QuizManager, QuizMetaData } from "@/lib/manager/quizManager.js";
 import { activity_quiz_create_data_type } from "@/zod/quiz.zod";
 const qm = QuizManager.getInstance();
+
+
+
 export class QuizService {
 
     async getQuizConfig(chatid: string) {
@@ -33,7 +36,6 @@ export class QuizService {
     }
 
     async createQuiz(userid: string, userRole: string, data: activity_quiz_create_data_type) {
-
         // user quiz creation
         const quiz = await qm.CreateQuiz(userid, userRole, data);
         return quiz;
@@ -43,5 +45,16 @@ export class QuizService {
     async getAvailableQuizzes() {
         const cachedQuizzes = await qm.getAllActiveQuizzes();
         return cachedQuizzes;
+    }
+
+    // --- Quiz Metadata (Redis Hashes) ---
+    async getQuizMetaData(quizId: string): Promise<QuizMetaData | null> {
+        const data = await qm.getQuizMetaData(quizId);
+        return data;
+    }
+
+    async getLeaderboard(quizId: string): Promise<any> {
+        const data = await qm.sendQuizLeaderboard(quizId);
+        return data;
     }
 }

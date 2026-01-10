@@ -46,7 +46,7 @@ export class Network {
     data: any,
     isOnlyData: boolean = false,
     isOnlyMessage: boolean = false
-  ) {
+  ): Promise<any> {
     try {
       if (!this.botauthtoken) {
         await this.login();
@@ -60,20 +60,25 @@ export class Network {
         return isOnlyData
           ? responce.data?.data
           : isOnlyMessage
-          ? responce.data?.message
-          : responce.data;
+            ? responce.data?.message
+            : responce.data;
       }
       return null;
     } catch (error: any) {
       logger.error(error?.response?.data?.message)
-      return null;
+      if (error?.response?.data?.message === "Invalid or expired token") {
+        await this.login();
+        return await this.postRequest(url, data, isOnlyData, isOnlyMessage);
+      } else {
+        return null;
+      }
     }
   }
   async getRequest(
     url: string,
     isOnlyData: boolean = false,
     isOnlyMessage: boolean = false
-  ) {
+  ): Promise<any> {
     try {
       if (!this.botauthtoken) {
         await this.login();
@@ -88,13 +93,18 @@ export class Network {
         return isOnlyData
           ? responce.data?.data
           : isOnlyMessage
-          ? responce.data?.message
-          : responce.data;
+            ? responce.data?.message
+            : responce.data;
       }
       return null;
     } catch (error: any) {
       logger.error(error?.response?.data?.message)
-      return null;
+      if (error?.response?.data?.message === "Invalid or expired token") {
+        await this.login();
+        return await this.getRequest(url, isOnlyData, isOnlyMessage);
+      } else {
+        return null;
+      }
     }
   }
   async auth() {
@@ -106,7 +116,7 @@ export class Network {
 
       let request = await axios.get(url, { headers: header });
       console.log("response", request.status);
-    } catch (error) {}
+    } catch (error) { }
   }
 
   async SendNotificationToSurver(type = "", data: any = null) {
@@ -225,7 +235,7 @@ export class Network {
   }
   async getQuestionsIds() {
     try {
-      let url = this.getUrl(`/questions/ids`);      
+      let url = this.getUrl(`/questions/ids`);
       return this.getRequest(url, true);
     } catch (error) {
       throw new Error("Error from getQuestionsIds / Network ");
@@ -288,7 +298,7 @@ export class Network {
       throw new Error("Error from getUserAns / Network ");
     }
   }
-  async SetUserAns( userAns: any) {
+  async SetUserAns(userAns: any) {
     try {
       let url = this.getUrl(`/user/ans/set`);
       return this.postRequest(url, userAns, false, true);

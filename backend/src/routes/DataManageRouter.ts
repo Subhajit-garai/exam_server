@@ -106,6 +106,11 @@ async function insertBulkData(req: any, res: any) {
   }
 }
 
+DataManageRouter.get(
+  "/admin/bulkinsertQuestion",
+  Updater_authenticate,
+  backupQuestion
+);
 DataManageRouter.post(
   "/admin/bulkinsertQuestion",
   Updater_authenticate,

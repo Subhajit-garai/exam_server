@@ -172,7 +172,7 @@ export class Network {
 
   async getExamQuestionsAns(examid: string) {
     try {
-      let url = this.getUrl(`/questions/ans/get/${examid}`);
+      let url = this.getUrl(`/question/ans/get/${examid}`);
       return this.getRequest(url, true);
     } catch (error) {
       throw new Error("Error from getExamQuestionsAns / Network ");
@@ -180,7 +180,7 @@ export class Network {
   }
   async getQuestions(examid: string) {
     try {
-      let url = this.getUrl(`/questions/get/${examid}`);
+      let url = this.getUrl(`/question/get/${examid}`);
       return this.getRequest(url, true);
     } catch (error) {
       throw new Error("Error from getQuestions / Network ");
@@ -189,7 +189,7 @@ export class Network {
 
   async getQuestions_byIds(ids: string[]) {
     try {
-      let url = this.getUrl(`/questions/get/byids`);
+      let url = this.getUrl(`/question/get/byids`);
       return this.postRequest(url, ids, true);
     } catch (error) {
       throw new Error("Error from getQuestions / Network ");
@@ -215,7 +215,7 @@ export class Network {
   }
   async getQuestionsIds() {
     try {
-      let url = this.getUrl(`/questions/ids`);
+      let url = this.getUrl(`/question/ids`);
       return this.getRequest(url, true);
     } catch (error) {
       throw new Error("Error from getQuestionsIds / Network ");

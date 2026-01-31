@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { botauthenticate } from "@/middleware/botauth.js";
 
-import { botUserRouter } from "./bot.user.routes";
-import { botExamRouter } from "./bot.exam.routes";
-import { botQuestionRouter } from "./bot.question.routes";
-import { botQuizRouter } from "./bot.quiz.routes";
-import { botTelegramRouter } from "./bot.telegram.routes";
+import { botUserRouter } from "./bot.user.routes.js";
+import { botExamRouter } from "./bot.exam.routes.js";
+import { botQuestionRouter } from "./bot.question.routes.js";
+import { botQuizRouter } from "./bot.quiz.routes.js";
+import { botTelegramRouter } from "./bot.telegram.routes.js";
 
 import { bot_login } from "@/controllers/bot/bot.telegram.controller.js";
 import { getExamPattern, getMockSetExamPattern } from "@/controllers/bot/bot.exampattern.controller.js";

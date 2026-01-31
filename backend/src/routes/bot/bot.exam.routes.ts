@@ -1,5 +1,5 @@
-import { examQuestionAddedCompletionStatusCheck, getExamDetails } from "@/controllers/bot.controller";
-import { getExamPatternId, updatExamCrationStatus } from "@/controllers/bot/bot.exampattern.controller";
+import { examQuestionAddedCompletionStatusCheck, getExamDetails } from "@/controllers/bot.controller.js";
+import { getExamPatternId, updatExamCrationStatus } from "@/controllers/bot/bot.exampattern.controller.js";
 import { Router } from "express";
 export const botExamRouter = Router();
 

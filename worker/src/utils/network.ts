@@ -107,6 +107,8 @@ export class Network {
       }
     }
   }
+
+
   async auth() {
     try {
       let url = this.getUrl(`/auth`);
@@ -173,19 +175,51 @@ export class Network {
     }
   }
 
-  async AddQuestions(examid: string, questions: any) {
+
+  //exam 
+
+  async examQuestionAddedStatusChange(examid: string) {
     try {
-      let url = this.getUrl(`/questions/add/${examid}`);
-      return this.postRequest(url, questions, false, true);
+      let url = this.getUrl(`/exam/question/add/status/${examid}`);
+      return this.getRequest(url, false, true);
     } catch (error) {
       throw new Error("Error from AddQuestions / Network ");
     }
   }
 
-  async examQuestionAddedStatusChange(examid: string) {
+  async getExamDetails(examid: string) {
     try {
-      let url = this.getUrl(`/exam/questions/add/status/${examid}`);
-      return this.getRequest(url, false, true);
+      let url = this.getUrl(`/exam/details/get/${examid}`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getExamDetails / Network ");
+    }
+  }
+
+  async requestToupdateExamCreationStatus(examid: string) {
+    try {
+      let url = this.getUrl(`/exam/update/creation/status/${examid}`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getExamDetails / Network ");
+    }
+  }
+
+  async getExamPatternId(examid: string) {
+    try {
+      let url = this.getUrl(`/exam/patternid/get/${examid}`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getExamPatternId / Network ");
+    }
+  }
+
+  //question
+
+  async AddQuestions(examid: string, questions: any) {
+    try {
+      let url = this.getUrl(`/question/add/${examid}`);
+      return this.postRequest(url, questions, false, true);
     } catch (error) {
       throw new Error("Error from AddQuestions / Network ");
     }
@@ -193,15 +227,16 @@ export class Network {
 
   async getExamQuestionsAns(examid: string) {
     try {
-      let url = this.getUrl(`/questions/ans/get/${examid}`);
+      let url = this.getUrl(`/question/ans/get/${examid}`);
       return this.getRequest(url, true);
     } catch (error) {
       throw new Error("Error from getExamQuestionsAns / Network ");
     }
   }
+
   async getQuestions(examid: string) {
     try {
-      let url = this.getUrl(`/questions/get/${examid}`);
+      let url = this.getUrl(`/question/get/${examid}`);
       return this.getRequest(url, true);
     } catch (error) {
       throw new Error("Error from getQuestions / Network ");
@@ -209,7 +244,7 @@ export class Network {
   }
   async getQuestions_byIds(ids: string[]) {
     try {
-      let url = this.getUrl(`/questions/get/byids`);
+      let url = this.getUrl(`/question/get/byids`);
       return this.postRequest(url, ids, true);
     } catch (error) {
       throw new Error("Error from getQuestions / Network ");
@@ -224,72 +259,30 @@ export class Network {
     }
   }
 
-  async setMockQuestionSetStatus(mockid: string, status: CreationTypes) {
-    try {
-      let url = this.getUrl(`/mockquestionset/status/set/${mockid}`);
 
-      return this.postRequest(url, status);
-    } catch (error) {
-      throw new Error("Error from getMockQuestionSet / Network ");
-    }
-  }
   async getQuestionsIds() {
     try {
-      let url = this.getUrl(`/questions/ids`);
+      let url = this.getUrl(`/question/ids`);
       return this.getRequest(url, true);
     } catch (error) {
       throw new Error("Error from getQuestionsIds / Network ");
     }
   }
-  async getExamDetails(examid: string) {
-    try {
-      let url = this.getUrl(`/exam/details/get/${examid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamDetails / Network ");
-    }
-  }
-  async requestToupdateExamCreationStatus(examid: string) {
-    try {
-      let url = this.getUrl(`/exam/update/creation/status/${examid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamDetails / Network ");
-    }
-  }
+
+
   async getQuestionViaids(ids: string[]) {
     try {
-      let url = this.getUrl(`/questions/info/get`);
+      let url = this.getUrl(`/question/info/get`);
       return this.getRequest(url, true);
     } catch (error) {
       throw new Error("Error from getQuestionViaids / Network ");
     }
   }
-  async getExamPatternId(examid: string) {
-    try {
-      let url = this.getUrl(`/exam/patternid/get/${examid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamPatternId / Network ");
-    }
-  }
 
-  async getMockSetPatternInfobyTitle(title: string) {
-    try {
-      let url = this.getUrl(`/mock/exampattern/details/get?title=${title}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getMockSetPatternInfobyTitle / Network ");
-    }
-  }
-  async getExamPattern(exampatternid: string) {
-    try {
-      let url = this.getUrl(`/exampattern/get/${exampatternid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamPattern / Network ");
-    }
-  }
+
+
+
+  //user
   async getUserAns(examid: string, userid: string) {
     try {
       let url = this.getUrl(`/user/ans/get?examid=${examid}&userid=${userid}`);
@@ -337,15 +330,41 @@ export class Network {
     }
   }
 
-  async getSyllabusDataForExamCreattion(syllabusid: string) {
+
+
+
+  // telegram group
+
+  async telegramgroupinfo(chat_id: number) {
     try {
-      let url = this.getUrl(`/syllabus/exam/get?syllabusid=${syllabusid}`);
+      let url = this.getUrl(`/telegram/group/info?chatid=${chat_id}`);
+      return await this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from telegramgroupinfo / Network ");
+    }
+  }
+  async telegramGroupTopicInfo(groupId: number, name: string) {
+    try {
+      let url = this.getUrl(
+        `/telegram/group/topic/info/get?groupId=${groupId}&name=${name}`
+      );
       return this.getRequest(url, true);
     } catch (error) {
-      throw new Error("Error from getSyllabusDataForExamCreattion / Network ");
+      throw new Error("Error from telegramgroupinfo / Network ");
     }
   }
 
+  //other
+
+  async setMockQuestionSetStatus(mockid: string, status: CreationTypes) {
+    try {
+      let url = this.getUrl(`/mockquestionset/status/set/${mockid}`);
+
+      return this.postRequest(url, status);
+    } catch (error) {
+      throw new Error("Error from getMockQuestionSet / Network ");
+    }
+  }
   async getQuizConfigData(
     chatid: number,
     platform: botPlatform,
@@ -361,26 +380,35 @@ export class Network {
     }
   }
 
-  // telegram group
-
-  async telegramgroupinfo(chat_id: number) {
+  async getSyllabusDataForExamCreattion(syllabusid: string) {
     try {
-      let url = this.getUrl(`/group/info?chatid=${chat_id}`);
-      return await this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from telegramgroupinfo / Network ");
-    }
-  }
-  async telegramGroupTopicInfo(groupId: number, name: string) {
-    try {
-      let url = this.getUrl(
-        `/group/topic/info/get?groupId=${groupId}&name=${name}`
-      );
+      let url = this.getUrl(`/syllabus/exam/get?syllabusid=${syllabusid}`);
       return this.getRequest(url, true);
     } catch (error) {
-      throw new Error("Error from telegramgroupinfo / Network ");
+      throw new Error("Error from getSyllabusDataForExamCreattion / Network ");
     }
   }
+
+
+
+
+  async getMockSetPatternInfobyTitle(title: string) {
+    try {
+      let url = this.getUrl(`/mock/exampattern/details/get?title=${title}`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getMockSetPatternInfobyTitle / Network ");
+    }
+  }
+  async getExamPattern(exampatternid: string) {
+    try {
+      let url = this.getUrl(`/exampattern/get/${exampatternid}`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getExamPattern / Network ");
+    }
+  }
+
   //
 }
 

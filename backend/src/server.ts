@@ -15,7 +15,7 @@ import { IssuePublicRouter } from "./routes/IssueRouter.js";
 import { paymentVerification } from "./controllers/payment.controller.js";
 import { metrixRoute } from "./routes/metrix.route.js";
 import { paymentRouter } from "./routes/paymentRouter.js";
-import { botRouter } from "./routes/botRouter.js";
+import { botRouter } from "./routes/bot/botRouter.js";
 import { DataManageRouter } from "./routes/DataManageRouter.js";
 import { examPublicRouter } from "./routes/examRoutes.js";
 import { examPatternPublicRouter } from "./routes/examPattern.routes.js";
@@ -30,7 +30,6 @@ import { questionProcessingPublicRouter } from "./routes/questionprocessing.rout
 import { statsRouter } from "./routes/statsRoutes.js";
 import { categoryPublicRouter } from "./routes/category.routes.js";
 import { progressRouter } from "./routes/progress.routes.js";
-import { botauthenticate } from "./middleware/botauth.js";
 
 
 

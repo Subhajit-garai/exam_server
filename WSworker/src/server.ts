@@ -1,6 +1,6 @@
 import http from "http";
 import "dotenv/config";
-import { SocketManager } from "./socket/socket.manager.js";
+import { SocketManager } from "@repo/socket/socket.manager.js";
 
 
 const PORT = process.env.WS_PORT || 8080;

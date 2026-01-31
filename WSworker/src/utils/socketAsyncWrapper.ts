@@ -1,5 +1,5 @@
-import { logger } from "src/utils/logger.js";
-import { BaseSocketHandler } from "../socket/handlers/base.socket.handler.js";
+import { logger } from "@repo/utils/logger.js";
+import { BaseSocketHandler } from "@repo/socket/handlers/base.socket.handler.js";
 
 /**
  * Wraps an async socket handler method to catch errors automatically.

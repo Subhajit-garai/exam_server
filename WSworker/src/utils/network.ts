@@ -1,8 +1,8 @@
 import axios from "axios";
 import dotenv from "dotenv";
-import { botPlatform } from "../lib/types/types.js";
-import { logger } from "./logger.js";
-import { user_data } from "src/socket/user.js";
+import { botPlatform } from "@repo/lib/types/types.js";
+import { logger } from "@repo/utils/logger.js";
+import { user_data } from "@repo/socket/user.js";
 dotenv.config();
 
 export type CreationTypes =

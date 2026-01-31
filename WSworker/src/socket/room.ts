@@ -1,5 +1,5 @@
-import { User } from "./user.js";
-import { shuffleArraySeeded } from "../utils/shuffle.js";
+import { User } from "@repo/socket/user.js";
+import { shuffleArraySeeded } from "@repo/utils/shuffle.js";
 
 export class Room {
     public id: string;

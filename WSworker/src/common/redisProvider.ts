@@ -1,6 +1,6 @@
 import { Redis } from "ioredis";
 
-import { Task } from "./types.js";
+import { Task } from "./types/types.js";
 
 export class RedisProvider {
     private static instance: RedisProvider;

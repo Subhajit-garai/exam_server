@@ -10,6 +10,7 @@ const server = http.createServer((req, res) => {
     res.end('WebSocket Worker is running\n');
 });
 
+
 // Initialize SocketManager
 const socketManager = SocketManager.getInstance();
 socketManager.init(server, "/quiz");

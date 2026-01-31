@@ -1,4 +1,4 @@
-name: Worker Deploy
+name: WSWorker Deploy
 
 on:
   push:

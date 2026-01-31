@@ -4,10 +4,6 @@ import { network } from "@/utils/network";
 import { runWorker } from "./tasks/worker-runner";
 
 // demo structure of tasks
-
-
-
-
 //  {
 //   examid: 'cmjhf8pjm0003robu9zwvpa3b',
 //   userid: 'cmiumchq20009jwbuf2mbvusw',

@@ -1,16 +1,16 @@
-import { BaseSocketHandler } from "./base.socket.handler.js";
+import { BaseSocketHandler } from "@repo/socket/handlers/base.socket.handler.js";
 import { WebSocket } from "ws";
-import { QuizManager } from "../../common/manager/quizManager.js";
-import { logger } from "src/utils/logger.js";
-import { catchAsyncSocket } from "../../utils/socketAsyncWrapper.js";
+import { QuizManager } from "@repo/manager/quizManager.js";
+import { logger } from "@repo/utils/logger.js";
+import { catchAsyncSocket } from "@repo/utils/socketAsyncWrapper.js";
 import {
     QuizHandlerType,
     JoinQuizPayload,
     LeaveQuizPayload,
     EndQuizPayload,
     SubmitAnswerPayload,
-} from "../../common/types/ws.types.js";
-import { SocketManager } from "../socket.manager.js";
+} from "@repo/types/ws.types.js";
+import { SocketManager } from "@repo/socket/socket.manager.js";
 
 
 export class QuizSocketHandler extends BaseSocketHandler {

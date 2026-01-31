@@ -1,32 +1,21 @@
 {
-    "compilerOptions": {
-        "target": "ES2020",
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
-        "outDir": "./dist",
-        "rootDir": "./src",
-        "strict": true,
-        "noImplicitAny": false,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "baseUrl": ".",
-        "paths": {
-            "@repo/db/*": [
-                "src/mocks/repo/db/*"
-            ],
-            "@repo/prisma/*": [
-                "src/mocks/repo/prisma/*"
-            ],
-            "@prisma/client/runtime/client": [
-                "src/mocks/prisma/client/runtime/client"
-            ]
-        }
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@repo/types/*": ["./src/common/types/*"],
+      "@repo/common/*": ["./src/common/*"],
+      "@repo/manager/*": ["./src/common/manager/*"],
+      "@repo/socket/*": ["./src/socket/*"],
+      "@repo/lib/*": ["./src/lib/*"],
+      "@repo/utils/*": ["./src/utils/*"]
     },
-    "include": [
-        "src/**/*.ts"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+    "rootDir": "." /* Specify the root folder within your source files. */,
+    "outDir": "./dist" /* Specify an output folder for all emitted files. */,
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "target": "ES2023",
+    "strict": true,
+    "esModuleInterop": true
+  }
 }

@@ -1,12 +1,12 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { Server } from "http";
-import { verifyToken } from "../common/token.js";
-import { QuizSocketHandler } from "./handlers/quiz.socket.handler.js";
-import { BaseSocketHandler } from "./handlers/base.socket.handler.js";
-import { RedisProvider } from "../common/redisProvider.js";
-import { User } from "./user.js";
-import { Room } from "./room.js";
-import { Network } from "src/utils/network.js";
+import { verifyToken } from "@repo/common/token.js";
+import { QuizSocketHandler } from "@repo/socket/handlers/quiz.socket.handler.js";
+import { BaseSocketHandler } from "@repo/socket/handlers/base.socket.handler.js";
+import { RedisProvider } from "@repo/common/redisProvider.js";
+import { User } from "@repo/socket/user.js";
+import { Room } from "@repo/socket/room.js";
+import { Network } from "@repo/utils/network.js";
 
 
 export class SocketManager {

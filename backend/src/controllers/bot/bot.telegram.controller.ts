@@ -1,7 +1,4 @@
-import { veryfyhashPasswordFn } from "@/lib/security/hash.js";
-import { genToken } from "@/lib/token.js";
-import prisma from "@repo/db/index.js";
-import { UserRole } from "@repo/prisma/client.js";
+
 import { BotService } from "../../services/bot.service.js";
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 

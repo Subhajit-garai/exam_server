@@ -1,4 +1,4 @@
-import { getQuizConfigdData, getQuizTopic, sentQuizData } from "@/controllers/bot/bot.quiz.controller";
+import { getQuizConfigdData, getQuizTopic, sentQuizData } from "@/controllers/bot/bot.quiz.controller.js";
 import { Router } from "express";
 export const botQuizRouter = Router();
 

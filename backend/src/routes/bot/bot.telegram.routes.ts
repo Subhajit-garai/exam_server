@@ -1,5 +1,5 @@
 
-import { AllUserData, isGroupJoinable, sendGroupinfo, sendGroupTopicinfo, sendValidchatids } from "@/controllers/bot/bot.telegram.controller";
+import { AllUserData, isGroupJoinable, sendGroupinfo, sendGroupTopicinfo, sendValidchatids } from "@/controllers/bot/bot.telegram.controller.js";
 import { Router } from "express";
 export const botTelegramRouter = Router();
 

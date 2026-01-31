@@ -1,7 +1,7 @@
 import { Router } from "express";
+import { getUserdata, setUserProgress } from "@/controllers/bot.controller.js";
 import { getUserScore, setUserScore } from "@/controllers/bot/bot.score.controller.js";
 import { getUserans, SetUserans } from "@/controllers/bot/bot.ans.controller.js";
-import { getUserdata, setUserProgress } from "@/controllers/bot.controller.js";
 import { IsprimeUser, sendAlluser } from "@/controllers/bot/bot.telegram.controller.js";
 
 export const botUserRouter = Router();

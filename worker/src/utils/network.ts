@@ -372,7 +372,7 @@ export class Network {
   ) {
     try {
       let url = this.getUrl(
-        `/get/quiz/config?chatid=${chatid}&userid=${userid}&platform=${platform}`
+        `/quiz/get/config?chatid=${chatid}&userid=${userid}&platform=${platform}`
       );
       return this.getRequest(url, true);
     } catch (error) {

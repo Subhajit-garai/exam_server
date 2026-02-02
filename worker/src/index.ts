@@ -9,6 +9,7 @@ import { runWorker } from "./tasks/worker-runner";
 //   userid: 'cmiumchq20009jwbuf2mbvusw',
 //   examtype: 'Dpp'
 // }
+
 // let CREATE_QUIZ_TASK: Task = {
 //   type: "CREATE_QUIZ",
 //   id: "b9437e1a-5483-4893-831a-98fb018839a6",
@@ -20,6 +21,19 @@ import { runWorker } from "./tasks/worker-runner";
 //   variant: "Quiz",
 //   category: "JECA",
 // };
+let QUIZ_Processing_TASK: Task = {
+  type: "SEND_QUIZ_DATA",
+  id: "b9437e1a-5483-4893-831a-98fb018839a6",
+  payload: {
+    cburl: 'https://153280c08a5f.ngrok-free.app/survertask',
+    userid: 7057093987,
+    chatid: -1002506753144,
+    platfrom: 'TELEGRAM',
+    chat_type: 'supergroup'
+  },
+  variant: "Quiz",
+  category: "JECA",
+};
 
 
 // let CREATE_EXAM_TASK: Task = {
@@ -58,7 +72,7 @@ import { runWorker } from "./tasks/worker-runner";
 const main = async () => {
   try {
     let redisClient = RedisProvider.getInstance();
-    // await redisClient.push(); // added testing
+    await redisClient.push(QUIZ_Processing_TASK); // added testing
 
     while (true) {
       let data = await redisClient.pop();

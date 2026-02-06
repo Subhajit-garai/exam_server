@@ -95,8 +95,6 @@ export class QuizProcessingTask extends BaseWorkerTask {
       );
 
 
-      console.log("---> ", quizConfig);
-
 
       let {
         total_questions,

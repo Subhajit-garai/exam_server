@@ -61,7 +61,7 @@ export class SocketManager {
 
                 if (!token) {
                     ws.close(1008, "Token required");
-                    console.log("Token required");
+                    console.log("Token required! , token not found ");
                     return;
                 }
                 let userinfo: any

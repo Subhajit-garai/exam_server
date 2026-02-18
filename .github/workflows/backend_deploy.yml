@@ -17,56 +17,56 @@ jobs:
 
 
 
-  # build-backend:
+  build-backend:
   
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     imagetag: ${{ steps.image_tag.outputs.imagetag }}
+    runs-on: ubuntu-latest
+    outputs:
+      imagetag: ${{ steps.image_tag.outputs.imagetag }}
 
-  #   steps:
-  #     - uses: actions/checkout@v5
-  #     - uses: docker/login-action@v3
-  #       with:
-  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-  #     - name: Set up QEMU
-  #       uses: docker/setup-qemu-action@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-  #     - name: Extract metadata (tag, labels)
-  #       id: meta
-  #       uses: docker/metadata-action@v5.9.0
-  #       with:
-  #         images: ${{env.BACKEND_IMAGE}}
-  #         tags: |
-  #           type=semver,pattern={{version}}
-  #           type=sha,format=long
-  #           type=raw,value=latest
+      - name: Extract metadata (tag, labels)
+        id: meta
+        uses: docker/metadata-action@v5.9.0
+        with:
+          images: ${{env.BACKEND_IMAGE}}
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,format=long
+            type=raw,value=latest
 
-  #     - name: Build and push image
-  #       uses: docker/build-push-action@v6
-  #       with:
-  #         context: ./backend
-  #         push: true
-  #         tags: ${{ steps.meta.outputs.tags }}
-  #         labels: ${{ steps.meta.outputs.labels }}
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
-  #     - name: Deploy backend (first tag only)
-  #       id: image_tag
-  #       run: |
-  #         # Get first tag from metadata (split by newline)
-  #         FIRST_TAG=$(echo "${{ steps.meta.outputs.tag-names }}" | head -n1)
-  #         if [ -z "$FIRST_TAG" ]; then
-  #           echo "No tag found, exiting."
-  #           exit 1
-  #         fi
-  #         echo "Deploying tag: $FIRST_TAG"
-  #         echo "imagetag=$FIRST_TAG" >> $GITHUB_OUTPUT
+      - name: Deploy backend (first tag only)
+        id: image_tag
+        run: |
+          # Get first tag from metadata (split by newline)
+          FIRST_TAG=$(echo "${{ steps.meta.outputs.tag-names }}" | head -n1)
+          if [ -z "$FIRST_TAG" ]; then
+            echo "No tag found, exiting."
+            exit 1
+          fi
+          echo "Deploying tag: $FIRST_TAG"
+          echo "imagetag=$FIRST_TAG" >> $GITHUB_OUTPUT
 
-  # deploy-backend:
+  deploy-backend:
     needs: build-backend
     runs-on: ubuntu-latest
     environment: production

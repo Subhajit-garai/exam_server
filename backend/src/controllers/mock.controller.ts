@@ -81,8 +81,8 @@ export const RemoveQuestionFromMock = asyncHandler(async (req: any, res: any) =>
     });
 });
 
-export const getAvalibleMock = asyncHandler(async (req: any, res: any) => {
-    const response = await mockService.getAvalibleMock();
+export const getAvailableMock = asyncHandler(async (req: any, res: any) => {
+    const response = await mockService.getAvailableMock();
     res.json({
         success: true,
         data: response

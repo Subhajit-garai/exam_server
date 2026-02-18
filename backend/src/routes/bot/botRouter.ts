@@ -9,7 +9,7 @@ import { botTelegramRouter } from "./bot.telegram.routes.js";
 
 import { bot_login } from "@/controllers/bot/bot.telegram.controller.js";
 import { getExamPattern, getMockSetExamPattern } from "@/controllers/bot/bot.exampattern.controller.js";
-import { getSyllabusDataForExamCreattion, processNotification } from "@/controllers/bot.controller.js";
+import { getSyllabusDataForExamCreation, processNotification } from "@/controllers/bot.controller.js";
 
 export const botRouter = Router();
 export const botSecureRouter = Router();
@@ -35,7 +35,7 @@ botSecureRouter.use("/telegram", botTelegramRouter);
 botSecureRouter.get("/exampattern/get/:exampatternid", getExamPattern);
 botSecureRouter.get("/mock/exampattern/details/get", getMockSetExamPattern);
 //syllabus
-botSecureRouter.get("/syllabus/exam/get", getSyllabusDataForExamCreattion);
+botSecureRouter.get("/syllabus/exam/get", getSyllabusDataForExamCreation);
 botSecureRouter.post("/notification", processNotification)
 
 // Fallback for unmatched bot routes to prevent falling through to user auth

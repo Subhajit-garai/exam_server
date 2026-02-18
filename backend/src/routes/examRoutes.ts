@@ -1,21 +1,21 @@
 import { Router } from "express";
 import {
-  deletexams,
+  //   deletexams,
   getExams,
   examJoinRequestProcess,
-  joinedExamData,
-  submitAnswerhandler,
-  gettokenSystem,
-  finalsubmitExam,
-  getUserMetaDataforAnExam,
-  ExamAttemptQuestionMetaData,
+  getJoinedExamData,
+  submitAnswerHandler,
+  getTokenSystem,
+  finalSubmitExam,
+  getUserMetaDataForExam,
+  getExamAttemptQuestionMetaData,
   getUserAnsSetOfAnExam,
-  getExamsbyid,
-  update_targeted_exam_year,
-  getAvalibletargetExam,
-  getAvalibletargetExamAll,
+  getExamsById,
+  updateTargetedExamYear,
+  getAvailableTargetExam,
+  getAvailableTargetExamAll,
   getExamYearInfo,
-  fetch_targeted_exam_by_id,
+  fetchTargetedExamById,
   getCategoryName,
 } from "../controllers/exam.controller.js";
 import { create_targeted_exam, create_targeted_exam_year, CreateExam } from "@/controllers/exam/exam.create.controller.js";
@@ -25,26 +25,26 @@ export const examAdminRouter = Router();
 export const examPublicRouter = Router();
 
 // Public Routes
-examPublicRouter.get("/tokensystem", gettokenSystem);
+examPublicRouter.get("/tokensystem", getTokenSystem);
 examPublicRouter.get("/category/name", getCategoryName);
 examPublicRouter.get("/joinrequest", examJoinRequestProcess);
 examPublicRouter.get("/getExams", getExams);
-examPublicRouter.get("/getexambyid", getExamsbyid);
-examPublicRouter.get("/data", joinedExamData);
-examPublicRouter.get("/submitans", submitAnswerhandler);
-examPublicRouter.get("/finalsubmit", finalsubmitExam);
+examPublicRouter.get("/getexambyid", getExamsById);
+examPublicRouter.get("/data", getJoinedExamData);
+examPublicRouter.get("/submitans", submitAnswerHandler);
+examPublicRouter.get("/finalsubmit", finalSubmitExam);
 examPublicRouter.get("/year/get", getExamYearInfo);
-examPublicRouter.get("/usermetadataforanexam", getUserMetaDataforAnExam)
-examPublicRouter.get("/examattemptquestiondata", ExamAttemptQuestionMetaData)
+examPublicRouter.get("/usermetadataforanexam", getUserMetaDataForExam)
+examPublicRouter.get("/examattemptquestiondata", getExamAttemptQuestionMetaData)
 examPublicRouter.get("/getuseransset", getUserAnsSetOfAnExam)
-examPublicRouter.get("/avalible/targeted/exam", getAvalibletargetExam);
-examPublicRouter.get("/avalible/targeted/exam/all", getAvalibletargetExamAll);
+examPublicRouter.get("/avalible/targeted/exam", getAvailableTargetExam);
+examPublicRouter.get("/avalible/targeted/exam/all", getAvailableTargetExamAll);
 
 // Admin Routes (Protected)
-examAdminRouter.post("/get/target/exam/id", fetch_targeted_exam_by_id);
+examAdminRouter.post("/get/target/exam/id", fetchTargetedExamById);
 
-examAdminRouter.get("/deletexams", deletexams);
+// examAdminRouter.get("/deletexams", deletexams);
 examAdminRouter.post("/create", CreateExam);
 examAdminRouter.post("/create/target/exam", create_targeted_exam);
 examAdminRouter.post("/create/target/examyear", create_targeted_exam_year);
-examAdminRouter.put("/update/target/examyear/info", update_targeted_exam_year);
+examAdminRouter.put("/update/target/examyear/info", updateTargetedExamYear);

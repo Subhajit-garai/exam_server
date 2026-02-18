@@ -12,7 +12,6 @@ dayjs.extend(timezone);
 
 const qm = QuizManager.getInstance();
 
-// Run every minute
 export const quizScheduler = async () => {
     try {
         console.log("Running quiz scheduler...");

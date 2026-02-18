@@ -128,7 +128,7 @@ export class MockService {
         return response.exam_pattern;
     }
 
-    async getAvalibleMock() {
+    async getAvailableMock() {
         // Maybe return just names and IDs for a dropdown
         const response = await prisma.exam.findMany({
             where: {

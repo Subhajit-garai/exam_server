@@ -12,79 +12,79 @@ env:
   WSWORKER_IMAGE: ${{ secrets.WSWORKER_IMAGE }}
   DOCKER_NETWORK: ${{ secrets.DOCKER_NETWORK }}
 
-jobs:
-  build-worker:
-    runs-on: ubuntu-latest
-    outputs:
-      imagetag: ${{ steps.image_tag.outputs.imagetag }}
-    steps:
-      - uses: actions/checkout@v5
+# jobs:
+#   build-worker:
+#     runs-on: ubuntu-latest
+#     outputs:
+#       imagetag: ${{ steps.image_tag.outputs.imagetag }}
+#     steps:
+#       - uses: actions/checkout@v5
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKERHUB_TOKEN }}
+#       - name: Set up QEMU
+#         uses: docker/setup-qemu-action@v3
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v3
 
-      - name: Extract metadata (tag, labels)
-        id: meta
-        uses: docker/metadata-action@v5.9.0
-        with:
-          images: ${{env.WSWORKER_IMAGE}}
-          tags: |
-            type=semver,pattern={{version}}
-            type=sha,format=long
-            type=raw,value=latest
+#       - name: Extract metadata (tag, labels)
+#         id: meta
+#         uses: docker/metadata-action@v5.9.0
+#         with:
+#           images: ${{env.WSWORKER_IMAGE}}
+#           tags: |
+#             type=semver,pattern={{version}}
+#             type=sha,format=long
+#             type=raw,value=latest
 
-      - name: Build and push image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./WSworker
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+#       - name: Build and push image
+#         uses: docker/build-push-action@v6
+#         with:
+#           context: ./WSworker
+#           push: true
+#           tags: ${{ steps.meta.outputs.tags }}
+#           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Deploy WSworker (first tag only)
-        id: image_tag
-        run: |
-          # Get first tag from metadata (split by newline)
-          FIRST_TAG=$(echo "${{ steps.meta.outputs.tag-names }}" | head -n1)
-          if [ -z "$FIRST_TAG" ]; then
-            echo "No tag found, exiting."
-            exit 1
-          fi
-          echo "Deploying tag: $FIRST_TAG"
-          echo "imagetag=$FIRST_TAG" >> $GITHUB_OUTPUT
+#       - name: Deploy WSworker (first tag only)
+#         id: image_tag
+#         run: |
+#           # Get first tag from metadata (split by newline)
+#           FIRST_TAG=$(echo "${{ steps.meta.outputs.tag-names }}" | head -n1)
+#           if [ -z "$FIRST_TAG" ]; then
+#             echo "No tag found, exiting."
+#             exit 1
+#           fi
+#           echo "Deploying tag: $FIRST_TAG"
+#           echo "imagetag=$FIRST_TAG" >> $GITHUB_OUTPUT
 
-  deploy-worker:
-    needs: 
-      - build-worker
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          envs: WSWORKER_IMAGE
-          script: |
+#   deploy-worker:
+#     needs: 
+#       - build-worker
+#     runs-on: ubuntu-latest
+#     environment: production
+#     steps:
+#       - uses: appleboy/ssh-action@v1
+#         with:
+#           host: ${{ secrets.HOST }}
+#           username: ${{ secrets.USER }}
+#           key: ${{ secrets.SSH_KEY }}
+#           envs: WSWORKER_IMAGE
+#           script: |
           
-            IMAGE=${WSWORKER_IMAGE}:${{ needs.build-worker.outputs.imagetag }}
-            sudo docker pull $IMAGE
-            sudo docker stop exam_wsworker || true
-            sudo docker rm exam_wsworker || true
+#             IMAGE=${WSWORKER_IMAGE}:${{ needs.build-worker.outputs.imagetag }}
+#             sudo docker pull $IMAGE
+#             sudo docker stop exam_wsworker || true
+#             sudo docker rm exam_wsworker || true
 
-            sudo docker run -d \
-            --name exam_wsworker \
-            --network ${{ secrets.DOCKER_NETWORK}} \
-            --network-alias wsworker \
-            -p 5001:5001 \
-            --env-file /home/ubuntu/deploy/.wsworker.env \
-            $IMAGE
-            sleep 20
-            sudo docker system prune -f
+#             sudo docker run -d \
+#             --name exam_wsworker \
+#             --network ${{ secrets.DOCKER_NETWORK}} \
+#             --network-alias wsworker \
+#             -p 5001:5001 \
+#             --env-file /home/ubuntu/deploy/.wsworker.env \
+#             $IMAGE
+#             sleep 20
+#             sudo docker system prune -f

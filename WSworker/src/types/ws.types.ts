@@ -1,4 +1,4 @@
-import { exam_question_format_for_ui_type } from "@repo/types/questionTypes.js";
+import { exam_question_format_for_ui_type } from "@/types/questionTypes.js";
 
 export type QuizHandlerType =
     | "QUIZ_START"

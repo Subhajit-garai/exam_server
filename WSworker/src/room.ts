@@ -1,4 +1,4 @@
-import { User } from "@repo/socket/user.js";
+import { User } from "@/user.js";
 import { shuffleArraySeeded } from "@repo/utils/shuffle.js";
 
 export class Room {

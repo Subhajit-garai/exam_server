@@ -1,20 +1,28 @@
 import http from "http";
 import "dotenv/config";
-import { SocketManager } from "@repo/socket/socket.manager.js";
+import { SocketManager } from "@/manager/socket.manager.js";
+import { logger } from "./utils/logger";
 
 
-const PORT = process.env.WS_PORT || 8080;
+const PORT = Number(process.env.WS_PORT);
 
-const server = http.createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('WebSocket Worker is running\n');
+
+const server = http.createServer();
+
+server.on("request", (req, res) => {
+    if (req.url === "/health") {
+        res.end("OK");
+    }
 });
 
+server.on("upgrade", (req, socket, head) => {
+    logger.info(":UPGRADE REQUEST:");
+});
 
 // Initialize SocketManager
 const socketManager = SocketManager.getInstance();
 socketManager.init(server, "/quiz");
 
-server.listen(PORT, () => {
-    console.log(`WebSocket Worker listening on port ${PORT}`);
+server.listen(PORT, "0.0.0.0", () => {
+    logger.success(`WebSocket Worker listening on port ${PORT}`);
 });

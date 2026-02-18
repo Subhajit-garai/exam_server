@@ -1,12 +1,13 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { Server } from "http";
-import { verifyToken } from "@repo/common/token.js";
-import { QuizSocketHandler } from "@repo/socket/handlers/quiz.socket.handler.js";
-import { BaseSocketHandler } from "@repo/socket/handlers/base.socket.handler.js";
-import { RedisProvider } from "@repo/common/redisProvider.js";
-import { User } from "@repo/socket/user.js";
-import { Room } from "@repo/socket/room.js";
+import { verifyToken } from "@/utils/token.js";
+import { QuizSocketHandler } from "@/handlers/quiz.socket.handler.js";
+import { BaseSocketHandler } from "@/handlers/base.socket.handler.js";
+import { RedisProvider } from "@/utils/redisProvider.js";
+import { User } from "@/user.js";
+import { Room } from "@/room.js";
 import { Network } from "@repo/utils/network.js";
+import { logger } from "@/utils/logger";
 
 
 export class SocketManager {
@@ -25,9 +26,9 @@ export class SocketManager {
 
         this.redisSub.subscribe("WS_BROADCAST", (err: any, count: number) => {
             if (err) {
-                console.error("Failed to subscribe: %s", err.message);
+                logger.error("Failed to subscribe: %s", err.message);
             } else {
-                console.log(`Subscribed successfully! This client is currently subscribed to ${count} channels.`);
+                logger.success(`Subscribed successfully! This client is currently subscribed to ${count} channels.`);
             }
         });
 
@@ -37,7 +38,7 @@ export class SocketManager {
                     const { userIds, type, payload, rooms } = JSON.parse(message);
                     this.broadcast(userIds, type, payload, rooms);
                 } catch (error) {
-                    console.error("Error processing Redis message:", error);
+                    logger.error("Error processing Redis message:", error);
                 }
             }
         });
@@ -52,8 +53,10 @@ export class SocketManager {
 
     public init(server: Server, path?: string) {
         this.wss = new WebSocketServer({ server, path });
-
+        logger.info("SocketManager initialized");
         this.wss.on("connection", async (ws: WebSocket, req: any) => {
+
+            logger.info("New connection establishing");
             try {
                 // 1. Authentication
                 const url = new URL(req.url, `http://${req.headers.host}`);
@@ -61,50 +64,57 @@ export class SocketManager {
 
                 if (!token) {
                     ws.close(1008, "Token required");
-                    console.log("Token required! , token not found ");
+                    logger.error("Token required! , token not found ");
                     return;
                 }
                 let userinfo: any
-
                 // auth 
-
                 try {
                     userinfo = verifyToken(token);
                     if (typeof userinfo === 'string') {
-                        console.log("Invalid token payload");
+                        logger.error("Invalid token payload");
                         throw new Error("Invalid token payload");
                     }
                 } catch (e) {
-                    console.log(" error ---> ", e);
+                    logger.error(" error ---> ", e);
                     ws.close(1008, "Invalid token");
                     return;
                 }
 
                 // Store user mapping
                 let user = this.users.get(userinfo.id);
-                if (!user) {
 
+
+                if (!user) {
                     let network = Network.getInstance()
                     let responce = await network.getuserInfo(userinfo.id)
+                    if (responce) {
+                        logger.success("User data fetched successfully");
+                    } else {
+                        logger.error("User data not found");
+                        ws.close(1008, "User data not found");
+                        return;
+                    }
                     user = new User(userinfo.id, responce, ws);
 
                     this.users.set(userinfo.id, user);
                 } else {
                     user.addSocket(ws);
                 }
-
                 // 2. Initialize Handlers
                 const quizHandler = new QuizSocketHandler(ws, user);
-
                 this.clients.set(ws, [quizHandler]);
 
-                ws.on("message", async (message: string) => {
+
+                ws.on("message", async (message: string | Buffer) => {
+
                     try {
 
-                        const parsed = JSON.parse(message);
-                        // console.log("Message received:", parsed);
-                        const { category, type, payload } = parsed;
+                        const parsed = JSON.parse(message.toString());
 
+                        console.log("-----> ", parsed);
+
+                        const { category, type, payload } = parsed;
                         // Route to appropriate handler
                         const handlers = this.clients.get(ws);
                         if (handlers) {
@@ -116,6 +126,7 @@ export class SocketManager {
                                 }
                             }
                         }
+
                     } catch (error: any) {
                         console.error("Error processing message:", error);
                         ws.send(JSON.stringify({ type: "ERROR", payload: { message: error?.message ?? "Something went wrong" } }));
@@ -123,7 +134,8 @@ export class SocketManager {
                 });
 
                 ws.on("close", (code, reason) => {
-                    console.log(`User disconnected: ${userinfo.id}`);
+                    logger.error(`User disconnected: ${userinfo.id}`);
+                    logger.error("RESON:", reason.toString())
                     this.clients.delete(ws);
 
                     // Remove from user
@@ -140,12 +152,7 @@ export class SocketManager {
                 ws.close(1011, "Internal Server Error");
             }
         });
-
-        console.log("WebSocket Server Initialized");
     }
-
-
-
 
     public broadcast(userIds: string[], type: string, payload: any, rooms?: string[]) {
         let handled = false;
@@ -192,25 +199,26 @@ export class SocketManager {
         });
     }
 
+
     public joinRoom(roomId: string, user: User) {
         let room = this.rooms.get(roomId);
         if (!room) {
             room = new Room(roomId);
             this.rooms.set(roomId, room);
-            console.log(`[ROOM_CREATE] Created room ${roomId}`);
+            logger.info(`[ROOM_CREATE] Created room ${roomId}`);
         }
         room.addUser(user);
-        console.log(`[ROOM_JOIN] User ${user.id} joined room ${roomId}`);
+        logger.success(`[ROOM_JOIN] User ${user.id} joined room ${roomId}`);
     }
 
     public leaveRoom(roomId: string, user: User) {
         const room = this.rooms.get(roomId);
         if (room) {
             room.removeUser(user);
-            console.log(`[ROOM_LEAVE] User ${user.id} left room ${roomId}`);
+            logger.success(`[ROOM_LEAVE] User ${user.id} left room ${roomId}`);
             if (room.getUserCount() === 0) {
                 this.rooms.delete(roomId);
-                console.log(`[ROOM_DELETE] Deleted empty room ${roomId}`);
+                logger.success(`[ROOM_DELETE] Deleted empty room ${roomId}`);
             }
         }
     }

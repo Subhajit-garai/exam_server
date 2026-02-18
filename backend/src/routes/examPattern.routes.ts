@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-    getAvalibleExamPattern,
+    getAvailableExamPattern,
     getExamPatternById,
     updateExamPattern,
     deleteExamPattern,
@@ -11,7 +11,7 @@ export const examPatternAdminRouter = Router();
 export const examPatternPublicRouter = Router();
 
 // Public Routes
-examPatternPublicRouter.get("/list", getAvalibleExamPattern); // Changed from /avalibleExamPattern to /list for cleaner API if mounted at /exampattern
+examPatternPublicRouter.get("/list", getAvailableExamPattern); // Changed from /avalibleExamPattern to /list for cleaner API if mounted at /exampattern
 
 // Admin Routes (Protected)
 examPatternAdminRouter.post("/create", CreateNewExamPattern); // /create

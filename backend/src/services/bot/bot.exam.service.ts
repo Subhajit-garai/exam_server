@@ -42,7 +42,7 @@ export class BotExamService {
         });
     }
 
-    async getSyllabusDataForExamCreattion(syllabusid: string) {
+    async getSyllabusDataForExamCreation(syllabusid: string) {
         if (!syllabusid) throw new Error("Syllabus ID not received");
 
         const syllabusData = await prisma.syllabus.findFirst({
@@ -138,7 +138,7 @@ export class BotExamService {
     }
 
 
-    async AddProcessingQuestions(data: any[]) {
+    async addProcessingQuestions(data: any[]) {
         if (!data || data.length === 0) return [];
 
         const result = await prisma.questionProcessing.createMany({

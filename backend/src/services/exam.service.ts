@@ -24,12 +24,12 @@ dayjs.extend(timezone);
 const em = ExamManager.getInstance();
 
 export class ExamService {
-    async deletexams() {
-        let response = await prisma.exam.deleteMany({});
-        return response;
-    }
+    // async deletexams() {
+    //     let response = await prisma.exam.deleteMany({});
+    //     return response;
+    // }
 
-    async update_targeted_exam_year(data: any) {
+    async updateTargetedExamYear(data: any) {
         let isTargetdExam_Year = await prisma.examYear.findUnique({
             where: {
                 id: data.exam_year_id,
@@ -37,7 +37,7 @@ export class ExamService {
         });
 
         if (!isTargetdExam_Year) {
-            throw new Error("Porvided exam year id is invalid ");
+            throw new Error("Provided exam year id is invalid ");
         }
 
         let updated_target_exam_year = await prisma.examYear.update({
@@ -102,7 +102,7 @@ export class ExamService {
         return data;
     }
 
-    async getUserMetaDataforAnExam(userId: string, examId: string) {
+    async getUserMetaDataForExam(userId: string, examId: string) {
         let data: ExamMetaData = {} as ExamMetaData;
 
         let userScore = await prisma.score.findFirst({
@@ -137,23 +137,23 @@ export class ExamService {
 
         function userTotalRightWrong(userScore: any) {
             if (!userScore?.result) {
-                return { rignt: 0, wrong: 0 };
+                return { right: 0, wrong: 0 };
             }
-            let rignt = 0;
+            let right = 0;
             let wrong = 0;
             if (userScore?.result) {
                 Object.keys(userScore.result).forEach((item: any) => {
-                    rignt += userScore.result[item].Right;
+                    right += userScore.result[item].Right;
                     wrong += userScore.result[item].Wrong;
                 });
             }
-            return { rignt, wrong };
+            return { right, wrong };
         }
 
-        let { rignt, wrong } = userTotalRightWrong(userScore);
+        let { right, wrong } = userTotalRightWrong(userScore);
         data.examid = examId;
         data.score = userScore ? userScore?.score : 0;
-        data.rignt = rignt;
+        data.rignt = right;
         data.wrong = wrong;
         data.attempts = 1;
         data.rank = userLeaderboard ? userLeaderboard?.rank : 0;
@@ -163,11 +163,10 @@ export class ExamService {
         return data;
     }
 
-    async gettokenSystem(userId: string, type: any) {
+    async getTokenSystem(userId: string, type: any) {
         let data = await getServiceCharge(undefined, type, userId);
         return data;
     }
-
 
     async getCategoryName() {
         let response = await prisma.category.findMany({});
@@ -179,7 +178,7 @@ export class ExamService {
         return Category;
     }
 
-    async fetch_targeted_exam_by_id(id: string) {
+    async fetchTargetedExamById(id: string) {
         let target_exam = await prisma.targetExam.findFirst({
             where: {
                 id: id,
@@ -190,7 +189,7 @@ export class ExamService {
         return target_exam;
     }
 
-    async ExamAttemptQuestionMetaData(userId: string, examId: string) {
+    async getExamAttemptQuestionMetaData(userId: string, examId: string) {
         let data = await prisma.score.findFirst({
             where: {
                 user_id: userId,
@@ -204,7 +203,7 @@ export class ExamService {
         return data;
     }
 
-    async submitAnswerhandler(
+    async submitAnswerHandler(
         userId: string,
         examId: string,
         number: string,
@@ -224,7 +223,7 @@ export class ExamService {
         return status;
     }
 
-    async finalsubmitExam(userId: string, examId: string) {
+    async finalSubmitExam(userId: string, examId: string) {
         let status = await em.submitExam(examId, userId);
 
         try {
@@ -238,7 +237,7 @@ export class ExamService {
         return status;
     }
 
-    async joinedExamData(
+    async getJoinedExamData(
         userId: string,
         examId: string,
         type: "pre" | "next" | "current",
@@ -314,55 +313,7 @@ export class ExamService {
                 }
 
                 // join time checking
-                {
-                    let examDate = dayjs.utc(exam.date).tz("Asia/Kolkata");
-                    let currentISTTime = dayjs.utc().tz("Asia/Kolkata");
-
-                    let isSame = currentISTTime.isSame(examDate, "day");
-                    let date = examDate.format("DD-MM-YYYY");
-
-                    if (isSame) {
-                        let startTime = dayjs.tz(
-                            `${date} ${exam.starttime}`,
-                            "DD-MM-YYYY hh:mm a",
-                            "Asia/Kolkata"
-                        );
-                        let started = currentISTTime.isAfter(startTime);
-
-                        if (started) {
-                            let jointime = exam?.jointime as string;
-                            if (jointime == "no limit") {
-                                jointime = "00:15 m";
-                            }
-                            const minutesMatch = jointime.match(/(\d+):(\d+)/);
-                            let joinTimeLimit;
-                            if (minutesMatch) {
-                                const [_, hours, minutes] = minutesMatch.map(Number);
-                                joinTimeLimit = startTime
-                                    .add(hours, "hour")
-                                    .add(minutes, "minute");
-                            } else {
-                                console.error("Invalid jointime format:", jointime);
-                            }
-
-                            let isExamJoinTimeExecd = currentISTTime.isAfter(joinTimeLimit);
-
-                            if (isExamJoinTimeExecd) {
-                                throw new CustomError("Exam Joining Time is over");
-                            }
-                        } else {
-                            let remainingTime = Math.max(
-                                startTime.diff(currentISTTime, "minutes"),
-                                0
-                            );
-                            throw new CustomError(
-                                `Exam not started yet , remining time is ${remainingTime} m`
-                            );
-                        }
-                    } else {
-                        throw new CustomError("Exam Joining Time is over/not started");
-                    }
-                }
+                this.isExamSessionActive(exam);
             }
 
             // transaction point
@@ -408,7 +359,7 @@ export class ExamService {
         return exam_year;
     }
 
-    async getExamsbyid(id: string) {
+    async getExamsById(id: string) {
         let response = await prisma.exam.findMany({
             where: {
                 id: id,
@@ -460,142 +411,72 @@ export class ExamService {
         starttime?: string,
         endtime?: string
     ) {
-        let response;
-        let total;
+        const where: any = {
+            OR: [{ created_by: userId }, { Visibility: Visibility.Public }],
+            ...(type ? { examtype: type } : {}),
+        };
 
         if (starttime && endtime) {
-            response = await prisma.exam.findMany({
-                where: {
-                    AND: [
-                        {
-                            OR: [{ created_by: userId }, { Visibility: Visibility.Public }],
-                        },
-                        {
-                            date: {
-                                gte: starttime,
-                                lte: endtime,
-                            },
-                        },
-                    ],
-                    ...(type ? { examtype: type } : {}),
-                    creationstatus: "Done",
-                },
-                select: {
-                    id: true,
-                    name: true,
-                    display_id: true,
-                    exam_pattern: {
-                        select: {
-                            id: true,
-                            total_questions: true,
-                            examname: true,
-                            syllabus: true,
-                            difficulty: true,
-                            format: true,
-                            Category: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    slug: true
-                                }
-                            }
-                        },
-                    },
-                    Visibility: true,
-                    examtype: true,
-                    starttime: true,
-                    creationstatus: true,
-                    date: true,
-                    duration: true,
-                    jointime: true,
-                    ContestRegister: {
-                        select: {
-                            count: true,
-                        },
+            where.AND = [
+                {
+                    date: {
+                        gte: starttime,
+                        lte: endtime,
                     },
                 },
-
-                skip: (page - 1) * limit,
-                take: limit,
-                orderBy: { date: order },
-            });
-
-            total = await prisma.exam.count({
-                where: {
-                    AND: [
-                        {
-                            OR: [{ created_by: userId }, { Visibility: Visibility.Public }],
-                        },
-                        {
-                            date: {
-                                gte: starttime,
-                                lte: endtime,
-                            },
-                        },
-                    ],
-                    ...(type ? { examtype: type } : {}),
-                    creationstatus: "Done",
-                },
-            });
-        } else {
-            response = await prisma.exam.findMany({
-                where: {
-                    OR: [{ created_by: userId }, { Visibility: Visibility.Public }],
-                    ...(type ? { examtype: type } : {}),
-                },
-                select: {
-                    id: true,
-                    name: true,
-                    display_id: true,
-                    exam_pattern: {
-                        select: {
-                            id: true,
-                            total_questions: true,
-                            examname: true,
-                            syllabus: true,
-                            difficulty: true,
-                            format: true,
-                            Category: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    slug: true
-                                }
-                            }
-                        },
-                    },
-                    Visibility: true,
-                    examtype: true,
-                    starttime: true,
-                    creationstatus: true,
-
-                    date: true,
-                    duration: true,
-                    jointime: true,
-                    ContestRegister: {
-                        select: {
-                            count: true,
-                        },
-                    },
-                },
-
-                skip: (page - 1) * limit,
-                take: limit,
-                orderBy: { date: order },
-            });
-
-            total = await prisma.exam.count({
-                where: {
-                    OR: [{ created_by: userId }, { Visibility: Visibility.Public }],
-                    ...(type ? { examtype: type } : {}),
-                },
-            });
+            ];
+            where.creationstatus = "Done";
         }
+
+        const response = await prisma.exam.findMany({
+            where,
+            select: {
+                id: true,
+                name: true,
+                display_id: true,
+                exam_pattern: {
+                    select: {
+                        id: true,
+                        total_questions: true,
+                        examname: true,
+                        syllabus: true,
+                        difficulty: true,
+                        format: true,
+                        Category: {
+                            select: {
+                                id: true,
+                                name: true,
+                                slug: true
+                            }
+                        }
+                    },
+                },
+                Visibility: true,
+                examtype: true,
+                starttime: true,
+                creationstatus: true,
+                date: true,
+                duration: true,
+                jointime: true,
+                ContestRegister: {
+                    select: {
+                        count: true,
+                    },
+                },
+            },
+            skip: (page - 1) * limit,
+            take: limit,
+            orderBy: { date: order },
+        });
+
+        const total = await prisma.exam.count({
+            where,
+        });
 
         return { exams: response, total, currentPage: page };
     }
 
-    async getAvalibletargetExamAll() {
+    async getAvailableTargetExamAll() {
         let response = await prisma.targetExam.findMany({
             select: {
                 name: true,
@@ -608,11 +489,11 @@ export class ExamService {
             throw new Error("Can not find any exam");
         }
 
-        let AvalibleExam = response.flat();
-        return AvalibleExam;
+        let availableExam = response.flat();
+        return availableExam;
     }
 
-    async getAvalibletargetExam(category: string) {
+    async getAvailableTargetExam(category: string) {
 
 
         let response = await prisma.targetExam.findMany({
@@ -632,11 +513,11 @@ export class ExamService {
             throw new Error("Can not find any exam");
         }
 
-        let AvalibleExam = response.flat();
-        return AvalibleExam;
+        let availableExam = response.flat();
+        return availableExam;
     }
 
-    async getAvalibleExamPattern(exam: string, userId: string) {
+    async getAvailableExamPattern(exam: string, userId: string) {
         let response = await prisma.exam_pattern.findMany({
             where: {
                 examname: exam,
@@ -901,5 +782,54 @@ export class ExamService {
         });
         return response;
     }
-}
 
+    private isExamSessionActive(exam: any) {
+        let examDate = dayjs.utc(exam.date).tz("Asia/Kolkata");
+        let currentISTTime = dayjs.utc().tz("Asia/Kolkata");
+
+        let isSame = currentISTTime.isSame(examDate, "day");
+        let date = examDate.format("DD-MM-YYYY");
+
+        if (isSame) {
+            let startTime = dayjs.tz(
+                `${date} ${exam.starttime}`,
+                "DD-MM-YYYY hh:mm a",
+                "Asia/Kolkata"
+            );
+            let started = currentISTTime.isAfter(startTime);
+
+            if (started) {
+                let jointime = exam?.jointime as string;
+                if (jointime == "no limit") {
+                    jointime = "00:15 m";
+                }
+                const minutesMatch = jointime.match(/(\d+):(\d+)/);
+                let joinTimeLimit;
+                if (minutesMatch) {
+                    const [_, hours, minutes] = minutesMatch.map(Number);
+                    joinTimeLimit = startTime
+                        .add(hours, "hour")
+                        .add(minutes, "minute");
+                } else {
+                    console.error("Invalid jointime format:", jointime);
+                }
+
+                let isExamJoinTimeExecd = currentISTTime.isAfter(joinTimeLimit);
+
+                if (isExamJoinTimeExecd) {
+                    throw new CustomError("Exam Joining Time is over");
+                }
+            } else {
+                let remainingTime = Math.max(
+                    startTime.diff(currentISTTime, "minutes"),
+                    0
+                );
+                throw new CustomError(
+                    `Exam not started yet , remining time is ${remainingTime} m`
+                );
+            }
+        } else {
+            throw new CustomError("Exam Joining Time is over/not started");
+        }
+    }
+}

@@ -84,14 +84,14 @@ export const userSignup = asyncHandler(async (req: any, res: any) => {
   });
 })
 
-export const useremailValidationTokengen = asyncHandler(async (req: any, res: any) => {
+export const generateEmailValidationToken = asyncHandler(async (req: any, res: any) => {
   let processedData = useremailValidationZodSchema.safeParse(req.body);
 
   if (!processedData.success) {
     throw ZodDataSafeParse(processedData)
   }
   let { email } = processedData.data;
-  await userService.useremailValidationTokengen(email);
+  await userService.generateEmailValidationToken(email);
   res.status(200).json({
     success: true,
     message: "validation  token send successfully on your email ",
@@ -100,7 +100,7 @@ export const useremailValidationTokengen = asyncHandler(async (req: any, res: an
 
 })
 
-export const useremailValidationTokenVerify = asyncHandler(async (req: any, res: any) => {
+export const verifyUserEmailValidationToken = asyncHandler(async (req: any, res: any) => {
 
   let processedData = validateTokenZodSchema.safeParse(req.body);
 
@@ -111,7 +111,7 @@ export const useremailValidationTokenVerify = asyncHandler(async (req: any, res:
 
   let { token, email } = processedData.data;
   if (!email) throw Error("email not found ")
-  const userId = await userService.useremailValidationTokenVerify(token, email, req.user);
+  const userId = await userService.verifyUserEmailValidationToken(token, email, req.user);
 
   setCookie(res, userId);
 
@@ -121,7 +121,7 @@ export const useremailValidationTokenVerify = asyncHandler(async (req: any, res:
   });
 })
 
-export const usertelegramidValidationTokengen = asyncHandler(async (req: any, res: any) => {
+export const generateUserTelegramIdValidationToken = asyncHandler(async (req: any, res: any) => {
 
   let processedData = usertelegramidValidationZodSchema.safeParse(req.body);
 
@@ -130,7 +130,7 @@ export const usertelegramidValidationTokengen = asyncHandler(async (req: any, re
   }
 
   let { telegramid } = processedData.data;
-  await userService.usertelegramidValidationTokengen(req.user, telegramid);
+  await userService.generateUserTelegramIdValidationToken(req.user, telegramid);
   return res.status(200).json({
     success: true,
     message: "validation  token send successfully on your email ",
@@ -138,7 +138,7 @@ export const usertelegramidValidationTokengen = asyncHandler(async (req: any, re
 
 })
 
-export const usertetegramidValidationTokenVerify = asyncHandler(async (
+export const verifyUserTelegramIdValidationToken = asyncHandler(async (
   req: any,
   res: any
 ) => {
@@ -149,7 +149,7 @@ export const usertetegramidValidationTokenVerify = asyncHandler(async (
     throw ZodDataSafeParse(processedData)
   }
   let { token } = processedData.data;
-  await userService.usertetegramidValidationTokenVerify(req.user, token);
+  await userService.verifyUserTelegramIdValidationToken(req.user, token);
 
   res.status(200).json({
     success: true,
@@ -157,14 +157,14 @@ export const usertetegramidValidationTokenVerify = asyncHandler(async (
   });
 })
 
-export const userForgotpasswordTokenGen = asyncHandler(async (req: any, res: any) => {
+export const generateUserForgotPasswordToken = asyncHandler(async (req: any, res: any) => {
   let processedData = forgotpasswordZodSchema.safeParse(req.body);
 
   if (!processedData.success) {
     throw ZodDataSafeParse(processedData)
   }
   let { email } = processedData.data;
-  await userService.userForgotpasswordTokenGen(email);
+  await userService.generateUserForgotPasswordToken(email);
   res.status(200).json({
     success: true,
     message: "pasword reset token send successfully on your email ",
@@ -174,13 +174,13 @@ export const userForgotpasswordTokenGen = asyncHandler(async (req: any, res: any
 
 
 
-export const userForgotpasswordTokenVerify = asyncHandler(async (req: any, res: any) => {
+export const verifyUserForgotPasswordToken = asyncHandler(async (req: any, res: any) => {
   let processedData = forgotpasswordVerifyZodSchema.safeParse(req.body);
 
   if (!processedData.success) {
     throw ZodDataSafeParse(processedData)
   }
-  await userService.userForgotpasswordTokenVerify(processedData.data);
+  await userService.verifyUserForgotPasswordToken(processedData.data);
   res.status(200).json({
     success: true,
     message: "user password change successfully ",

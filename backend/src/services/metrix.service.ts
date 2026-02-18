@@ -1,20 +1,39 @@
 import prisma from "@repo/db/index.js";
-import { timeinpute } from "../zod/metrix.zod.js";
 import dayjs from "dayjs";
-import {
-    get_subject_wish_daily_score,
-    get_subject_wish_hour_score,
-    get_subject_wish_minute_score,
-    get_subject_wish_monthly_score,
-    get_subject_wish_weekly_score,
-    getdailyscore,
-    gethourscore,
-    getminutescore,
-    getmonthlyscore,
-    getweeklyscore,
-    top_4_user_from_exam_leaderboard,
-    top_10_user_from_exam_leaderboard,
-} from "@repo/prisma/sql.js";
+// import {
+//     get_subject_wish_daily_score,
+//     get_subject_wish_hour_score,
+//     get_subject_wish_minute_score,
+//     get_subject_wish_monthly_score,
+//     get_subject_wish_weekly_score,
+//     getdailyscore,
+//     gethourscore,
+//     getminutescore,
+//     getmonthlyscore,
+//     getweeklyscore,
+//     top_4_user_from_exam_leaderboard,
+//     top_10_user_from_exam_leaderboard,
+// } from "@repo/prisma/sql.js";
+
+
+type Leaderboard = {
+    user_id: string;
+    name: string;
+    score: number;
+    rank: number;
+}
+type score = {
+    time: string;
+    total_score: number;
+}
+type subjectScore = {
+    time: string;
+    subject: string;
+    total_right: number;
+    total_wrong: number;
+}
+type TimeGroup = "hour" | "day" | "week" | "month";
+
 
 export class MetrixService {
 
@@ -90,27 +109,6 @@ export class MetrixService {
         });
         return data;
     }
-
-    async getTopNOfAnExam(userId: string, examId: string, offset: string = "4") {
-        let data:
-            | top_10_user_from_exam_leaderboard.Result[]
-            | top_4_user_from_exam_leaderboard.Result[] = [];
-
-        switch (offset) {
-            case "10":
-                data = await prisma.$queryRawTyped(
-                    top_10_user_from_exam_leaderboard(examId, userId)
-                );
-                break;
-            default:
-                data = await prisma.$queryRawTyped(
-                    top_4_user_from_exam_leaderboard(examId, userId)
-                );
-                break;
-        }
-        return data;
-    }
-
     async getAllUserRankFronAnExam(userId: string, examId: string) {
         let data = await prisma.leaderboard.findMany({
             where: {
@@ -175,6 +173,96 @@ export class MetrixService {
         };
     }
 
+    // sql 
+    async getTopNOfAnExam(userId: string, examId: string, offset: string = "4") {
+        let data: Leaderboard[] = [];
+        data = await this.get_user_leaderboard(
+            examId,
+            userId,
+            parseInt(offset)
+        );
+        return data;
+    }
+
+    async get_user_leaderboard(examId: string, userId: string, topLimit: number = 4): Promise<Leaderboard[]> {
+
+        const result = await prisma.$queryRaw<Leaderboard[]>`
+WITH top_n AS (
+    SELECT l.user_id, u.name, l.score, l.rank
+    FROM leaderboard l
+    JOIN "User" u ON l.user_id = u.id
+    WHERE l.exam_id = ${examId}
+    ORDER BY l.rank ASC
+    LIMIT ${topLimit}
+),
+my_rank AS (
+    SELECT l.user_id, u.name, l.score, l.rank
+    FROM leaderboard l
+    JOIN "User" u ON l.user_id = u.id
+    WHERE l.exam_id = ${examId}
+    AND l.user_id = ${userId}
+),
+extra_user AS (
+    SELECT l.user_id, u.name, l.score, l.rank
+    FROM leaderboard l
+    JOIN "User" u ON l.user_id = u.id
+    WHERE l.exam_id = ${examId}
+    AND l.rank > (SELECT MAX(rank) FROM top_n)
+    ORDER BY l.rank ASC
+    LIMIT 1
+)
+SELECT * FROM top_n
+UNION ALL
+SELECT * FROM my_rank
+WHERE user_id NOT IN (SELECT user_id FROM top_n)
+UNION ALL
+SELECT * FROM extra_user
+WHERE ${userId} IN (SELECT user_id FROM top_n);
+`;
+        return result;
+    }
+
+    async get_user_score(
+        userId: string,
+        interval: string,
+        group: TimeGroup = "hour"
+    ) {
+
+        const config = {
+            hour: {
+                table: "user_score_summary_hour",
+                column: "hour",
+            },
+            day: {
+                table: "user_score_summary_day",
+                column: "day",
+            },
+            week: {
+                table: "user_score_summary_week",
+                column: "week",
+            },
+            month: {
+                table: "user_score_summary_month",
+                column: "month",
+            },
+        }[group];
+
+        const result = await prisma.$queryRawUnsafe<score[]>(`
+    SELECT
+      ${config.column} as time,
+      total_score
+    FROM
+      ${config.table}
+    WHERE
+      user_id = $1
+      AND ${config.column} >= NOW() - $2::INTERVAL
+    ORDER BY
+      ${config.column} ASC
+  `, userId, interval);
+
+        return result;
+    }
+
     async getScoreMetrix(
         userid: string,
         offset: string,
@@ -182,37 +270,10 @@ export class MetrixService {
         endDate?: string
     ) {
         let interval = "7 DAYS";
-        let data:
-            | getdailyscore.Result[]
-            | getweeklyscore.Result[]
-            | getmonthlyscore.Result[]
-            | gethourscore.Result[]
-            | getminutescore.Result[] = [];
+        let data: score[] = [];
 
-        if (offset) {
-            switch (offset) {
-                case "week":
-                    interval = "3 MONTHS"; // Show last 12 weeks
-                    data = await prisma.$queryRawTyped(getweeklyscore(userid, interval));
-                    break;
-                case "month":
-                    interval = "1 YEAR"; // Show last 12 months
-                    data = await prisma.$queryRawTyped(getmonthlyscore(userid, interval));
-                    break;
-                case "hour":
-                    interval = "24 HOURS";
-                    data = await prisma.$queryRawTyped(gethourscore(userid, interval));
-                    break;
-                case "minute":
-                    interval = "30 MINUTES";
-                    data = await prisma.$queryRawTyped(getminutescore(userid, interval));
-                    break;
-                default:
-                    interval = "7 DAYS"; // Show last 7 days
-                    data = await prisma.$queryRawTyped(getdailyscore(userid, interval)); // day
-                    break;
-            }
-        }
+
+        data = await this.get_user_score(userid, interval, "week");
 
         const sanitizedData = data.map((item: any) => {
             return {
@@ -255,6 +316,56 @@ export class MetrixService {
         return { finaldata, maxScore };
     }
 
+
+    async get_subject_wish_score(
+        userId: string,
+        interval: string,
+        group: TimeGroup = "hour"
+    ) {
+
+        const config = {
+            hour: {
+                table: "subject_score_summary_hour",
+                column: "hour",
+            },
+            day: {
+                table: "subject_score_summary_day",
+                column: "day",
+            },
+            week: {
+                table: "subject_score_summary_week",
+                column: "week",
+            },
+            month: {
+                table: "subject_score_summary_month",
+                column: "month",
+            },
+        }[group];
+
+
+
+        const result = await prisma.$queryRawUnsafe<subjectScore[]>(`
+    SELECT
+    ${config.column} as time,
+    subject,
+    total_right,
+    total_wrong
+    FROM
+      ${config.table}
+    WHERE
+      user_id = $1
+      AND ${config.column} >= NOW() - $2::INTERVAL
+    ORDER BY
+      ${config.column} ASC,
+      user_id
+  `, userId, interval);
+
+
+
+        return result;
+
+    }
+
     async getSubjectScoreMetrix(
         userid: string,
         offset: string,
@@ -262,49 +373,9 @@ export class MetrixService {
         endDate?: string
     ) {
         let interval = "7 DAYS";
-        let data:
-            | get_subject_wish_weekly_score.Result[]
-            | get_subject_wish_daily_score.Result[]
-            | get_subject_wish_monthly_score.Result[]
-            | get_subject_wish_hour_score.Result[]
-            | get_subject_wish_minute_score.Result[] = [];
-
-        if (offset) {
-            switch (offset) {
-                case "week":
-                    interval = "3 MONTHS";
-                    data = await prisma.$queryRawTyped(
-                        get_subject_wish_weekly_score(userid, interval)
-                    );
-                    break;
-                case "month":
-                    interval = "1 YEAR";
-                    data = await prisma.$queryRawTyped(
-                        get_subject_wish_monthly_score(userid, interval)
-                    );
-                    break;
-                case "hour":
-                    interval = "24 HOURS";
-                    data = await prisma.$queryRawTyped(
-                        get_subject_wish_hour_score(userid, interval)
-                    );
-                    break;
-                case "minute":
-                    interval = "30 MINUTES";
-                    data = await prisma.$queryRawTyped(
-                        get_subject_wish_minute_score(userid, interval)
-                    );
-                    break;
-                default:
-                    interval = "7 DAYS";
-                    data = await prisma.$queryRawTyped(
-                        get_subject_wish_daily_score(userid, interval)
-                    ); // day
-                    break;
-            }
-        }
+        let data: subjectScore[] = [];
+        data = await this.get_subject_wish_score(userid, interval)
         let range = 10;
-
         interface Data {
             subject: string;
             A: number;

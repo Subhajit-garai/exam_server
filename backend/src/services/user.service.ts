@@ -106,7 +106,7 @@ export class UserService {
         return newUser;
     }
 
-    async useremailValidationTokengen(email: string) {
+    async generateEmailValidationToken(email: string) {
         let User = await prisma.user.findUnique({
             where: {
                 email: email,
@@ -144,7 +144,7 @@ export class UserService {
         return true;
     }
 
-    async useremailValidationTokenVerify(token: string, email: string, userId?: string) {
+    async verifyUserEmailValidationToken(token: string, email: string, userId?: string) {
         return await prisma.$transaction(async (tx: any) => {
             let token_hash = Createhash(token);
 
@@ -189,7 +189,7 @@ export class UserService {
         });
     }
 
-    async usertelegramidValidationTokengen(userId: string, telegramid: string) {
+    async generateUserTelegramIdValidationToken(userId: string, telegramid: string) {
 
 
         let telegram = await prisma.social.findUnique({
@@ -246,7 +246,7 @@ export class UserService {
         return true;
     }
 
-    async usertetegramidValidationTokenVerify(userId: string, token: string) {
+    async verifyUserTelegramIdValidationToken(userId: string, token: string) {
         return await prisma.$transaction(async (tx: any) => {
             let token_hash = Createhash(token);
 
@@ -286,7 +286,7 @@ export class UserService {
         });
     }
 
-    async userForgotpasswordTokenGen(email: string) {
+    async generateUserForgotPasswordToken(email: string) {
         let User = await prisma.user.findUnique({
             where: {
                 email: email,
@@ -324,7 +324,7 @@ export class UserService {
         return true;
     }
 
-    async userForgotpasswordTokenVerify(data: any) {
+    async verifyUserForgotPasswordToken(data: any) {
         let { email, ForgotpasswordToken, newpassword } = data;
         let token_hash = Createhash(ForgotpasswordToken);
 

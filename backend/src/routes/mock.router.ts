@@ -1,4 +1,4 @@
-import { AddQuestionIntoMock, get_all_mock, get_mock_by_id, getAvalibleMock, getExampatternFormock, getmockQuestion, RemoveQuestionFromMock } from "@/controllers/mock.controller.js";
+import { AddQuestionIntoMock, get_all_mock, get_mock_by_id, getAvailableMock, getExampatternFormock, getmockQuestion, RemoveQuestionFromMock } from "@/controllers/mock.controller.js";
 import { Router } from "express";
 
 
@@ -23,4 +23,4 @@ mockRouter.post(
     "/question/remove",
     RemoveQuestionFromMock
 );
-mockRouter.get("/getids", getAvalibleMock);
+mockRouter.get("/getids", getAvailableMock);

@@ -55,8 +55,12 @@ export class QuizManager {
 
         const count = await this.redis.scard(`quiz:users:${quizId}`);
 
+        console.log("44444: - > user count ----> ", count);
+
+
         // Check if user is already in (to avoid double counting if rejoining)
         const isMember = await this.redis.sismember(`quiz:users:${quizId}`, userId);
+        console.log("44444: - > user isMember ----> ", isMember);
 
         if (!isMember && count >= meta.limit) {
             // Quiz is full, start the quiz
@@ -138,7 +142,7 @@ export class QuizManager {
                 limit = 6;
                 break;
             default:
-                throw new CustomError("Invalid quiz type", 400);
+                throw new CustomError("Free mode not implemented yet", 501);
         }
 
         let quizdata: QuizMetaData = {
@@ -160,6 +164,8 @@ export class QuizManager {
 
         // send task to worker to fetch questions
         await this.redis.publish("FETCH_QUESTIONS", JSON.stringify({ quizId }));
+
+        // create activity( quiz created)
         await this.redisProvider.push({
             type: "CREATE_QUIZ",
             id: quizId,
@@ -169,7 +175,7 @@ export class QuizManager {
                 examtype: "Quiz",
             },
             variant: "Quiz",
-            category: "JECA",
+            category: "JECA", // hard coded exam 
         });
 
     }

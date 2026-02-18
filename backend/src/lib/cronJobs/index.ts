@@ -139,16 +139,20 @@ pgClient.connect().then(async () => {
   await pgClient.query("LISTEN prime_status_channel");
 });
 
+
+
+
+
 // implements it in oops
 
 export type scheduledJob_type = {
   [key: string]: CronJob;
 };
-
 const scheduledJobs: scheduledJob_type = {};
 
 function scheduleJob(event: events) {
   let cronTime;
+
   if (event.run_at == "Any") {
     let time = dayjs()
       .add(Math.floor(Math.random() * 10), "minute")

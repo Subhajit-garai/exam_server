@@ -45,9 +45,9 @@ export class BotController {
   /**
    * Fetches syllabus data for exam creation.
    */
-  public getSyllabusDataForExamCreattion = asyncHandler(async (req: Request, res: Response) => {
+  public getSyllabusDataForExamCreation = asyncHandler(async (req: Request, res: Response) => {
     const syllabusid = req.query.syllabusid as string;
-    const syllabus = await botService.exam.getSyllabusDataForExamCreattion(syllabusid);
+    const syllabus = await botService.exam.getSyllabusDataForExamCreation(syllabusid);
     res.json({ success: true, message: "message", data: syllabus });
   });
 
@@ -74,9 +74,9 @@ export class BotController {
       data: questionData,
     });
   });
-  public AddProcessingQuestions = asyncHandler(async (req: Request, res: Response) => {
+  public addProcessingQuestions = asyncHandler(async (req: Request, res: Response) => {
     const data = req.body;
-    const questionData = await botService.exam.AddProcessingQuestions(data);
+    const questionData = await botService.exam.addProcessingQuestions(data);
 
     res.json({
       success: true,
@@ -149,10 +149,10 @@ const controller = new BotController();
 export const test = controller.test;
 export const getUserdata = controller.getUserdata;
 export const examQuestionAddedCompletionStatusCheck = controller.examQuestionAddedCompletionStatusCheck;
-export const getSyllabusDataForExamCreattion = controller.getSyllabusDataForExamCreattion;
+export const getSyllabusDataForExamCreation = controller.getSyllabusDataForExamCreation;
 export const getQuestionViaIds = controller.getQuestionViaIds;
 export const getQuestionViaIdsforProcessing = controller.getQuestionViaIdsforProcessing;
-export const AddProcessingQuestions = controller.AddProcessingQuestions;
+export const addProcessingQuestions = controller.addProcessingQuestions;
 export const setUserProgress = controller.setUserProgress;
 export const getExamDetails = controller.getExamDetails;
 export const processNotification = controller.processNotification;

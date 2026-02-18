@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { auth, Logout, userPurchases, usertelegramidValidationTokengen, usertetegramidValidationTokenVerify, updateUser, getUserTimeline, getSubscriptionTiers, getUserSubscriptionDetails } from "../controllers/user.controller.js";
+import { auth, Logout, userPurchases, generateUserTelegramIdValidationToken, verifyUserTelegramIdValidationToken, updateUser, getUserTimeline, getSubscriptionTiers, getUserSubscriptionDetails } from "../controllers/user.controller.js";
 import { getUserRewards } from "../controllers/activity.controller.js";
 import { otpLimiter } from "@repo/lib/security/ratelimiter.js";
 import { IsUserLoginOpen } from "@repo/lib/security/Security.js";
@@ -20,8 +20,8 @@ userRouter.get("/ws-token", IsUserLoginOpen, (req: any, res: any) => {
 userRouter.get("/logout", Logout);
 // notes 
 userRouter.get("/notes/allsubject", getAllNoteSubjectForUser)
-userRouter.post("/validate/telegramid", otpLimiter, usertelegramidValidationTokengen);
-userRouter.post("/verify/telegramid", otpLimiter, usertetegramidValidationTokenVerify);
+userRouter.post("/validate/telegramid", otpLimiter, generateUserTelegramIdValidationToken);
+userRouter.post("/verify/telegramid", otpLimiter, verifyUserTelegramIdValidationToken);
 //purchases 
 userRouter.get("/purchases", userPurchases);
 userRouter.get("/timeline", getUserTimeline);

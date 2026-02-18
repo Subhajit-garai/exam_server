@@ -72,7 +72,7 @@ let QUIZ_Processing_TASK: Task = {
 const main = async () => {
   try {
     let redisClient = RedisProvider.getInstance();
-    await redisClient.push(QUIZ_Processing_TASK); // added testing
+    // await redisClient.push(QUIZ_Processing_TASK); // added testing
 
     while (true) {
       let data = await redisClient.pop();

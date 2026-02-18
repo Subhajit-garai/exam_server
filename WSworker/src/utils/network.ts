@@ -1,8 +1,8 @@
 import axios from "axios";
 import dotenv from "dotenv";
-import { botPlatform } from "@repo/lib/types/types.js";
+import { botPlatform } from "@/utils/types/types.js";
 import { logger } from "@repo/utils/logger.js";
-import { user_data } from "@repo/socket/user.js";
+import { user_data } from "@/user.js";
 dotenv.config();
 
 export type CreationTypes =
@@ -131,37 +131,38 @@ export class Network {
           password: this.password,
         };
         let request = await axios.post(url, logindata);
-
-        console.log("login request", request.status);
-
         if (request) {
-          console.log("Login successful");
+          logger.success("Login successful");
           if (request?.data?.success) {
-            console.log("Setting bot token....");
+            logger.success("Setting bot token....");
             this.botauthtoken = request?.data?.data;
 
             this.islogin = true;
-            console.log("Bot token set successfully");
+            logger.success("Bot token set successfully");
             return true;
           }
           return true;
         } else {
-          console.log("Login failed");
+          logger.error("Login failed");
           return false;
         }
       } catch (error: any) {
-        console.error(`❌ Login attempt ${attempt} failed:`, error?.message);
+        logger.error(`❌ Login attempt ${attempt} failed:`, error?.message);
 
         if (attempt === retries) {
-          console.error("❌ All login attempts failed. Exiting.");
+          logger.error("❌ All login attempts failed. Exiting.");
           process.exit(1); // exit app if still not successful
         }
 
-        console.log(`🔁 Waiting ${delayMs}ms before retrying...`);
+        logger.info(`🔁 Waiting ${delayMs}ms before retrying...`);
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
   }
+
+
+
+  // user 
 
 
   async getuserInfo(userid: string): Promise<user_data> {
@@ -169,82 +170,6 @@ export class Network {
     return await this.getRequest(url, true)
   }
 
-
-  async getExamQuestionsAns(examid: string) {
-    try {
-      let url = this.getUrl(`/question/ans/get/${examid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamQuestionsAns / Network ");
-    }
-  }
-  async getQuestions(examid: string) {
-    try {
-      let url = this.getUrl(`/question/get/${examid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getQuestions / Network ");
-    }
-  }
-
-  async getQuestions_byIds(ids: string[]) {
-    try {
-      let url = this.getUrl(`/question/get/byids`);
-      return this.postRequest(url, ids, true);
-    } catch (error) {
-      throw new Error("Error from getQuestions / Network ");
-    }
-  }
-
-  async getMockQuestionSet(mockid: string) {
-    try {
-      return this.getQuestions(mockid);
-    } catch (error) {
-      throw new Error("Error from getMockQuestionSet / Network ");
-    }
-  }
-
-  async setMockQuestionSetStatus(mockid: string, status: CreationTypes) {
-    try {
-      let url = this.getUrl(`/mockquestionset/status/set/${mockid}`);
-
-      return this.postRequest(url, status);
-    } catch (error) {
-      throw new Error("Error from getMockQuestionSet / Network ");
-    }
-  }
-  async getQuestionsIds() {
-    try {
-      let url = this.getUrl(`/question/ids`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getQuestionsIds / Network ");
-    }
-  }
-  async getExamDetails(examid: string) {
-    try {
-      let url = this.getUrl(`/exam/details/get/${examid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamDetails / Network ");
-    }
-  }
-  async getExamPatternId(examid: string) {
-    try {
-      let url = this.getUrl(`/exam/patternid/get/${examid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamPatternId / Network ");
-    }
-  }
-  async getExamPattern(exampatternid: string) {
-    try {
-      let url = this.getUrl(`/exampattern/get/${exampatternid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamPattern / Network ");
-    }
-  }
   async getUserAns(examid: string, userid: string) {
     try {
       let url = this.getUrl(`/user/ans/get?examid=${examid}&userid=${userid}`);
@@ -292,6 +217,89 @@ export class Network {
     }
   }
 
+
+  // question
+
+  async getExamQuestionsAns(examid: string) {
+    try {
+      let url = this.getUrl(`/question/ans/get/${examid}`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getExamQuestionsAns / Network ");
+    }
+  }
+  async getQuestions(examid: string) {
+    try {
+      let url = this.getUrl(`/question/get/${examid}`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getQuestions / Network ");
+    }
+  }
+
+  async getQuestions_byIds(ids: string[]) {
+    try {
+      let url = this.getUrl(`/question/get/byids`);
+      return this.postRequest(url, ids, true);
+    } catch (error) {
+      throw new Error("Error from getQuestions / Network ");
+    }
+  }
+
+  async getMockQuestionSet(mockid: string) {
+    try {
+      return this.getQuestions(mockid);
+    } catch (error) {
+      throw new Error("Error from getMockQuestionSet / Network ");
+    }
+  }
+
+  async getQuestionsIds() {
+    try {
+      let url = this.getUrl(`/question/ids`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getQuestionsIds / Network ");
+    }
+  }
+
+
+
+
+
+  // exam
+  async getExamDetails(examid: string) {
+    try {
+      let url = this.getUrl(`/exam/details/get/${examid}`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getExamDetails / Network ");
+    }
+  }
+  async getExamPatternId(examid: string) {
+    try {
+      let url = this.getUrl(`/exam/patternid/get/${examid}`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getExamPatternId / Network ");
+    }
+  }
+
+
+
+  // exampattern 
+
+  async getExamPattern(exampatternid: string) {
+    try {
+      let url = this.getUrl(`/exampattern/get/${exampatternid}`);
+      return this.getRequest(url, true);
+    } catch (error) {
+      throw new Error("Error from getExamPattern / Network ");
+    }
+  }
+
+  // quiz
+
   async getQuizConfigData(
     chatid: number,
     platform: botPlatform,
@@ -299,11 +307,24 @@ export class Network {
   ) {
     try {
       let url = this.getUrl(
-        `/get/quiz/config?chatid=${chatid}&userid=${userid}&platform=${platform}`
+        `/quiz/get/config?chatid=${chatid}&userid=${userid}&platform=${platform}`
       );
       return this.getRequest(url, true);
     } catch (error) {
       throw new Error("Error from getSyllabusDataForExamCreattion / Network ");
+    }
+  }
+
+
+  // mock question set
+
+  async setMockQuestionSetStatus(mockid: string, status: CreationTypes) {
+    try {
+      let url = this.getUrl(`/mockquestionset/status/set/${mockid}`);
+
+      return this.postRequest(url, status);
+    } catch (error) {
+      throw new Error("Error from getMockQuestionSet / Network ");
     }
   }
 }

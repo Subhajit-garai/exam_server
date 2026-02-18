@@ -1,6 +1,6 @@
-import { BaseSocketHandler } from "@repo/socket/handlers/base.socket.handler.js";
+import { BaseSocketHandler } from "@/handlers/base.socket.handler.js";
 import { WebSocket } from "ws";
-import { QuizManager } from "@repo/manager/quizManager.js";
+import { QuizManager } from "@/manager/quizManager.js";
 import { logger } from "@repo/utils/logger.js";
 import { catchAsyncSocket } from "@repo/utils/socketAsyncWrapper.js";
 import {
@@ -9,8 +9,8 @@ import {
     LeaveQuizPayload,
     EndQuizPayload,
     SubmitAnswerPayload,
-} from "@repo/types/ws.types.js";
-import { SocketManager } from "@repo/socket/socket.manager.js";
+} from "@/types/ws.types.js";
+import { SocketManager } from "@/manager/socket.manager.js";
 
 
 export class QuizSocketHandler extends BaseSocketHandler {
@@ -43,6 +43,8 @@ export class QuizSocketHandler extends BaseSocketHandler {
 
     @catchAsyncSocket
     private async handleJoinQuiz(payload: JoinQuizPayload) {
+
+
         const { quizId } = payload;
         logger.info(`[JOIN_QUIZ] Handler processing for quiz ${quizId}`, payload);
 

@@ -1,12 +1,12 @@
-import { RedisProvider } from "@repo/common/redisProvider.js";
+import { RedisProvider } from "@/utils/redisProvider.js";
 import {
     exam_question_format_for_ui_type,
     exam_question_format_type,
-} from "@repo/types/questionTypes.js";
-import { logger } from "@repo/utils/logger.js";
-import { WsMessage, StartQuizPayload, QuestionPayload, EndQuizPayload, QuizLeaderboardPayload } from "@repo/types/ws.types.js";
-import { shuffleArraySeeded } from "@repo/utils/shuffle.js";
-import { user_data } from "@repo/socket/user.js";
+} from "@/types/questionTypes.js";
+import { logger } from "@/utils/logger.js";
+import { WsMessage, StartQuizPayload, QuestionPayload, EndQuizPayload, QuizLeaderboardPayload } from "@/types/ws.types.js";
+import { shuffleArraySeeded } from "@/utils/shuffle.js";
+import { user_data } from "@/user.js";
 
 interface QuizMetaData {
     id: string;

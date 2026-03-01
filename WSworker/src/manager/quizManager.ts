@@ -34,6 +34,7 @@ export class QuizManager {
   private redisProvider: RedisProvider;
   private redis: any; // Direct ioredis client
   private leaderboardTimers: Map<string, NodeJS.Timeout> | null = null;
+  private activeQuizTimers: Map<string, NodeJS.Timeout> = new Map();
 
   public static getInstance() {
     if (!this.instance) {
@@ -55,7 +56,7 @@ export class QuizManager {
 
   async addUser(quizId: string, userId: string, name: string, avatar?: string) {
     logger.info(`[QUIZ_ADD_USER] Adding user ${userId} to quiz ${quizId}`);
-    
+
     const meta = await this.getQuizMetaData(quizId);
     if (!meta) throw new Error("Quiz not found");
 
@@ -174,14 +175,17 @@ export class QuizManager {
 
     await this.redis.publish("WS_BROADCAST", JSON.stringify(message));
 
-    setTimeout(() => {
-      this.runQuestionLoop(quizId, 1);
-    }, countDown * 1000);
+    this.scheduleQuizTimer(quizId, countDown * 1000, 1);
   }
 
   async runQuestionLoop(quizId: string, questionNumber: number) {
     const meta = await this.getQuizMetaData(quizId);
-    if (!meta) return;
+
+    if (!meta) {
+      this.cancelQuizTimer(quizId);
+      await this.redis.del(`quiz:active_loop:${quizId}`);
+      return;
+    }
 
     if (questionNumber === 1) {
       await this.redis.set(`quiz:state:${quizId}`, "running", "EX", 7200);
@@ -199,12 +203,56 @@ export class QuizManager {
 
     await this.sendQuestionToRoom(quizId, questionNumber, startTime, endTime);
 
-    setTimeout(() => {
-      this.runQuestionLoop(quizId, questionNumber + 1);
-    }, duration);
+    this.scheduleQuizTimer(quizId, duration, questionNumber + 1);
+  }
+
+
+  // restoreActiveQuizzes() is not called
+  async restoreActiveQuizzes() {
+  const keys = await this.redis.keys("quiz:active_loop:*");
+
+  for (const key of keys) {
+    const quizId = key.split(":")[2];
+
+    const ttl = await this.redis.pttl(key);
+
+    if (ttl > 0) {
+      this.scheduleQuizTimer(quizId, ttl, 1);
+    } else {
+      await this.redis.del(key);
+    }
+  }
+}
+  // --- Question  schudle Management ---
+
+  private scheduleQuizTimer(
+    quizId: string,
+    delay: number,
+    questionIndex: number,
+  ) {
+    this.cancelQuizTimer(quizId);
+
+    const timer = setTimeout(() => {
+      this.activeQuizTimers.delete(quizId);
+      this.runQuestionLoop(quizId, questionIndex);
+    }, delay);
+
+    this.activeQuizTimers.set(quizId, timer);
+  }
+
+  public cancelQuizTimer(quizId: string) {
+    const timer = this.activeQuizTimers.get(quizId);
+
+    if (timer) {
+      clearTimeout(timer);
+      this.activeQuizTimers.delete(quizId);
+    }
   }
 
   async endQuizBroadcast(quizId: string) {
+    this.cancelQuizTimer(quizId);
+    await this.redis.del(`quiz:active_loop:${quizId}`);
+
     const message: WsMessage<EndQuizPayload> = {
       userIds: [],
       type: "QUIZ_ENDED",
@@ -213,6 +261,7 @@ export class QuizManager {
       },
       rooms: [quizId],
     };
+
     await this.redis.publish("WS_BROADCAST", JSON.stringify(message));
     logger.success(`[QUIZ_END] Auto-ended quiz ${quizId}`);
 
@@ -446,13 +495,13 @@ export class QuizManager {
 
     let score = 0;
     if (isMultiple) {
-      console.log("multiple ans");
-      score = ans.filter((ans) => questionAns.split(",").includes(ans)).length;
+      logger.info("multiple ans");
+      score = ans.filter((a) => questionAns.split(",").includes(a)).length;
     } else {
       let CorrectAns =
         typeof questionAns !== "string" ? String(questionAns) : questionAns;
       score = ans[0] === CorrectAns ? 1 : 0;
-      console.log("score", score);
+      logger.info("score", score);
     }
 
     // 2. Store Detailed Submission

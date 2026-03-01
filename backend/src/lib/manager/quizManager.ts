@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { activity_quiz_create_data_type } from "@/zod/quiz.zod.js";
 import { CreationTypes } from "@repo/prisma/enums.js";
 import { logger } from "../helper/logger.js";
+import Redis from "ioredis";
 
 export interface QuizMetaData {
     id: string;
@@ -29,7 +30,7 @@ export type user_data = {
 export class QuizManager {
     private static instance: QuizManager;
     private redisProvider: RedisProvider;
-    private redis: any; // Direct ioredis client
+    private redis: Redis; // Direct ioredis client
 
     public static getInstance() {
         if (!this.instance) {
@@ -47,39 +48,7 @@ export class QuizManager {
         return this.redisProvider;
     }
 
-    // --- User Management (Redis Sets) ---
-
-    async addUser(quizId: string, userId: string) {
-        const meta = await this.getQuizMetaData(quizId);
-        if (!meta) throw new Error("Quiz not found");
-
-        const count = await this.redis.scard(`quiz:users:${quizId}`);
-
-        console.log("44444: - > user count ----> ", count);
-
-
-        // Check if user is already in (to avoid double counting if rejoining)
-        const isMember = await this.redis.sismember(`quiz:users:${quizId}`, userId);
-        console.log("44444: - > user isMember ----> ", isMember);
-
-        if (!isMember && count >= meta.limit) {
-            // Quiz is full, start the quiz
-            await this.redis.sadd(`quiz:users:${quizId}`, userId);
-            console.log(`User ${userId} added to quiz ${quizId}. Quiz full, starting...`);
-            await this.startQuiz(quizId);
-            return;
-        }
-
-        await this.redis.sadd(`quiz:users:${quizId}`, userId);
-        console.log(`User ${userId} added to quiz ${quizId}`);
-
-        // Check again if we hit the limit after adding
-        const newCount = await this.redis.scard(`quiz:users:${quizId}`);
-        if (newCount >= meta.limit) {
-            await this.startQuiz(quizId);
-        }
-    }
-
+    // --- User Management (Redis Sets) --
 
     async removeUser(quizId: string, userId: string) {
         await this.redis.srem(`quiz:users:${quizId}`, userId);
@@ -89,33 +58,6 @@ export class QuizManager {
     async isUserExist(quizId: string, userId: string): Promise<boolean> {
         const exists = await this.redis.sismember(`quiz:users:${quizId}`, userId);
         return exists === 1;
-    }
-
-    async joinQuiz(quizId: string, userId: string) {
-        const meta = await this.getQuizMetaData(quizId);
-        if (!meta) throw new Error("Quiz not found");
-
-        const count = await this.redis.scard(`quiz:users:${quizId}`);
-
-        // Check if user is already in (to avoid double counting if rejoining)
-        const isMember = await this.redis.sismember(`quiz:users:${quizId}`, userId);
-
-        if (!isMember && count >= meta.limit) {
-            // Quiz is full, start the quiz
-            await this.redis.sadd(`quiz:users:${quizId}`, userId);
-            console.log(`User ${userId} added to quiz ${quizId}. Quiz full, starting...`);
-            await this.startQuiz(quizId);
-            return;
-        }
-
-        await this.redis.sadd(`quiz:users:${quizId}`, userId);
-        console.log(`User ${userId} added to quiz ${quizId}`);
-
-        // Check again if we hit the limit after adding
-        const newCount = await this.redis.scard(`quiz:users:${quizId}`);
-        if (newCount >= meta.limit) {
-            await this.startQuiz(quizId);
-        }
     }
     // --- Quiz Metadata (Redis Hashes) ---
     async CreateQuiz(userid: string, userRole: string, data: activity_quiz_create_data_type) {
@@ -161,9 +103,10 @@ export class QuizManager {
 
         // Store as JSON string in Redis
         await this.redis.set(`quiz:data:${quizId}`, JSON.stringify(quizdata), 'EX', 60 * 60 * 24);
-
         // send task to worker to fetch questions
         await this.redis.publish("FETCH_QUESTIONS", JSON.stringify({ quizId }));
+
+        logger.success(`Quiz ${quizId} created by user ${userid} with mode ${mode}`);
 
         // create activity( quiz created)
         await this.redisProvider.push({
@@ -216,7 +159,6 @@ export class QuizManager {
     }
 
     async startQuiz(quizId: string) {
-
         // Publish start message to Redis (so WS Worker can pick it up)
         const message = JSON.stringify({
             type: "QUIZ_STARTED",

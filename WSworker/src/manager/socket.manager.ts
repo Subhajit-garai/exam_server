@@ -54,9 +54,30 @@ export class SocketManager {
     public init(server: Server, path?: string) {
         this.wss = new WebSocketServer({ server, path });
         logger.info("SocketManager initialized");
+
+        const hbInterval = setInterval(() => {
+            if (!this.wss) return;
+            this.wss.clients.forEach((ws: any) => {
+                if (ws.isAlive === false) {
+                    logger.error("Terminating stale connection");
+                    return ws.terminate();
+                }
+                ws.isAlive = false;
+                ws.ping();
+            });
+        }, 30000);
+
+        this.wss.on("close", () => {
+            clearInterval(hbInterval);
+        });
+
         this.wss.on("connection", async (ws: WebSocket, req: any) => {
 
             logger.info("New connection establishing");
+            (ws as any).isAlive = true;
+            ws.on("pong", () => {
+                (ws as any).isAlive = true;
+            });
             try {
                 // 1. Authentication
                 const url = new URL(req.url, `http://${req.headers.host}`);
@@ -87,15 +108,15 @@ export class SocketManager {
 
                 if (!user) {
                     let network = Network.getInstance()
-                    let responce = await network.getuserInfo(userinfo.id)
-                    if (responce) {
+                    let response = await network.getuserInfo(userinfo.id)
+                    if (response) {
                         logger.success("User data fetched successfully");
                     } else {
                         logger.error("User data not found");
                         ws.close(1008, "User data not found");
                         return;
                     }
-                    user = new User(userinfo.id, responce, ws);
+                    user = new User(userinfo.id, response, ws);
 
                     this.users.set(userinfo.id, user);
                 } else {

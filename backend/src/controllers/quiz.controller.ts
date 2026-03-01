@@ -26,15 +26,6 @@ export const getLeaderboard = asyncHandler(async (req: any, res: any) => {
 })
 
 
-export const joinQuiz = asyncHandler(async (req: any, res: any) => {
-  let id = req.query.id;
-
-  let quiz = await quizService.joinQuiz(id, req.user);
-  res.json({ success: true, message: "message", data: quiz });
-
-})
-
-
 export const createUserQuiz = asyncHandler(
   async (req: Request | any, res: Response) => {
 

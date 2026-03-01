@@ -168,7 +168,12 @@ export const deleteQuestion = async (req: any, res: any) => {
 };
 
 export const getAllQuestions = asyncHandler(async (req: any, res: any) => {
+
+  console.log("getAllQuestions   body");
   let body = QuestionFilterDataFetchZodSchema.safeParse(req.query);
+
+
+
 
 
   if (!body.success) {
@@ -179,8 +184,11 @@ export const getAllQuestions = asyncHandler(async (req: any, res: any) => {
 
   const { questions, total, currentPage } = await questionService.getAllQuestions(body.data, pageNumber);
 
+  console.log("- questions ", questions);
+
+
   if (!questions) {
-    return res.status(400).json({
+    return res.status(401).json({
       message: "questions not found",
     });
   }

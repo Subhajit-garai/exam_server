@@ -147,14 +147,14 @@ export class Network {
           return false;
         }
       } catch (error: any) {
-        logger.error(`❌ Login attempt ${attempt} failed:`, error?.message);
+        logger.error(` Login attempt ${attempt} failed:`, error?.message);
 
         if (attempt === retries) {
-          logger.error("❌ All login attempts failed. Exiting.");
+          logger.error(" All login attempts failed. Exiting.");
           process.exit(1); // exit app if still not successful
         }
 
-        logger.info(`🔁 Waiting ${delayMs}ms before retrying...`);
+        logger.info(` Waiting ${delayMs}ms before retrying...`);
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }

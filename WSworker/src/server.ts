@@ -1,7 +1,7 @@
 import http from "http";
 import "dotenv/config";
 import { SocketManager } from "@/manager/socket.manager.js";
-import { logger } from "./utils/logger";
+import { logger } from "./utils/logger.js";
 
 
 const PORT = Number(process.env.WS_PORT);

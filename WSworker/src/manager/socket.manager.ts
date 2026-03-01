@@ -7,7 +7,7 @@ import { RedisProvider } from "@/utils/redisProvider.js";
 import { User } from "@/user.js";
 import { Room } from "@/room.js";
 import { Network } from "@repo/utils/network.js";
-import { logger } from "@/utils/logger";
+import { logger } from "@/utils/logger.js";
 
 
 export class SocketManager {

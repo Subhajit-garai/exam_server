@@ -8,6 +8,7 @@
     "dev": "tsx src/server.ts",
     "build": "tsc && tsc-alias",
     "start": "node dist/src/server.js",
+    "build:start": " tsc && tsc-alias &&node dist/src/server.js",
     "seed": "tsx src/scripts/seedDemoQuiz.ts"
   },
   "keywords": [],

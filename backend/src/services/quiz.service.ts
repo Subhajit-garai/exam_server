@@ -30,11 +30,6 @@ export class QuizService {
         return notifyStatus;
     }
 
-    async joinQuiz(id: string, userid: string) {
-        const notifyStatus = await qm.joinQuiz(id, userid);
-        return notifyStatus;
-    }
-
     async createQuiz(userid: string, userRole: string, data: activity_quiz_create_data_type) {
         // user quiz creation
         const quiz = await qm.CreateQuiz(userid, userRole, data);

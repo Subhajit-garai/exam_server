@@ -44,7 +44,6 @@ export class QuizSocketHandler extends BaseSocketHandler {
     @catchAsyncSocket
     private async handleJoinQuiz(payload: JoinQuizPayload) {
 
-
         const { quizId } = payload;
         logger.info(`[JOIN_QUIZ] Handler processing for quiz ${quizId}`, payload);
 
@@ -60,7 +59,7 @@ export class QuizSocketHandler extends BaseSocketHandler {
                 quizId,
                 this.user.id,
                 this.user.data.name,
-                this.user.data.avater
+                this.user.data.avatar
             );
             this.send("QUIZ_JOINED", { quizId, message: "Successfully joined quiz" });
         } catch (error) {

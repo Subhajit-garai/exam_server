@@ -56,13 +56,13 @@ export class Network {
       let header = {
         Authorization: this.botauthtoken,
       };
-      let responce = await axios.post(url, data, { headers: header });
-      if (responce.data.success) {
+      let response = await axios.post(url, data, { headers: header });
+      if (response.data.success) {
         return isOnlyData
-          ? responce.data?.data
+          ? response.data?.data
           : isOnlyMessage
-            ? responce.data?.message
-            : responce.data;
+            ? response.data?.message
+            : response.data;
       }
       return null;
     } catch (error: any) {
@@ -82,14 +82,14 @@ export class Network {
       let header = {
         Authorization: this.botauthtoken,
       };
-      let responce = await axios.get(url, { headers: header });
+      let response = await axios.get(url, { headers: header });
 
-      if (responce.data.success) {
+      if (response.data.success) {
         return isOnlyData
-          ? responce.data?.data
+          ? response.data?.data
           : isOnlyMessage
-            ? responce.data?.message
-            : responce.data;
+            ? response.data?.message
+            : response.data;
       }
       return null;
     } catch (error: any) {

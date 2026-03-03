@@ -188,7 +188,7 @@ export const getAllQuestions = asyncHandler(async (req: any, res: any) => {
 
 
   if (!questions) {
-    return res.status(401).json({
+    return res.status(404).json({
       message: "questions not found",
     });
   }

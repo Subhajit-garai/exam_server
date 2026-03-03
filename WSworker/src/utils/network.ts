@@ -105,7 +105,7 @@ export class Network {
       };
 
       let request = await axios.get(url, { headers: header });
-      console.log("response", request.status);
+      logger.success("response", request.status);
     } catch (error) { }
   }
 
@@ -116,15 +116,15 @@ export class Network {
     };
     let request = await axios.post(url, data, { headers: header });
     if (request.status == 200) {
-      console.log("response", request.status);
-      console.log("notification sended ..");
+      logger.success("response", request.status);
+      logger.info("notification sended ..");
     }
   }
 
   async login(retries = 10, delayMs = 2000) {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
-        console.log("login porcess started .... ", `Attempt ${attempt}`);
+        logger.info("login porcess started .... ", `Attempt ${attempt}`);
         let url = this.getUrl(`/login`);
         let logindata = {
           email: this.username,

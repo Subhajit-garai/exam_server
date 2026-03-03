@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 import { sendMessage_HtmlParse } from "@repo/lib/messageService/telgramMessenger.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { ProfileService } from "./profile.service.js";
+import { logger } from "@/lib/helper/logger.js";
 
 
 const profileService = new ProfileService();
@@ -146,9 +147,11 @@ export class UserService {
 
     async verifyUserEmailValidationToken(token: string, email: string, userId?: string) {
         return await prisma.$transaction(async (tx: any) => {
-            let token_hash = Createhash(token);
 
+            let token_hash = Createhash(token);
             let User: any;
+
+
             if (userId) {
                 User = await tx.user.findUnique({
                     where: {
@@ -157,6 +160,7 @@ export class UserService {
                     },
                 });
             } else {
+
                 User = await tx.user.findUnique({
                     where: {
                         email: email,
@@ -164,11 +168,16 @@ export class UserService {
                     },
                 });
             }
+            logger.info(User)
+
+
 
             if (User) {
+
                 if (User?.resetTokenExpires < new Date()) {
                     throw new Error("user not exist token expired");
                 }
+
             } else {
                 throw new Error("user not exist");
             }

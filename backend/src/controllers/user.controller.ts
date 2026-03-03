@@ -12,6 +12,7 @@ import {
 import { UserService } from "../services/user.service.js";
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
+import { logger } from "@/lib/helper/logger.js";
 
 const userService = new UserService();
 
@@ -108,12 +109,12 @@ export const verifyUserEmailValidationToken = asyncHandler(async (req: any, res:
     throw ZodDataSafeParse(processedData)
   }
 
-
   let { token, email } = processedData.data;
   if (!email) throw Error("email not found ")
-  const userId = await userService.verifyUserEmailValidationToken(token, email, req.user);
+  const userId = await userService.verifyUserEmailValidationToken(token, email);
 
   setCookie(res, userId);
+
 
   res.status(200).json({
     success: true,
@@ -195,8 +196,6 @@ export const userSignin = asyncHandler(async (req: any, res: any) => {
     throw ZodDataSafeParse(processedData)
   }
   let User = await userService.userSignin(processedData.data);
-
-  // setCookie(res, User.id); // remove this 
   res.status(200).json({
     success: true,
     message: "User needs to verify their email. ",

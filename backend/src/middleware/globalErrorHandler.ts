@@ -1,5 +1,6 @@
 import { Prisma } from "@repo/prisma/client.js"
 import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
+import { logger } from "@/lib/helper/logger.js";
 
 export class CustomError extends Error {
   statusCode: number;
@@ -11,16 +12,10 @@ export class CustomError extends Error {
 }
 
 export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  console.error("Global error:", err);
-
+  logger.error("Global error:", err.message);
   let message = err instanceof Error ? err.message : "Unknown error";
   let statusCode = (err as CustomError).statusCode || 400;
 
-  // zod error
-  // if (err.name === 'ZodError') {
-  //   statusCode = 400;
-  //   message = err.message || 'Validation Error';
-  // }
 
   // Handle Prisma known errors
   if (err instanceof Prisma.PrismaClientKnownRequestError) {

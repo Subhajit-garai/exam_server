@@ -30,6 +30,7 @@ import { questionProcessingPublicRouter } from "./routes/questionprocessing.rout
 import { statsRouter } from "./routes/statsRoutes.js";
 import { categoryPublicRouter } from "./routes/category.routes.js";
 import { progressRouter } from "./routes/progress.routes.js";
+import { logger } from "./lib/helper/logger.js";
 
 
 
@@ -54,7 +55,7 @@ const allowedOrigins = allowedOriginsstr?.split(",") || [
   "http://localhost:3004",
 ];
 
-console.log("allowedOrigins", allowedOrigins);
+logger.info("allowedOrigins", allowedOrigins);
 
 app.use(
   cors({
@@ -114,5 +115,5 @@ app.use("/api/v1/admin", isAdmin, adminRouter);
 app.use(errorHandler);
 
 server.listen(PORT, () => {
-  console.log(`server is listening on ${PORT}`);
+  logger.success(`server is listening on ${PORT}`);
 });

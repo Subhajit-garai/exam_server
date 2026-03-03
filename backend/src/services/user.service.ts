@@ -172,6 +172,8 @@ export class UserService {
 
 
 
+            logger.info("User in verifyUserEmailValidationToken", User);
+
             if (User) {
 
                 if (User?.resetTokenExpires < new Date()) {
@@ -375,6 +377,8 @@ export class UserService {
         }
 
         let veryfypassword = await veryfyhashPasswordFn(password, User.password);
+
+        logger.info("veryfypassword", veryfypassword);
 
         if (!veryfypassword) {
             throw new Error("credientile incurrect");

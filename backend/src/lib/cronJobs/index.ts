@@ -17,6 +17,7 @@ import { eventRunner } from "./jobs/event/event-runner.js";
 import { resetWeeklyLeaderboard } from "./jobs/activity.cron.js";
 import { updateSystemStats, initSystemStats } from "./jobs/stats.cron.js";
 import { SocialPlatform } from "@repo/prisma/enums.js";
+import { logger } from "../helper/logger.js";
 
 const pgClient = new Client({ connectionString: process.env.DATABASE_URL });
 
@@ -166,7 +167,6 @@ function scheduleJob(event: events) {
     cronTime = timeToCron(event.run_at);
   }
 
-  console.log("cronTime is ", cronTime, "event setup processing ....");
 
   const job = new CronJob(
     cronTime,
@@ -179,15 +179,13 @@ function scheduleJob(event: events) {
   );
   if (!event.id) return;
   scheduledJobs[event.id] = job;
-  console.log("job added into scheduledJobs ", event.id);
-  console.log("job startting...");
-
+  logger.success("job added into scheduledJobs ", event.id, "event type is ", event.type, "Time is ", event.run_at);
   job.start();
 }
 
 async function loadAndScheduleAllEvents() {
   try {
-    console.log("Loading and scheduling all events...");
+    logger.info("Loading and scheduling all events...");
 
     const eventsFromDb = await prisma.events.findMany({
       where: {
@@ -202,9 +200,9 @@ async function loadAndScheduleAllEvents() {
       if (event) scheduleJob(event);
     }
 
-    console.log("All events loaded and scheduled.");
+    logger.success("All events loaded and scheduled.");
   } catch (error) {
-    console.log("error in loadAndScheduleAllEvents ", error);
+    logger.error("error in loadAndScheduleAllEvents ", error);
   }
 }
 

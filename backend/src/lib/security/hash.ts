@@ -9,17 +9,13 @@ export const veryfyhashPasswordFn = async (
   password: string,
   hashPassword: string
 ): Promise<boolean> => {
-  return await bcrypt.compareSync(password, hashPassword);
+  return bcrypt.compareSync(password, hashPassword);
 };
 
 export const Createhash = (token: string) => {
   return crypto.createHash("sha256").update(token).digest("hex");
 };
-// export const generateResetToken=()=> {
-//     const token = crypto.randomBytes(32).toString("hex"); // 64-character random string
-//     const hashedToken = crypto.createHash("sha256").update(token).digest("hex"); // Secure hash
-//     return { token, hashedToken };
-//   }
+
 
 export const generateResetToken = (uniqueIdentifyer?: string) => {
   let token = crypto.randomBytes(32).toString("hex"); // Generate a random token

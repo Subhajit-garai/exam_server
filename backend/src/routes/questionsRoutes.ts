@@ -18,10 +18,10 @@ questionPublicRouter.get("/getquestionexplanation", GetQuestionExplanation);
 
 // Admin Routes (Protected)
 questionAdminRouter.post("/create", createQuestion);
-questionAdminRouter.get("/:id", getQuestion);
-questionAdminRouter.get("/alldata/:id", getQuestionalldatabyID);
 questionAdminRouter.get("/allquestions", getAllQuestions);
+questionAdminRouter.get("/alldata/:id", getQuestionalldatabyID);
 questionAdminRouter.put("/update", updateQuestion);
+questionAdminRouter.get("/:id", getQuestion);
 questionAdminRouter.delete("/:id", deleteQuestion);
 
 

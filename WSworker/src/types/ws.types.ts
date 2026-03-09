@@ -41,8 +41,7 @@ export interface StartQuizPayload {
     message?: string;
 }
 export interface QuizLeaderboardPayload {
-    quizId: string;
-    leaderboard: { user: { name: string; avater?: string }; score: string }[];
+    leaderboard: { name: string, avater?: string; score: string }[];
 }
 
 export interface QuestionPayload {

@@ -260,7 +260,6 @@ export class QuestionService {
     }
 
     async getAllQuestions(filters: any, page: number = 1) {
-        console.log("--> body", filters);
         let {
             category,
             difficulty,
@@ -363,7 +362,7 @@ export class QuestionService {
                 where: Formatedfilter,
                 skip: (page - 1) * questionsPerPage,
                 take: questionsPerPage,
-                orderBy: { id: "asc" },
+                orderBy: { id: "desc" },
             });
         }
 

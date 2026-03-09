@@ -168,12 +168,6 @@ export class UserService {
                     },
                 });
             }
-            logger.info(User)
-
-
-
-            logger.info("User in verifyUserEmailValidationToken", User);
-
             if (User) {
 
                 if (User?.resetTokenExpires < new Date()) {

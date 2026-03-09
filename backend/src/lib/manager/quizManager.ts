@@ -10,17 +10,20 @@ export interface QuizMetaData {
     id: string;
     total_questions: number;
     nextQuestionTime: number;
-    quizOpenFor: number;  // it is in hours that indicate quiz present in cache in how many hours
+    ttl: number;  // it is in hours that indicate quiz present in cache in how many hours , ttl - > time to live
     topic: string | "All";
     subject: string;
     limit: number;
     status: CreationTypes;
     created_by?: string;
     creator_role?: string;
+    created_at: Date;
 }
 
-interface User {
-    id: string;
+type leaderboard_type = {
+    name: string;
+    avatar: string;
+    score: string;
 }
 export type user_data = {
     avatar?: string,
@@ -95,14 +98,16 @@ export class QuizManager {
             creator_role: userRole,
             total_questions: data.total_questions ? parseInt(data.total_questions) : 10,
             nextQuestionTime: data.nextQuestionTime ? parseInt(data.nextQuestionTime) : 60,
-            quizOpenFor: data.quizOpenFor ? parseInt(data.quizOpenFor) : 24,
+            ttl: data.ttl ? parseInt(data.ttl) : 24,
+            created_at: new Date(),
             status: "Created"
         }
 
 
 
         // Store as JSON string in Redis
-        await this.redis.set(`quiz:data:${quizId}`, JSON.stringify(quizdata), 'EX', 60 * 60 * 24);
+        await this.redis.set(`quiz:data:${quizId}`, JSON.stringify(quizdata));
+        await this.redis.expire(`quiz:data:${quizId}`, (quizdata?.ttl * 3600)); // sets expiry to 24 hours (in seconds)
         // send task to worker to fetch questions
         await this.redis.publish("FETCH_QUESTIONS", JSON.stringify({ quizId }));
 
@@ -141,7 +146,6 @@ export class QuizManager {
 
         const quizzes: QuizMetaData[] = [];
         // Use mget for better performance if keys are many, but loop is fine for now or pipeline
-
         if (keys.length > 0) {
             const values = await this.redis.mget(keys);
             values.forEach((val: string | null) => {
@@ -183,7 +187,8 @@ export class QuizManager {
             return;
         }
 
-        const leaderboard: { user: user_data, score: string }[] = [];
+        const leaderboard: leaderboard_type[] = [];
+
         for (let i = 0; i < data.length; i += 2) {
 
             const userId = data[i];
@@ -202,14 +207,13 @@ export class QuizManager {
             }
 
             leaderboard.push({
-                user: {
-                    name: userDetails.name,
-                    avatar: userDetails.avatar
-                },
+                name: userDetails.name,
+                avatar: userDetails.avatar ?? "P",
                 score: score
             });
         }
 
         logger.success(`[LEADERBOARD] Sent leaderboard for ${quizId}`);
+        return leaderboard;
     }
 }

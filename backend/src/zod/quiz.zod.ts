@@ -13,7 +13,7 @@ export const create_quiz_data_ZodSchema = z.object({
   starttime: z.string().optional(),
   endtime: z.string().optional(),
   nextQuestionTime: z.number().optional(),
-  quizOpenFor: z.number().optional(),
+  ttl: z.number().optional(),
   question_count: z.number().optional(),
   quiz_type: z.nativeEnum(quiz_type),
   chatId: z.string().optional(),
@@ -24,7 +24,7 @@ export const create_quiz_data_ZodSchema = z.object({
 export const activity_quiz_create_data_ZodSchema = z.object({
   total_questions: z.string().optional(),
   nextQuestionTime: z.string().optional(),
-  quizOpenFor: z.string().optional(),
+  ttl: z.string().optional(),
   topic: z.string(),
   subject: z.string(),
   mode: z.string()

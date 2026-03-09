@@ -1,11 +1,9 @@
-import { eventRuns, eventType, UserRole } from "@repo/prisma/client.js"
+
 import prisma from "@repo/db/index.js";
 
 import { z } from "zod";
-import { events } from "../types/EventTypes.js";
 import { isAdmin } from "./auth.js";
 import { setCookie } from "../token.js";
-import { debuglog } from "../helper/debugLog.js";
 import { asyncHandler } from "../helper/asyncHandler.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { logger } from "../helper/logger.js";

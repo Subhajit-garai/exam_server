@@ -6,6 +6,7 @@ import {
 import { QuestionService } from "../services/question.service.js";
 import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
+import { logger } from "@/lib/helper/logger.js";
 
 const questionService = new QuestionService();
 
@@ -169,12 +170,8 @@ export const deleteQuestion = async (req: any, res: any) => {
 
 export const getAllQuestions = asyncHandler(async (req: any, res: any) => {
 
-  console.log("getAllQuestions   body");
   let body = QuestionFilterDataFetchZodSchema.safeParse(req.query);
-
-
-
-
+  logger.info("------> filter body is  ", body);
 
   if (!body.success) {
     throw ZodDataSafeParse(body)
@@ -184,11 +181,9 @@ export const getAllQuestions = asyncHandler(async (req: any, res: any) => {
 
   const { questions, total, currentPage } = await questionService.getAllQuestions(body.data, pageNumber);
 
-  console.log("- questions ", questions);
-
-
   if (!questions) {
     return res.status(404).json({
+      success: false,
       message: "questions not found",
     });
   }

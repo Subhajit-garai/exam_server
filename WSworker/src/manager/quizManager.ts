@@ -25,9 +25,13 @@ interface QuizMetaData {
   countDown: number;
 }
 
-interface User {
-  id: string;
+type leaderboard_type = {
+  name: string;
+  avatar: string;
+  score: string;
 }
+
+
 
 export class QuizManager {
   private static instance: QuizManager;
@@ -51,7 +55,6 @@ export class QuizManager {
   getRedisClient() {
     return this.redisProvider;
   }
-
   // --- User Management (Redis Sets) ---
 
   async addUser(quizId: string, userId: string, name: string, avatar?: string) {
@@ -205,7 +208,6 @@ export class QuizManager {
 
     this.scheduleQuizTimer(quizId, duration, questionNumber + 1);
   }
-
 
   // restoreActiveQuizzes() is not called
   async restoreActiveQuizzes() {
@@ -444,45 +446,18 @@ export class QuizManager {
     isMultiple: boolean,
     submissionTimeIso: string,
   ) {
-    // 1. Time Validation & Calculation
-    let timeTaken = 0;
-    const questionStartTimeStr = await this.redis.get(
-      `quiz:question:startTime:${quizId}:${number}`,
-    );
-    const questionEndTimeStr = await this.redis.get(
-      `quiz:question:endTime:${quizId}:${number}`,
+
+    const alreadyAnswered = await this.redis.hexists(
+      `quiz:submissions:${quizId}:${userId}`,
+      number.toString(),
     );
 
-    if (questionEndTimeStr && questionStartTimeStr) {
-      const allowedEndTime = new Date(questionEndTimeStr).getTime();
-      const startTimestamp = new Date(questionStartTimeStr).getTime();
-      const submissionTime = new Date(submissionTimeIso).getTime();
-
-      const alreadyAnswered = await this.redis.hexists(
-        `quiz:submissions:${quizId}:${userId}`,
-        number.toString(),
-      );
-
-      if (alreadyAnswered) {
-        throw new Error("Answer already submitted");
-      }
-
-      // Calculate time taken in seconds
-      timeTaken = (submissionTime - startTimestamp) / 1000;
-      if (timeTaken < 0) timeTaken = 0; // Should not happen but safety first
-
-      // Add a small buffer (e.g., 5 seconds) for network latency
-      const bufferMs = 5000;
-
-      if (submissionTime > allowedEndTime + bufferMs) {
-        logger.error(
-          `[LATE_SUBMISSION] User ${userId} submitted late for Q${number} in ${quizId}`,
-        );
-        // throw new Error("Submission rejected: Time is up");
-      }
-
-      logger.info(`[TIME_TAKEN] User ${userId} time taken for Q${number} in ${quizId}: ${timeTaken}`);
+    if (alreadyAnswered) {
+      throw new Error("Answer already submitted");
     }
+
+    let timeTaken = await this.CalculateTime(quizId, number, submissionTimeIso)
+
 
     let questionAns = await this.getQuizQuestionAns(quizId, number); // DO NOT shuffle options for validation
 
@@ -535,8 +510,37 @@ export class QuizManager {
     );
   }
 
-  async CalculateTime(time: string) {
-    // let quizdata = await this.getQuizMetaData(time);
+  async CalculateTime(quizId: string, number: number, submissionTimeIso: string): Promise<number> {
+    // 1. Time Validation & Calculation
+    let timeTaken = 0;
+    const questionStartTimeStr = await this.redis.get(
+      `quiz:question:startTime:${quizId}:${number}`,
+    );
+    const questionEndTimeStr = await this.redis.get(
+      `quiz:question:endTime:${quizId}:${number}`,
+    );
+
+    if (questionEndTimeStr && questionStartTimeStr) {
+      const allowedEndTime = new Date(questionEndTimeStr).getTime();
+      const startTimestamp = new Date(questionStartTimeStr).getTime();
+      const submissionTime = new Date(submissionTimeIso).getTime();
+
+      // Calculate time taken in seconds
+      timeTaken = (submissionTime - startTimestamp) / 1000;
+      if (timeTaken < 0) timeTaken = 0; // Should not happen but safety first
+      // Added a small buffer (e.g., 5 seconds) for network latency
+      const bufferMs = 5000;
+      if (submissionTime > allowedEndTime + bufferMs) {
+        logger.error(
+          `[LATE_SUBMISSION] User  submitted late for Q${number} in ${quizId}`,
+        );
+        // throw new Error("Submission rejected: Time is up");
+      }
+
+      logger.info(`[TIME_TAKEN] User time taken for Q${number} in ${quizId}: ${timeTaken}`);
+    }
+
+    return timeTaken;
   }
 
   async incrementScore(quizId: string, userId: string, score: number) {
@@ -579,7 +583,7 @@ export class QuizManager {
           const profileKeys = userIds.map((id) => `user:profile:${id}`);
           const userDetailsList = await this.redis.mget(profileKeys);
 
-          const leaderboard: { name: string; avatar: string; score: string }[] = [];
+          const leaderboard: leaderboard_type[] = [];
 
           for (let i = 0; i < userIds.length; i++) {
             let userDetails: user_data = { name: "Unknown", avatar: "" };
@@ -587,7 +591,9 @@ export class QuizManager {
             if (userDetailsList[i]) {
               try {
                 userDetails = JSON.parse(userDetailsList[i]);
-              } catch { }
+              } catch {
+                logger.error(`[LEADERBOARD] Failed to parse user details for ${userIds[i]}`);
+              }
             }
 
             leaderboard.push({
@@ -598,7 +604,6 @@ export class QuizManager {
           }
 
           const message: WsMessage<QuizLeaderboardPayload> = {
-            userIds: [],
             type: "QUIZ_LEADERBOARD",
             payload: {
               leaderboard,

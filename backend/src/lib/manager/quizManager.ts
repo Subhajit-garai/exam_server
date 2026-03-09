@@ -17,11 +17,13 @@ export interface QuizMetaData {
     status: CreationTypes;
     created_by?: string;
     creator_role?: string;
-    created_at: Date;   
+    created_at: Date;
 }
 
-interface User {
-    id: string;
+type leaderboard_type = {
+    name: string;
+    avatar: string;
+    score: string;
 }
 export type user_data = {
     avatar?: string,
@@ -105,7 +107,7 @@ export class QuizManager {
 
         // Store as JSON string in Redis
         await this.redis.set(`quiz:data:${quizId}`, JSON.stringify(quizdata));
-        await this.redis.expire(`quiz:data:${quizId}`, (quizdata?.ttl*3600)); // sets expiry to 24 hours (in seconds)
+        await this.redis.expire(`quiz:data:${quizId}`, (quizdata?.ttl * 3600)); // sets expiry to 24 hours (in seconds)
         // send task to worker to fetch questions
         await this.redis.publish("FETCH_QUESTIONS", JSON.stringify({ quizId }));
 
@@ -185,7 +187,8 @@ export class QuizManager {
             return;
         }
 
-        const leaderboard: { user: user_data, score: string }[] = [];
+        const leaderboard: leaderboard_type[] = [];
+
         for (let i = 0; i < data.length; i += 2) {
 
             const userId = data[i];
@@ -204,10 +207,8 @@ export class QuizManager {
             }
 
             leaderboard.push({
-                user: {
-                    name: userDetails.name,
-                    avatar: userDetails.avatar
-                },
+                name: userDetails.name,
+                avatar: userDetails.avatar ?? "P",
                 score: score
             });
         }

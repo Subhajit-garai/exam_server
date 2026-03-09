@@ -83,7 +83,7 @@ jobs:
             --name exam_wsworker \
             --network ${{ secrets.DOCKER_NETWORK}} \
             --network-alias wsworker \
-            -p 6000:6000 \
+            -p 6001:6001 \
             --env-file /home/ubuntu/deploy/.wsworker.env \
             $IMAGE
             sleep 20

@@ -16,7 +16,7 @@ export function shuffleArraySeeded<T>(
   array: T[],
   seed: string
 ): { shuffled: T[]; map: number[] } {
-  const rng = seededRandom(seed);  
+  const rng = seededRandom(seed);
   const arr = [...array];
   const map = Array.from({ length: arr.length }, (_, i) => i + 1);
 
@@ -37,3 +37,5 @@ export function reverseMap(map: number[]): number[] {
   }
   return reversed;
 }
+
+

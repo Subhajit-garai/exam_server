@@ -249,13 +249,17 @@ export class ExamService {
     }
 
     async examJoinRequestProcess(userId: string, examId: string) {
-        let istelegramVerified = await prisma.social.findFirst({
-            where: {
-                userId: userId,
-                platform: SocialPlatform.telegram
 
-            },
-        });
+        // removing telegram form here
+
+        // let istelegramVerified = await prisma.social.findFirst({
+        //     where: {
+        //         userId: userId,
+        //         platform: SocialPlatform.telegram
+
+        //     },
+        // });
+
         let isEmailVerified = await prisma.social.findFirst({
             where: {
                 userId: userId,
@@ -267,8 +271,8 @@ export class ExamService {
 
         if (
             !(
-                isEmailVerified?.isVerified &&
-                istelegramVerified?.isVerified
+                isEmailVerified?.isVerified  // &&
+                //istelegramVerified?.isVerified
             )
         ) {
             throw new CustomError(
@@ -305,6 +309,7 @@ export class ExamService {
         }
 
         if (exam.creationstatus === "Done") {
+
             if (exam.examtype !== "Mock" && exam.examtype !== "PYQ") {
                 if (isUserGivenThisExam && isUserGivenThisExam.id) {
                     throw new CustomError(

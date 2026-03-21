@@ -12,8 +12,7 @@ import {
   QuizLeaderboardPayload,
 } from "@/types/ws.types.js";
 import { shuffleArraySeeded } from "@/utils/shuffle.js";
-import { user_data } from "@/user.js";
-import { LeaderboardManager } from "./leaderboardManager";
+import { LeaderboardManager } from "./leaderboardManager.js";
 
 interface QuizMetaData {
   id: string;

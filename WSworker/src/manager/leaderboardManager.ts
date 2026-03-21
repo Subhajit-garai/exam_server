@@ -1,7 +1,7 @@
-import { user_data } from "@/user";
-import { logger } from "@/utils/logger";
-import { RedisProvider } from "@/utils/redisProvider";
-import { leaderboard_type } from "./quizManager";
+import { user_data } from "@/user.js";
+import { logger } from "@/utils/logger.js";
+import { RedisProvider } from "@/utils/redisProvider.js";
+import { leaderboard_type } from "./quizManager.js";
 
 
 

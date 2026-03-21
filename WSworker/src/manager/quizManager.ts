@@ -430,7 +430,6 @@ export class QuizManager {
     return question.question;
   }
 
-
   async submitQuiz(quizId: string, userId: string) {
     await this.removeUser(quizId, userId);
     return await this.redisProvider.push({
@@ -476,12 +475,6 @@ export class QuizManager {
     // infomation of question 
     let questionAns = await this.getQuizQuestionAns(quizId, number); // DO NOT shuffle options for validation
     let questionData = await this.getQuizQuestioninfo(quizId, number)
-    // let questionData = await this.getQuestion(
-    //   "current",
-    //   quizId,
-    //   userId,
-    //   number,
-    // );
 
     if (!questionAns || !questionData) throw Error("Answer processing failed : can be due to time out or invalid question number");
 
@@ -493,27 +486,9 @@ export class QuizManager {
       score = userans.filter((a) => questionAns.split(",").includes(a)).length;
 
     } else {
-
-
-
       let CorrectAns = typeof questionAns !== "string" ? String(questionAns) : questionAns;
-
       let CorrectAnsIndex = questionData.map[parseInt(userans[0]) - 1];
-
-
-      // need to re shuffle
-      // user ans map
-      logger.info("user ans", userans);
-      logger.info("question data", questionAns);
-      console.log("correct ans", CorrectAns);
-      logger.info("question CorrectAnsIndex", CorrectAnsIndex);
-
-      logger.info("question options", questionData.options);
-      logger.info("question map", questionData.map);
-
       score = String(CorrectAnsIndex) === CorrectAns ? 1 : 0;
-      logger.info("score is :-- ", score)
-
       logger.info(" [score] user: ", userId, " score: ", score);
     }
 
@@ -544,9 +519,6 @@ export class QuizManager {
       `[ANSWER_STORED] User ${userId} scored ${score} in ${timeTaken}s for Q${number}`,
     );
   }
-
-
-
 
   async CalculateTime(quizId: string, number: number, submissionTimeIso: string): Promise<number> {
     // 1. Time Validation & Calculation

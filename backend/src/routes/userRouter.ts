@@ -20,8 +20,9 @@ userRouter.get("/ws-token", IsUserLoginOpen, (req: any, res: any) => {
 userRouter.get("/logout", Logout);
 // notes 
 userRouter.get("/notes/allsubject", getAllNoteSubjectForUser)
-userRouter.post("/validate/telegramid", otpLimiter, generateUserTelegramIdValidationToken);
-userRouter.post("/verify/telegramid", otpLimiter, verifyUserTelegramIdValidationToken);
+
+userRouter.post("/validate/telegramid", otpLimiter, generateUserTelegramIdValidationToken); // remove  later
+userRouter.post("/verify/telegramid", otpLimiter, verifyUserTelegramIdValidationToken); // remove  later
 //purchases 
 userRouter.get("/purchases", userPurchases);
 userRouter.get("/timeline", getUserTimeline);

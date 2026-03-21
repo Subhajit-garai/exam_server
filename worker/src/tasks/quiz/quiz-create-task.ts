@@ -7,6 +7,7 @@ import {
 import { RedisProvider } from "@/lib/radisProvider";
 import { exam_question_format_type } from "@/lib/types/ans-prossing-types";
 import { shuffleArraySeeded } from "@/utils/shuffle";
+import { logger } from "@/utils/logger";
 
 interface QuizMetaData {
   id: string;
@@ -39,7 +40,7 @@ export class QuizCreateTask extends BaseWorkerTask {
   redisporvider = RedisProvider.getInstance();
 
   async execute(): Promise<void> {
-    console.log("Running QuizCreateTask with data:", this.task.payload);
+    logger.info("Running QuizCreateTask with data:", this.task.payload);
 
     let newtWorkClient = Network.getInstance();
     let QuestionManagerClient = examQuestionManger.getInstance();
@@ -49,9 +50,7 @@ export class QuizCreateTask extends BaseWorkerTask {
 
     if (!quizData) throw Error("quiz data not found");
 
-
     this.changeQuizDataStatus(quizData)
-
     let { total_questions, topic, subject } = quizData
 
     let topics = [subject];
@@ -98,7 +97,7 @@ export class QuizCreateTask extends BaseWorkerTask {
 
   async changeQuizDataStatus(quizData: QuizMetaData, status: CreationTypes = "Processing") {
     quizData.status = status;
-    await this.redisporvider.getclient().set(`quiz:data:${quizData.id}`, JSON.stringify(quizData));
+    await this.redisporvider.getclient().set(`quiz:data:${quizData.id}`, JSON.stringify(quizData), 'KEEPTTL');
   }
 
 

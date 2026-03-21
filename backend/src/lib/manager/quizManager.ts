@@ -103,11 +103,24 @@ export class QuizManager {
             status: "Created"
         }
 
+        let key = `quiz:data:${quizId}`;
+
+        // quiz ttl and data set
+
+        const ttlSeconds = (quizdata?.ttl ?? 24) * 3600;
+        await this.redis.set(
+            key,
+            JSON.stringify(quizdata),
+            'EX',
+            ttlSeconds
+        );
 
 
-        // Store as JSON string in Redis
-        await this.redis.set(`quiz:data:${quizId}`, JSON.stringify(quizdata));
-        await this.redis.expire(`quiz:data:${quizId}`, (quizdata?.ttl * 3600)); // sets expiry to 24 hours (in seconds)
+
+
+        // await this.redis.expire(key, (quizdata?.ttl * 3600)); // sets expiry to 24 hours (in seconds)
+
+
         // send task to worker to fetch questions
         await this.redis.publish("FETCH_QUESTIONS", JSON.stringify({ quizId }));
 

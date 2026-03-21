@@ -13,6 +13,7 @@ import {
 } from "@/types/ws.types.js";
 import { shuffleArraySeeded } from "@/utils/shuffle.js";
 import { user_data } from "@/user.js";
+import { LeaderboardManager } from "./leaderboardManager";
 
 interface QuizMetaData {
   id: string;
@@ -25,7 +26,7 @@ interface QuizMetaData {
   countDown: number;
 }
 
-type leaderboard_type = {
+export type leaderboard_type = {
   name: string;
   avatar: string;
   score: string;
@@ -36,6 +37,7 @@ type leaderboard_type = {
 export class QuizManager {
   private static instance: QuizManager;
   private redisProvider: RedisProvider;
+  private LeaderboardManager: LeaderboardManager;
   private redis: any; // Direct ioredis client
   private leaderboardTimers: Map<string, NodeJS.Timeout> | null = null;
   private activeQuizTimers: Map<string, NodeJS.Timeout> = new Map();
@@ -50,6 +52,7 @@ export class QuizManager {
   private constructor() {
     this.redisProvider = RedisProvider.getInstance();
     this.redis = this.redisProvider.getclient();
+    this.LeaderboardManager = LeaderboardManager.getInstance();
   }
 
   getRedisClient() {
@@ -340,6 +343,7 @@ export class QuizManager {
   }
   // --- Question Management ---
 
+  // return question , which is formated for quiz question display
   async getQuestion(
     type: "pre" | "next" | "current",
     quizId: string,
@@ -408,14 +412,24 @@ export class QuizManager {
   }
   // --- Submission ---
 
-  async getQuizQuestionAns(quizId: string, number: number) {
+  async getQuizQuestionAns(quizId: string, number: number): Promise<string | number> {
     const questionStr = await this.redis.get(
       `quizquestion:${quizId}:part1:${number}`,
     );
     if (!questionStr) throw Error("Question data not found");
-    const question = JSON.parse(questionStr);
-    return question;
+    let question = JSON.parse(questionStr);
+    return question.question.ans;
   }
+  // return full info of question
+  async getQuizQuestioninfo(quizId: string, number: number) {
+    const questionStr = await this.redis.get(
+      `quizquestion:${quizId}:part1:${number}`,
+    );
+    if (!questionStr) throw Error("Question data not found");
+    let question = JSON.parse(questionStr);
+    return question.question;
+  }
+
   async submitQuiz(quizId: string, userId: string) {
     await this.removeUser(quizId, userId);
     return await this.redisProvider.push({
@@ -441,7 +455,7 @@ export class QuizManager {
   async submitAnswer(
     quizId: string,
     userId: string,
-    ans: string[],
+    userans: string[],
     number: number,
     isMultiple: boolean,
     submissionTimeIso: string,
@@ -458,15 +472,9 @@ export class QuizManager {
 
     let timeTaken = await this.CalculateTime(quizId, number, submissionTimeIso)
 
-
+    // infomation of question 
     let questionAns = await this.getQuizQuestionAns(quizId, number); // DO NOT shuffle options for validation
-
-    let questionData = await this.getQuestion(
-      "current",
-      quizId,
-      userId,
-      number,
-    );
+    let questionData = await this.getQuizQuestioninfo(quizId, number)
 
     if (!questionAns || !questionData) throw Error("Answer processing failed : can be due to time out or invalid question number");
 
@@ -474,19 +482,21 @@ export class QuizManager {
 
     if (isMultiple) {
       logger.info("multiple ans");
-      score = ans.filter((a) => questionAns.split(",").includes(a)).length;
+      if (typeof questionAns !== "string") throw Error("invali multiple ans format")
+      score = userans.filter((a) => questionAns.split(",").includes(a)).length;
+
     } else {
-      let CorrectAns =
-        typeof questionAns !== "string" ? String(questionAns) : questionAns;
-      score = ans[0] === CorrectAns ? 1 : 0;
+      let CorrectAns = typeof questionAns !== "string" ? String(questionAns) : questionAns;
+      let CorrectAnsIndex = questionData.map[parseInt(userans[0]) - 1];
+      score = String(CorrectAnsIndex) === CorrectAns ? 1 : 0;
       logger.info(" [score] user: ", userId, " score: ", score);
     }
 
     // 2. Store Detailed Submission
     const submissionData = {
-      questionId: questionData.question.questionid,
+      questionId: questionData.questionid,
       questionNumber: number,
-      userAnswer: ans,
+      userAnswer: userans,
       correct: score > 0, // Simplified correct check
       score,
       timeTaken,
@@ -544,14 +554,11 @@ export class QuizManager {
   }
 
   async incrementScore(quizId: string, userId: string, score: number) {
-    // Use ZINCRBY for Sorted Set Leaderboard
     logger.info(
       `[INCREMENT_SCORE] User ${userId} scored ${score} in quiz ${quizId}`,
     );
-    const key = `quiz:leaderboard:${quizId}`;
-    await this.redis.zincrby(key, score, userId);
-    // Ensure 24h TTL
-    await this.redis.expire(key, 86400);
+    await this.LeaderboardManager.updateLeaderboard(quizId, userId, score);
+
   }
 
   async sendQuizLeaderboard(quizId: string) {
@@ -563,46 +570,9 @@ export class QuizManager {
     this.leaderboardTimers.set(
       quizId,
       setTimeout(async () => {
+
         try {
-          const key = `quiz:leaderboard:${quizId}`;
-          const data = await this.redis.zrevrange(key, 0, -1, "WITHSCORES");
-
-          if (!data || data.length === 0) {
-            logger.error(`[LEADERBOARD] No data found for ${quizId}`);
-            return;
-          }
-
-          const userIds: string[] = [];
-          const scores: string[] = [];
-
-          for (let i = 0; i < data.length; i += 2) {
-            userIds.push(data[i]);
-            scores.push(data[i + 1]);
-          }
-
-          const profileKeys = userIds.map((id) => `user:profile:${id}`);
-          const userDetailsList = await this.redis.mget(profileKeys);
-
-          const leaderboard: leaderboard_type[] = [];
-
-          for (let i = 0; i < userIds.length; i++) {
-            let userDetails: user_data = { name: "Unknown", avatar: "" };
-
-            if (userDetailsList[i]) {
-              try {
-                userDetails = JSON.parse(userDetailsList[i]);
-              } catch {
-                logger.error(`[LEADERBOARD] Failed to parse user details for ${userIds[i]}`);
-              }
-            }
-
-            leaderboard.push({
-              name: userDetails.name,
-              avatar: userDetails.avatar ?? "P",
-              score: scores[i],
-            });
-          }
-
+          const leaderboard: leaderboard_type[] = await this.LeaderboardManager.getLeaderBoard(quizId);
           const message: WsMessage<QuizLeaderboardPayload> = {
             type: "QUIZ_LEADERBOARD",
             payload: {
@@ -612,8 +582,8 @@ export class QuizManager {
           };
 
           await this.redis.publish("WS_BROADCAST", JSON.stringify(message));
-
           logger.success(`[LEADERBOARD] Sent leaderboard for ${quizId}`);
+
         } finally {
           this.leaderboardTimers?.delete(quizId);
         }

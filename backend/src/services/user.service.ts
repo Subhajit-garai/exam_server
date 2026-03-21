@@ -251,6 +251,10 @@ export class UserService {
         return true;
     }
 
+
+
+
+
     async verifyUserTelegramIdValidationToken(userId: string, token: string) {
         return await prisma.$transaction(async (tx: any) => {
             let token_hash = Createhash(token);

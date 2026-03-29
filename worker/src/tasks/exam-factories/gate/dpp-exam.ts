@@ -2,7 +2,7 @@
 
 
 // src/exam-factories/gate/dpp-exam.ts
-import { IExamCreator } from "../base-exam";
+import { IExamCreator } from "../base-exam.js";
 
 export class GateDppExam implements IExamCreator {
   constructor(private payload: any) {}

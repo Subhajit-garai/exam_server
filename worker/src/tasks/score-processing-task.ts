@@ -1,4 +1,4 @@
-import { BaseWorkerTask } from "./base-task";
+import { BaseWorkerTask } from "./base-task.js";
 
 // src/workers/ans-processing-task.ts
 export class ScoreProcessingTask extends BaseWorkerTask {

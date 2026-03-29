@@ -6,8 +6,8 @@ import { BaseSocketHandler } from "@/handlers/base.socket.handler.js";
 import { RedisProvider } from "@/utils/redisProvider.js";
 import { User } from "@/user.js";
 import { Room } from "@/room.js";
-import { Network } from "@repo/utils/network.js";
 import { logger } from "@/utils/logger.js";
+import { BotService } from "@/services/bot/bot.service.js";
 
 
 export class SocketManager {
@@ -107,16 +107,16 @@ export class SocketManager {
 
 
                 if (!user) {
-                    let network = Network.getInstance()
-                    let response = await network.getuserInfo(userinfo.id)
-                    if (response) {
+                    let botService = new BotService()
+                    let userData = await botService.user.getuserInfo(userinfo.id)
+                    if (userData) {
                         logger.success("User data fetched successfully");
                     } else {
                         logger.error("User data not found");
                         ws.close(1008, "User data not found");
                         return;
                     }
-                    user = new User(userinfo.id, response, ws);
+                    user = new User(userinfo.id, userData, ws);
 
                     this.users.set(userinfo.id, user);
                 } else {

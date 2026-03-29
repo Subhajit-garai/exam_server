@@ -1,0 +1,59 @@
+model ExamProgress {
+    id                      String    @id @default(cuid())
+    userId                  String    @unique
+    attended                Int       @default(0)
+    totalQuestionsAttempted Int       @default(0)
+    totalCorrect            Int       @default(0)
+    accuracy                Float     @default(0.0)
+    lastExamId              String?
+    lastExamDate            DateTime?
+    lastRank                Int       @default(0)
+    bestRank                Int       @default(0)
+    User                    User      @relation(fields: [userId], references: [id])
+}
+
+model DppProgress {
+    id              String    @id @default(cuid())
+    userId          String    @unique
+    solvedCount     Int       @default(0) // Total DPPs fully solved
+    questionsSolved Int       @default(0)
+    lastDppId       String?
+    lastDppDate     DateTime?
+    currentStreak   Int       @default(0) // Specific streak for DPPs if needed
+    User            User      @relation(fields: [userId], references: [id])
+}
+
+model QuizProgress {
+    id           String    @id @default(cuid())
+    userId       String    @unique
+    attended     Int       @default(0)
+    totalScore   Int       @default(0)
+    lastQuizId   String?
+    lastQuizDate DateTime?
+    User         User      @relation(fields: [userId], references: [id])
+}
+
+// New Model: Track individual topic engagement
+model UserTopicProgress {
+    id         String         @id @default(cuid())
+    userId     String
+    topicId    String
+    // Reading metrics
+    timeSpent  Int            @default(0) // in seconds
+    status     ProgressStatus @default(NOT_STARTED)
+    lastReadAt DateTime       @default(now())
+    // Daily Tracking: { "YYYY-MM-DD": seconds }
+
+    // Relations
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, topicId])
+    @@index([userId])
+}
+
+enum ProgressStatus {
+    NOT_STARTED
+    IN_PROGRESS
+    COMPLETED
+}

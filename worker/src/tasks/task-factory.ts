@@ -1,11 +1,11 @@
 // src/workers/task-factory.ts
-import { Task } from "@/lib/types/types";
-import { AnsProcessingTask } from "./ans-processing-task";
-import { BaseWorkerTask } from "./base-task";
-import { CreateExamTask } from "./create-exam-task";
-import { CreateScoreTask } from "./create-score-task";
-import { QuizProcessingTask } from "./quiz-processing-task";
-import { QuizCreateTask } from "./quiz/quiz-create-task";
+import { Task } from "@/lib/types/types.js";
+import { AnsProcessingTask } from "./ans-processing-task.js";
+import { BaseWorkerTask } from "./base-task.js";
+import { CreateExamTask } from "./create-exam-task.js";
+import { CreateScoreTask } from "./create-score-task.js";
+import { QuizProcessingTask } from "./quiz-processing-task.js";
+import { QuizCreateTask } from "./quiz/quiz-create-task.js";
 
 export class TaskFactory {
   static create(task: Task): BaseWorkerTask {

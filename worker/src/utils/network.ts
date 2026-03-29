@@ -1,415 +1,430 @@
-import axios from "axios";
-import dotenv from "dotenv";
-import { botPlatform } from "../lib/types/types";
-import { logger } from "./logger";
-dotenv.config();
+// import axios from "axios";
+// import dotenv from "dotenv";
+// import { botPlatform } from "../lib/types/types.js";
+// import { logger } from "./logger.js";
+// import { BotService } from "@/services/bot/bot.service.js";
+// dotenv.config();
 
-export type CreationTypes =
-  | "Updated"
-  | "Created"
-  | "Processing"
-  | "Done"
-  | "Suspended";
+// export type CreationTypes =
+//   | "Updated"
+//   | "Created"
+//   | "Processing"
+//   | "Done"
+//   | "Suspended";
 
-export class Network {
-  private static instance: Network | null = null;
-  private username: string;
-  private password: string;
-  private botauthtoken: string;
-  islogin: boolean = false;
-  private be_url: string = process.env.BE_URL || "";
+// const botService = new BotService();
 
-  private constructor() {
-    this.username = process.env.BE_USERNAME || "";
-    this.password = process.env.BE_PASSWORD || "";
-    this.botauthtoken = "";
+// export class Network {
+//   private static instance: Network | null = null;
+//   private username: string;
+//   private password: string;
+//   private botauthtoken: string;
+//   islogin: boolean = false;
+//   private be_url: string = process.env.BE_URL || "";
 
-    this.login();
-  }
+//   private constructor() {
+//     this.username = process.env.BE_USERNAME || "";
+//     this.password = process.env.BE_PASSWORD || "";
+//     this.botauthtoken = "";
 
-  public static getInstance(): Network {
-    if (!Network.instance) {
-      Network.instance = new Network();
-    }
-    return Network.instance;
-  }
+//     this.login();
+//   }
 
-  getUrl(path: string, defaultPath: string = "/api/v1/bot"): string {
-    return `${this.be_url}${defaultPath}${path}`;
-  }
-  getAccessToken(): string {
-    return this.botauthtoken;
-  }
+//   public static getInstance(): Network {
+//     if (!Network.instance) {
+//       Network.instance = new Network();
+//     }
+//     return Network.instance;
+//   }
 
-  async postRequest(
-    url: string,
-    data: any,
-    isOnlyData: boolean = false,
-    isOnlyMessage: boolean = false
-  ): Promise<any> {
-    try {
-      if (!this.botauthtoken) {
-        await this.login();
-      }
+//   getUrl(path: string, defaultPath: string = "/api/v1/bot"): string {
+//     return `${this.be_url}${defaultPath}${path}`;
+//   }
+//   getAccessToken(): string {
+//     return this.botauthtoken;
+//   }
 
-      let header = {
-        Authorization: this.botauthtoken,
-      };
-      let responce = await axios.post(url, data, { headers: header });
-      if (responce.data.success) {
-        return isOnlyData
-          ? responce.data?.data
-          : isOnlyMessage
-            ? responce.data?.message
-            : responce.data;
-      }
-      return null;
-    } catch (error: any) {
-      logger.error(error?.response?.data?.message)
-      if (error?.response?.data?.message === "Invalid or expired token") {
-        await this.login();
-        return await this.postRequest(url, data, isOnlyData, isOnlyMessage);
-      } else {
-        return null;
-      }
-    }
-  }
-  async getRequest(
-    url: string,
-    isOnlyData: boolean = false,
-    isOnlyMessage: boolean = false
-  ): Promise<any> {
-    try {
-      if (!this.botauthtoken) {
-        await this.login();
-      }
+//   async postRequest(
+//     url: string,
+//     data: any,
+//     isOnlyData: boolean = false,
+//     isOnlyMessage: boolean = false
+//   ): Promise<any> {
+//     try {
+//       if (!this.botauthtoken) {
+//         await this.login();
+//       }
 
-      let header = {
-        Authorization: this.botauthtoken,
-      };
-      let responce = await axios.get(url, { headers: header });
+//       let header = {
+//         Authorization: this.botauthtoken,
+//       };
+//       let responce = await axios.post(url, data, { headers: header });
+//       if (responce.data.success) {
+//         return isOnlyData
+//           ? responce.data?.data
+//           : isOnlyMessage
+//             ? responce.data?.message
+//             : responce.data;
+//       }
+//       return null;
+//     } catch (error: any) {
+//       logger.error(error?.response?.data?.message)
+//       if (error?.response?.data?.message === "Invalid or expired token") {
+//         await this.login();
+//         return await this.postRequest(url, data, isOnlyData, isOnlyMessage);
+//       } else {
+//         return null;
+//       }
+//     }
+//   }
+//   async getRequest(
+//     url: string,
+//     isOnlyData: boolean = false,
+//     isOnlyMessage: boolean = false
+//   ): Promise<any> {
+//     try {
+//       if (!this.botauthtoken) {
+//         await this.login();
+//       }
 
-      if (responce.data.success) {
-        return isOnlyData
-          ? responce.data?.data
-          : isOnlyMessage
-            ? responce.data?.message
-            : responce.data;
-      }
-      return null;
-    } catch (error: any) {
-      logger.error(error?.response?.data?.message)
-      if (error?.response?.data?.message === "Invalid or expired token") {
-        await this.login();
-        return await this.getRequest(url, isOnlyData, isOnlyMessage);
-      } else {
-        return null;
-      }
-    }
-  }
+//       let header = {
+//         Authorization: this.botauthtoken,
+//       };
+//       let responce = await axios.get(url, { headers: header });
 
-
-  async auth() {
-    try {
-      let url = this.getUrl(`/auth`);
-      let header = {
-        Authorization: this.botauthtoken,
-      };
-
-      let request = await axios.get(url, { headers: header });
-      console.log("response", request.status);
-    } catch (error) { }
-  }
-
-  async SendNotificationToSurver(type = "", data: any = null) {
-    let url = this.getUrl(`/notification?type=${type}`);
-    let header = {
-      Authorization: this.botauthtoken,
-    };
-    let request = await axios.post(url, data, { headers: header });
-    if (request.status == 200) {
-      console.log("response", request.status);
-      console.log("notification sended ..");
-    }
-  }
-
-  async login(retries = 10, delayMs = 2000) {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        console.log("login porcess started .... ", `Attempt ${attempt}`);
-        let url = this.getUrl(`/login`);
-        let logindata = {
-          email: this.username,
-          password: this.password,
-        };
-        let request = await axios.post(url, logindata);
-
-        console.log("login request", request.status);
-
-        if (request) {
-          console.log("Login successful");
-          if (request?.data?.success) {
-            console.log("Setting bot token....");
-            this.botauthtoken = request?.data?.data;
-
-            this.islogin = true;
-            console.log("Bot token set successfully");
-            return true;
-          }
-          return true;
-        } else {
-          console.log("Login failed");
-          return false;
-        }
-      } catch (error: any) {
-        console.error(`❌ Login attempt ${attempt} failed:`, error?.message);
-
-        if (attempt === retries) {
-          console.error("❌ All login attempts failed. Exiting.");
-          process.exit(1); // exit app if still not successful
-        }
-
-        console.log(`🔁 Waiting ${delayMs}ms before retrying...`);
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-      }
-    }
-  }
+//       if (responce.data.success) {
+//         return isOnlyData
+//           ? responce.data?.data
+//           : isOnlyMessage
+//             ? responce.data?.message
+//             : responce.data;
+//       }
+//       return null;
+//     } catch (error: any) {
+//       logger.error(error?.response?.data?.message)
+//       if (error?.response?.data?.message === "Invalid or expired token") {
+//         await this.login();
+//         return await this.getRequest(url, isOnlyData, isOnlyMessage);
+//       } else {
+//         return null;
+//       }
+//     }
+//   }
 
 
-  //exam 
+//   async auth() {
+//     try {
+//       let url = this.getUrl(`/auth`);
+//       let header = {
+//         Authorization: this.botauthtoken,
+//       };
 
-  async examQuestionAddedStatusChange(examid: string) {
-    try {
-      let url = this.getUrl(`/exam/question/add/status/${examid}`);
-      return this.getRequest(url, false, true);
-    } catch (error) {
-      throw new Error("Error from AddQuestions / Network ");
-    }
-  }
-
-  async getExamDetails(examid: string) {
-    try {
-      let url = this.getUrl(`/exam/details/get/${examid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamDetails / Network ");
-    }
-  }
-
-  async requestToupdateExamCreationStatus(examid: string) {
-    try {
-      let url = this.getUrl(`/exam/update/creation/status/${examid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamDetails / Network ");
-    }
-  }
-
-  async getExamPatternId(examid: string) {
-    try {
-      let url = this.getUrl(`/exam/patternid/get/${examid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamPatternId / Network ");
-    }
-  }
-
-  //question
-
-  async AddQuestions(examid: string, questions: any) {
-    try {
-      let url = this.getUrl(`/question/add/${examid}`);
-      return this.postRequest(url, questions, false, true);
-    } catch (error) {
-      throw new Error("Error from AddQuestions / Network ");
-    }
-  }
-
-  async getExamQuestionsAns(examid: string) {
-    try {
-      let url = this.getUrl(`/question/ans/get/${examid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamQuestionsAns / Network ");
-    }
-  }
-
-  async getQuestions(examid: string) {
-    try {
-      let url = this.getUrl(`/question/get/${examid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getQuestions / Network ");
-    }
-  }
-  async getQuestions_byIds(ids: string[]) {
-    try {
-      let url = this.getUrl(`/question/get/byids`);
-      return this.postRequest(url, ids, true);
-    } catch (error) {
-      throw new Error("Error from getQuestions / Network ");
-    }
-  }
-
-  async getMockQuestionSet(mockid: string) {
-    try {
-      return this.getQuestions(mockid);
-    } catch (error) {
-      throw new Error("Error from getMockQuestionSet / Network ");
-    }
-  }
-
-
-  async getQuestionsIds() {
-    try {
-      let url = this.getUrl(`/question/ids`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getQuestionsIds / Network ");
-    }
-  }
-
-
-  async getQuestionViaids(ids: string[]) {
-    try {
-      let url = this.getUrl(`/question/info/get`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getQuestionViaids / Network ");
-    }
-  }
+//       let request = await axios.get(url, { headers: header });
+//       console.log("response", request.status);
+//     } catch (error) { }
+//   }
 
 
 
 
-  //user
-  async getUserAns(examid: string, userid: string) {
-    try {
-      let url = this.getUrl(`/user/ans/get?examid=${examid}&userid=${userid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getUserAns / Network ");
-    }
-  }
-  async SetUserAns(userAns: any) {
-    try {
-      let url = this.getUrl(`/user/ans/set`);
-      return this.postRequest(url, userAns, false, true);
-    } catch (error) {
-      throw new Error("Error from SetUserAns / Network ");
-    }
-  }
 
-  async setUserScore(examid: string, userid: string, userScore: any) {
-    try {
-      let url = this.getUrl(
-        `/user/score/set?examid=${examid}&userid=${userid}`
-      );
-      return this.postRequest(url, userScore, false, true);
-    } catch (error) {
-      throw new Error("Error from setUserScore / Network ");
-    }
-  }
-  async getUserScore(examid: string, userid: string) {
-    try {
-      let url = this.getUrl(
-        `/user/score/get?examid=${examid}&userid=${userid}`
-      );
-      return await this.getRequest(url, true, true);
-    } catch (error) {
-      throw new Error("Error from getUserScore / Network ");
-    }
-  }
+//   async login(retries = 10, delayMs = 2000) {
+//     for (let attempt = 1; attempt <= retries; attempt++) {
+//       try {
+//         console.log("login porcess started .... ", `Attempt ${attempt}`);
+//         let url = this.getUrl(`/login`);
+//         let logindata = {
+//           email: this.username,
+//           password: this.password,
+//         };
+//         let request = await axios.post(url, logindata);
 
-  async setUserProgress(userid: string, userProgress: any) {
-    try {
-      let url = this.getUrl(`/user/progress/set?userid=${userid}`);
-      return this.postRequest(url, userProgress, false, true);
-    } catch (error) {
-      throw new Error("Error from setUserProgress / Network ");
-    }
-  }
+//         console.log("login request", request.status);
+
+//         if (request) {
+//           console.log("Login successful");
+//           if (request?.data?.success) {
+//             console.log("Setting bot token....");
+//             this.botauthtoken = request?.data?.data;
+
+//             this.islogin = true;
+//             console.log("Bot token set successfully");
+//             return true;
+//           }
+//           return true;
+//         } else {
+//           console.log("Login failed");
+//           return false;
+//         }
+//       } catch (error: any) {
+//         console.error(`❌ Login attempt ${attempt} failed:`, error?.message);
+
+//         if (attempt === retries) {
+//           console.error("❌ All login attempts failed. Exiting.");
+//           process.exit(1); // exit app if still not successful
+//         }
+
+//         console.log(`🔁 Waiting ${delayMs}ms before retrying...`);
+//         await new Promise((resolve) => setTimeout(resolve, delayMs));
+//       }
+//     }
+//   }
 
 
+//   // async SendNotificationToSurver(type = "", data: any = null) {
+//   //   let url = this.getUrl(`/notification?type=${type}`);
+//   //   let header = {
+//   //     Authorization: this.botauthtoken,
+//   //   };
+//   //   let request = await axios.post(url, data, { headers: header });
+//   //   if (request.status == 200) {
+//   //     console.log("response", request.status);
+//   //     console.log("notification sended ..");
+//   //   }
+//   // }
+
+//   //exam
+
+//   async examQuestionAddedStatusChange(examid: string) {
+//     try {
+//       const result = await botService.exam.checkExamCompletionStatus(examid);
+//       return result
+//     } catch (error) {
+//       throw new Error("Error from AddQuestions / Network ");
+//     }
+//   }
 
 
-  // telegram group
+//   async getExamDetails(examid: string) {
+//     try {
+//       return await botService.exam.getExamDetails(examid);
+//     } catch (error) {
+//       throw new Error("Error from getExamDetails / Network ");
+//     }
+//   }
 
-  async telegramgroupinfo(chat_id: number) {
-    try {
-      let url = this.getUrl(`/telegram/group/info?chatid=${chat_id}`);
-      return await this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from telegramgroupinfo / Network ");
-    }
-  }
-  async telegramGroupTopicInfo(groupId: number, name: string) {
-    try {
-      let url = this.getUrl(
-        `/telegram/group/topic/info/get?groupId=${groupId}&name=${name}`
-      );
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from telegramgroupinfo / Network ");
-    }
-  }
+//   async requestToupdateExamCreationStatus(examid: string) {
+//     try {
+//       let url = this.getUrl(`/exam/update/creation/status/${examid}`);
+//       return this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from getExamDetails / Network ");
+//     }
+//   }
 
-  //other
-
-  async setMockQuestionSetStatus(mockid: string, status: CreationTypes) {
-    try {
-      let url = this.getUrl(`/mockquestionset/status/set/${mockid}`);
-
-      return this.postRequest(url, status);
-    } catch (error) {
-      throw new Error("Error from getMockQuestionSet / Network ");
-    }
-  }
-  async getQuizConfigData(
-    chatid: number,
-    platform: botPlatform,
-    userid: number
-  ) {
-    try {
-      let url = this.getUrl(
-        `/quiz/get/config?chatid=${chatid}&userid=${userid}&platform=${platform}`
-      );
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getSyllabusDataForExamCreattion / Network ");
-    }
-  }
-
-  async getSyllabusDataForExamCreattion(syllabusid: string) {
-    try {
-      let url = this.getUrl(`/syllabus/exam/get?syllabusid=${syllabusid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getSyllabusDataForExamCreattion / Network ");
-    }
-  }
+//   async getExamPatternId(examid: string) {
+//     try {
+//       let url = this.getUrl(`/exam/patternid/get/${examid}`);
+//       return this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from getExamPatternId / Network ");
+//     }
+//   }
 
 
 
 
-  async getMockSetPatternInfobyTitle(title: string) {
-    try {
-      let url = this.getUrl(`/mock/exampattern/details/get?title=${title}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getMockSetPatternInfobyTitle / Network ");
-    }
-  }
-  async getExamPattern(exampatternid: string) {
-    try {
-      let url = this.getUrl(`/exampattern/get/${exampatternid}`);
-      return this.getRequest(url, true);
-    } catch (error) {
-      throw new Error("Error from getExamPattern / Network ");
-    }
-  }
 
-  //
-}
 
-export const network = Network.getInstance();
+
+
+
+//   //question
+
+//   async AddQuestions(examid: string, questions: any) {
+//     try {
+//       let url = this.getUrl(`/question/add/${examid}`);
+//       return this.postRequest(url, questions, false, true);
+//     } catch (error) {
+//       throw new Error("Error from AddQuestions / Network ");
+//     }
+//   }
+
+//   async getExamQuestionsAns(examid: string) {
+//     try {
+//       let url = this.getUrl(`/question/ans/get/${examid}`);
+//       return this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from getExamQuestionsAns / Network ");
+//     }
+//   }
+
+//   async getQuestions(examid: string) {
+//     try {
+//       let url = this.getUrl(`/question/get/${examid}`);
+//       return this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from getQuestions / Network ");
+//     }
+//   }
+//   async getQuestions_byIds(ids: string[]) {
+//     try {
+//       let url = this.getUrl(`/question/get/byids`);
+//       return this.postRequest(url, ids, true);
+//     } catch (error) {
+//       throw new Error("Error from getQuestions / Network ");
+//     }
+//   }
+
+//   async getMockQuestionSet(mockid: string) {
+//     try {
+//       return this.getQuestions(mockid);
+//     } catch (error) {
+//       throw new Error("Error from getMockQuestionSet / Network ");
+//     }
+//   }
+
+
+//   async getQuestionsIds() {
+//     try {
+//       let url = this.getUrl(`/question/ids`);
+//       return this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from getQuestionsIds / Network ");
+//     }
+//   }
+
+
+//   async getQuestionViaids(ids: string[]) {
+//     try {
+//       let url = this.getUrl(`/question/info/get`);
+//       return this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from getQuestionViaids / Network ");
+//     }
+//   }
+
+
+
+
+//   //user
+//   async getUserAns(examid: string, userid: string) {
+//     try {
+//       let url = this.getUrl(`/user/ans/get?examid=${examid}&userid=${userid}`);
+//       return this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from getUserAns / Network ");
+//     }
+//   }
+//   async SetUserAns(userAns: any) {
+//     try {
+//       let url = this.getUrl(`/user/ans/set`);
+//       return this.postRequest(url, userAns, false, true);
+//     } catch (error) {
+//       throw new Error("Error from SetUserAns / Network ");
+//     }
+//   }
+
+//   async setUserScore(examid: string, userid: string, userScore: any) {
+//     try {
+//       let url = this.getUrl(
+//         `/user/score/set?examid=${examid}&userid=${userid}`
+//       );
+//       return this.postRequest(url, userScore, false, true);
+//     } catch (error) {
+//       throw new Error("Error from setUserScore / Network ");
+//     }
+//   }
+//   async getUserScore(examid: string, userid: string) {
+//     try {
+//       let url = this.getUrl(
+//         `/user/score/get?examid=${examid}&userid=${userid}`
+//       );
+//       return await this.getRequest(url, true, true);
+//     } catch (error) {
+//       throw new Error("Error from getUserScore / Network ");
+//     }
+//   }
+
+//   async setUserProgress(userid: string, userProgress: any) {
+//     try {
+//       let url = this.getUrl(`/user/progress/set?userid=${userid}`);
+//       return this.postRequest(url, userProgress, false, true);
+//     } catch (error) {
+//       throw new Error("Error from setUserProgress / Network ");
+//     }
+//   }
+
+
+
+
+//   // telegram group
+
+//   async telegramgroupinfo(chat_id: number) {
+//     try {
+//       let url = this.getUrl(`/telegram/group/info?chatid=${chat_id}`);
+//       return await this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from telegramgroupinfo / Network ");
+//     }
+//   }
+//   async telegramGroupTopicInfo(groupId: number, name: string) {
+//     try {
+//       let url = this.getUrl(
+//         `/telegram/group/topic/info/get?groupId=${groupId}&name=${name}`
+//       );
+//       return this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from telegramgroupinfo / Network ");
+//     }
+//   }
+
+//   //other
+
+//   async setMockQuestionSetStatus(mockid: string, status: CreationTypes) {
+//     try {
+//       let url = this.getUrl(`/mockquestionset/status/set/${mockid}`);
+
+//       return this.postRequest(url, status);
+//     } catch (error) {
+//       throw new Error("Error from getMockQuestionSet / Network ");
+//     }
+//   }
+//   async getQuizConfigData(
+//     chatid: number,
+//     platform: botPlatform,
+//     userid: number
+//   ) {
+//     try {
+//       let url = this.getUrl(
+//         `/quiz/get/config?chatid=${chatid}&userid=${userid}&platform=${platform}`
+//       );
+//       return this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from getSyllabusDataForExamCreattion / Network ");
+//     }
+//   }
+
+//   async getSyllabusDataForExamCreattion(syllabusid: string) {
+//     try {
+//       let url = this.getUrl(`/syllabus/exam/get?syllabusid=${syllabusid}`);
+//       return this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from getSyllabusDataForExamCreattion / Network ");
+//     }
+//   }
+
+
+
+
+//   async getMockSetPatternInfobyTitle(title: string) {
+//     try {
+//       let url = this.getUrl(`/mock/exampattern/details/get?title=${title}`);
+//       return this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from getMockSetPatternInfobyTitle / Network ");
+//     }
+//   }
+//   async getExamPattern(exampatternid: string) {
+//     try {
+//       let url = this.getUrl(`/exampattern/get/${exampatternid}`);
+//       return this.getRequest(url, true);
+//     } catch (error) {
+//       throw new Error("Error from getExamPattern / Network ");
+//     }
+//   }
+
+//   //
+// }
+
+// export const network = Network.getInstance();

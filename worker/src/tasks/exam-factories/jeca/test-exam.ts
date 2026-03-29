@@ -2,17 +2,18 @@
 import {
   examQuestionManger,
   SelectQuestion_type,
-} from "@/lib/ExamQuestionProcessor";
-import { IExamCreator } from "../base-exam";
-import { exam_pattern } from "@/lib/types/types";
-import { Network } from "@/utils/network";
-import { logger } from "@/utils/logger";
+} from "@/lib/ExamQuestionProcessor.js";
+import { IExamCreator } from "../base-exam.js";
+
+import { logger } from "@/utils/logger.js";
+import { BotService } from "@/services/bot/bot.service.js";
 
 export class JecaTestExam implements IExamCreator {
-  constructor(private payload: any) {}
+  constructor(private payload: any) { }
 
   async run(): Promise<void> {
-    let newtWorkClient = Network.getInstance();
+
+    const botService = new BotService()
     let QuestionManagerClient = examQuestionManger.getInstance();
 
     console.log("🧾 Creating JECA Test  Exam:", this.payload);
@@ -20,9 +21,9 @@ export class JecaTestExam implements IExamCreator {
 
     let { examid } = this.payload;
 
-    let examptternId = await newtWorkClient.getExamPatternId(examid);
+    let examptternId = await botService.exam.getExamPatternId(examid);
 
-    let exampattern: exam_pattern = await newtWorkClient.getExamPattern(
+    let exampattern = await botService.exam.getExamPattern(
       examptternId
     );
 
@@ -39,9 +40,9 @@ export class JecaTestExam implements IExamCreator {
       }
 
       let syllabus_data: (string | null)[] =
-        await newtWorkClient.getSyllabusDataForExamCreattion(syllabusid);
+        await botService.exam.getSyllabusDataForExamCreation(syllabusid);
 
-      
+
       logger.info(syllabus_data)
 
       syllabus_data.map((subject) => {
@@ -64,7 +65,7 @@ export class JecaTestExam implements IExamCreator {
           question,
           topics,
           is_multiple_ans[index]
-        );        
+        );
 
         let Question_array: string[] = [];
 
@@ -89,7 +90,7 @@ export class JecaTestExam implements IExamCreator {
 
       // request to update exam status
 
-      let status = await newtWorkClient.examQuestionAddedStatusChange(examid);
+      let status = await botService.exam.checkExamCompletionStatus(examid);
       if (status) {
         // send notification
       }

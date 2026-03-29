@@ -1,10 +1,10 @@
-import { exam_question_map_format } from "./types/types";
-import { Network } from "../utils/network";
-import { logger } from "@/utils/logger";
+import { BotService } from "@/services/bot/bot.service.js";
+import { exam_question_map_format } from "./types/types.js";
+import { logger } from "@/utils/logger.js";
 export type SelectQuestionNumber_type = Record<string, number>;
 export type SelectQuestion_type = Record<string, string[]>;
 
-interface QuestionsId {
+export interface QuestionsId {
   subject_name: string;
   ids: string[];
 }
@@ -19,14 +19,14 @@ export class examQuestionManger {
   refreshtime: number;
   count: number = 0;
   private static instance: examQuestionManger;
-  private Network: Network;
+  private BotService: BotService;
 
   private constructor(refreshtime: number) {
     this.Questions = {
       normal: [],
       multipleAns: [],
     };
-    this.Network = Network.getInstance();
+    this.BotService = new BotService();
     this.refreshtime = refreshtime;
     this.updateQuestionIds();
     this.refreshQuestionsIdList();
@@ -49,7 +49,7 @@ export class examQuestionManger {
   private async updateQuestionIds() {
     try {
       logger.info("Updating questions ids...");
-      let responce = await this.Network.getQuestionsIds();
+      let responce = await this.BotService.exam.getQuestionsIds();
       logger.info("request send");
       if (responce) {
         logger.success("Question ids info recived ");
@@ -305,6 +305,7 @@ export class examQuestionManger {
           );
         }
       } else {
+
         let Questions = this.Questions.normal; // normal ans  questions
         if (Object.keys(questionset).length <= Questions.length) {
 
@@ -353,7 +354,7 @@ export class examQuestionManger {
       });
     });
 
-    let res = await this.Network.AddQuestions(examid, formated_questions);
+    let res = await this.BotService.exam.addQuestionsToExam(formated_questions);
     return res ? res : false;
   }
 

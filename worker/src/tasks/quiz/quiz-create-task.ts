@@ -1,13 +1,14 @@
-import { BaseWorkerTask } from "../base-task";
-import { CreationTypes, Network } from "@/utils/network";
+import { BaseWorkerTask } from "../base-task.js";
 import {
   examQuestionManger,
   SelectQuestion_type,
-} from "@/lib/ExamQuestionProcessor";
-import { RedisProvider } from "@/lib/radisProvider";
-import { exam_question_format_type } from "@/lib/types/ans-prossing-types";
-import { shuffleArraySeeded } from "@/utils/shuffle";
-import { logger } from "@/utils/logger";
+} from "@/lib/ExamQuestionProcessor.js";
+import { RedisProvider } from "@/lib/radisProvider.js";
+import { exam_question_format_type } from "@/lib/types/ans-prossing-types.js";
+import { shuffleArraySeeded } from "@/utils/shuffle.js";
+import { logger } from "@/utils/logger.js";
+import { CreationTypes } from "@repo/prisma/enums.js";
+import { BotService } from "@/services/bot/bot.service.js";
 
 interface QuizMetaData {
   id: string;
@@ -29,7 +30,7 @@ type quiz_question_type = {
   title: string,
   options: string[],
   ans: string[],
-  explanation: string,
+  explanation: string | null,
   format: string,
   extra: any
 }
@@ -42,9 +43,8 @@ export class QuizCreateTask extends BaseWorkerTask {
   async execute(): Promise<void> {
     logger.info("Running QuizCreateTask with data:", this.task.payload);
 
-    let newtWorkClient = Network.getInstance();
+    const botService = new BotService()
     let QuestionManagerClient = examQuestionManger.getInstance();
-
     let quizData: QuizMetaData | null = await this.getQuizMetaData(this.task.payload.quizId);
 
 
@@ -72,12 +72,11 @@ export class QuizCreateTask extends BaseWorkerTask {
         });
     });
 
-    let finalquestions: quiz_question_type[] = await newtWorkClient.getQuestions_byIds(
-      Question_array
-    );
+    let finalquestions = await botService.exam.getQuestionsByIds(Question_array)
     if (finalquestions) {
       console.log("finalquestions are collected , ready to send to bot");
     }
+
 
     try {
       // also add question ans

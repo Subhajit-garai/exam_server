@@ -1,11 +1,11 @@
 // src/workers/create-score-task.ts
 
-import { BaseWorkerTask } from "./base-task";
+import { BaseWorkerTask } from "./base-task.js";
 
-import { ansType, Right_Wrong_set_type, Task } from "@/lib/types/types";
-import { examAnsManager } from "@/lib/ExamAnsProcessor";
-import { exam_question_format_type } from "@/lib/types/ans-prossing-types";
-import { logger } from "@/utils/logger";
+import { ansType, Right_Wrong_set_type, Task } from "@/lib/types/types.js";
+import { examAnsManager } from "@/lib/ExamAnsProcessor.js";
+import { exam_question_format_type } from "@/lib/types/ans-prossing-types.js";
+import { logger } from "@/utils/logger.js";
 
 export function validateOption(
   ans: string[],

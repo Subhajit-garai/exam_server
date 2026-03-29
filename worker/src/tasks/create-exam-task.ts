@@ -1,7 +1,7 @@
 // src/workers/create-exam-task.ts
-import { BaseWorkerTask } from "./base-task";
-import { GateExamFactory } from "./exam-factories/gate-factory";
-import { JecaExamFactory } from "./exam-factories/jeca-factory";
+import { BaseWorkerTask } from "./base-task.js";
+import { GateExamFactory } from "./exam-factories/gate-factory.js";
+import { JecaExamFactory } from "./exam-factories/jeca-factory.js";
 
 export class CreateExamTask extends BaseWorkerTask {
   async execute(): Promise<void> {

@@ -1,0 +1,47 @@
+//  score model
+model timescale_score {
+  id                String   @default(cuid())
+  user_id           String
+  exam_id           String
+  score             Int
+  not_attempt       Int?     @default(0)
+  topic_wise_result Json?
+  result            Json?
+  time              DateTime @default(now()) @db.Timestamptz(6)
+
+  @@id([id, time])
+  @@unique([user_id, exam_id, time])
+  @@index([time(sort: Desc)])
+}
+
+model score {
+  id                String   @id @default(cuid())
+  user_id           String
+  exam_id           String
+  leaderboard_id    String   @default(cuid())
+  not_attempt       Int?     @default(0)
+  score             Int
+  total_questions   Int      @default(0)
+  topic_wise_result Json?
+  result            Json?
+  time              DateTime @default(now())
+
+  @@unique([user_id, exam_id, time])
+  @@index([exam_id])
+  @@index([user_id])
+  @@index([time(sort: Desc)])
+}
+
+model leaderboard {
+  id      String   @id @default(cuid())
+  user_id String?
+  exam_id String
+  rank    Int
+  score   Int
+  time    DateTime @default(now())
+  // user       User     @relation(fields: [user_id], references: [id])
+  exam    Exam     @relation(fields: [exam_id], references: [id])
+  User    User?    @relation(fields: [user_id], references: [id])
+
+  @@unique([user_id, exam_id, time]) // Ensures one rank per user per exam
+}

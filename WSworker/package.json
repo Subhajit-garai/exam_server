@@ -9,20 +9,25 @@
     "build": "tsc && tsc-alias",
     "start": "node dist/src/server.js",
     "build:start": " tsc && tsc-alias &&node dist/src/server.js",
-    "seed": "tsx src/scripts/seedDemoQuiz.ts"
+    "seed": "tsx src/scripts/seedDemoQuiz.ts",
+    "gen": "npx prisma generate"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.0.1",
+    "@prisma/client": "^7.5.0",
     "axios": "^1.13.2",
     "dayjs": "^1.11.19",
     "dotenv": "^16.3.1",
     "ioredis": "^5.3.2",
     "jsonwebtoken": "^9.0.2",
+    "prisma": "^7.6.0",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.21.0",
-    "ws": "^8.14.2"
+    "ws": "^8.14.2",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.5",

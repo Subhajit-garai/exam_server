@@ -1,4 +1,4 @@
-import { Task } from "./types/types";
+import { Task } from "./types/types.js";
 import Redis from "ioredis";
 
 export class RedisProvider {

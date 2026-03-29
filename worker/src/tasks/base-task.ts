@@ -1,5 +1,5 @@
 // src/workers/base-task.ts
-import { Task } from "@repo/lib/types/types";
+import { Task } from "@repo/lib/types/types.js";
 
 export abstract class BaseWorkerTask {
   protected maxRetries = 1; // 3

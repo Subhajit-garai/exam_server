@@ -97,23 +97,23 @@ export type Question_Data_type = {
   status: QuestionStatus;
 };
 
-export type exam_pattern = {
-  id: string;
-  created_by: string;
-  examname: string;
-  category: string;
-  title: string | null;
-  format: string;
-  syllabus: "Generic" | "Syllabus";
-  syllabusid: string | null;
-  topics: string[];
-  difficulty: string;
-  part: boolean | null;
-  checkbox: boolean | null;
-  part_Count: number;
-  total_questions: number[];
-  check: string;
-  marks_values: number[];
-  neg_values: number[];
-  is_multiple_ans: number[];
-} | null;
+// export type exam_pattern = {
+//   id: string;
+//   created_by: string;
+//   examname: string;
+//   categoryId: string;
+//   title: string | null;
+//   format: string;
+//   syllabus: "Generic" | "Syllabus";
+//   syllabusid: string | null;
+//   topics: string[];
+//   difficulty: string;
+//   part: boolean | null;
+//   checkbox: boolean | null;
+//   part_Count: number;
+//   total_questions: number[];
+//   check: string;
+//   marks_values: number[];
+//   neg_values: number[];
+//   is_multiple_ans: number[];
+// } | null;

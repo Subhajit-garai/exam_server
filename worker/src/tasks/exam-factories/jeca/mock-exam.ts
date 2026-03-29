@@ -1,19 +1,20 @@
-import { Question_Data_type, Questions_type } from "@/lib/types/types";
-import { IExamCreator } from "../base-exam";
-import { CreationTypes, Network } from "@/utils/network";
+import { Question_Data_type, Questions_type } from "@/lib/types/types.js";
+import { IExamCreator } from "../base-exam.js";
 import _ from "lodash";
+import { BotService } from "@/services/bot/bot.service.js";
+import { CreationTypes } from "@repo/prisma/enums.js";
 
 // src/exam-factories/jeca/mock-exam.ts
 
 export class JecaMockExam implements IExamCreator {
-  constructor(private payload: any) {}
+  constructor(private payload: any) { }
 
   async run(): Promise<void> {
     console.log("🧾 Creating JECA MOCK Exam:", this.payload);
 
     // Your logic here
 
-    let newtWorkClient = Network.getInstance();
+    const botService = new BotService()
 
     let { mockid, action } = this.payload;
 
@@ -28,12 +29,14 @@ export class JecaMockExam implements IExamCreator {
     let MockSet_Status: CreationTypes = "Suspended";
     let isError = false; // if error true then status suspended
 
-    const mockSet = await newtWorkClient.setMockQuestionSetStatus(
+    const mockSet: any = await botService.exam.setMockQuestionSetStatus(
       mockid,
       "Processing"
     );
+
     if (mockSet) {
-      let exam_pattern_info = await newtWorkClient.getMockSetPatternInfobyTitle(
+
+      let exam_pattern_info = await botService.exam.getMockSetExamPattern(
         mockSet.pattern
       );
 
@@ -41,7 +44,7 @@ export class JecaMockExam implements IExamCreator {
         new Error("exam_pattern_info not found");
       }
 
-      let MockSetQuestion = await newtWorkClient.getMockQuestionSet(mockSet.id);
+      let MockSetQuestion = await botService.exam.getQuestionsForExam(mockSet.id);
 
       // question count checking
       if (!MockSetQuestion) new Error("questions not found in mock set");
@@ -59,8 +62,7 @@ export class JecaMockExam implements IExamCreator {
         // is pattern have multiple parts
         if (!(Object.keys(Mock_Questions).length > 1)) {
           throw new Error(
-            `Exam pattern have multiple part , but current mock set doesnot have multiple part . part length is --->${
-              Object.keys(Mock_Questions).length
+            `Exam pattern have multiple part , but current mock set doesnot have multiple part . part length is --->${Object.keys(Mock_Questions).length
             }`
           );
         }
@@ -75,8 +77,7 @@ export class JecaMockExam implements IExamCreator {
         let questions = Mock_Questions[part];
         // done
         if (questions.length > 0) {
-          let questionFullInfo: Question_Data_type[] =
-            await newtWorkClient.getQuestionViaids(questions);
+          let questionFullInfo = await botService.exam.getQuestionDetailsForBot(questions);
 
           questionFullInfo.map((question) => {
             if (!question_part_count[part]) {
@@ -87,14 +88,14 @@ export class JecaMockExam implements IExamCreator {
             if (question.difficulty) {
               difficulty_count[question.difficulty] += 1;
             }
-            if (question.topic) {
-              if (!topic_wise_count[question.topic]) {
-                topic_wise_count[question.topic] = 0;
+            if (question.Topic) {
+              if (!topic_wise_count[question.Topic.name]) {
+                topic_wise_count[question.Topic.name] = 0;
               }
-              topic_wise_count[question.topic] += 1;
+              topic_wise_count[question.Topic.name] += 1;
 
               // check other topic not added
-              if (!exam_pattern_info.topics.includes(question.topic)) {
+              if (!exam_pattern_info.topics.includes(question.Topic.name)) {
                 isError = true;
                 console.log("unkown topic found in mock set question ....");
               }

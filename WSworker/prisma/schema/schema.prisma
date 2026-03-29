@@ -1,0 +1,101 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../generated/prisma"
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+  previewFeatures = ["typedsql"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// subject models
+
+enum TopicStatus {
+  draft
+  published
+  archived
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  topicId   String
+  authorId  String
+  createdAt DateTime @default(now())
+  topic     Topic    @relation(fields: [topicId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model AppConfig {
+  id         String   @id @default(cuid())
+  feature    String   @unique
+  settings   Json
+  updated_at DateTime @updatedAt
+}
+
+model EntryChargeList {
+  id         String   @id @unique @default(cuid())
+  type       String   @default("not set")
+  Charge     Int      @default(0)
+  created_at DateTime @default(now())
+  created_by String?
+}
+
+model ContestRegister {
+  id     String   @id @unique @default(cuid())
+  examId String?  @default("new_value_not_seted")
+  count  Int      @default(0)
+  users  String[] @default([])
+  Exam   Exam[]
+}
+
+enum ExamStage {
+  Registration
+  Started
+  Ended
+}
+
+enum diffcultlevel {
+  Easy
+  Medium
+  Hard
+}
+
+enum check {
+  Normal
+  Hybrid
+}
+
+enum Status {
+  Created
+  Processing
+  Done
+  Duplicate
+  Suspended
+  Close
+}
+
+enum CreationTypes {
+  Updated
+  Created
+  Processing
+  Done
+  Suspended
+}
+
+enum Visibility {
+  Public
+  Private
+}
+
+enum syllabusType {
+  Generic
+  Syllabus
+}
+
+enum examformat {
+  Text
+  Image
+  Code
+}

@@ -1,0 +1,11 @@
+enum SocialPlatform {
+    email
+    telegram
+    whatsApp
+    linkedIn
+    gitHub
+    twitter
+    instagram
+    facebook
+    website
+}

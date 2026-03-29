@@ -3,28 +3,26 @@
 
 
 // src/exam-factories/jeca/dpp-exam.ts
-import { exam_pattern } from "@/lib/types/types";
-import { Network } from "../../../utils/network";
-import { IExamCreator } from "../base-exam";
-import { examQuestionManger, SelectQuestion_type } from "@/lib/ExamQuestionProcessor";
-import { logger } from "@/utils/logger";
+import { IExamCreator } from "../base-exam.js";
+import { examQuestionManger, SelectQuestion_type } from "@/lib/ExamQuestionProcessor.js";
+import { logger } from "@/utils/logger.js";
+import { BotService } from "@/services/bot/bot.service.js";
 
 export class JecaDppExam implements IExamCreator {
   constructor(private payload: any) { }
 
   async run(): Promise<void> {
     console.log("🧾 Creating JECA DPP Exam:", this.payload);
-
-    let newtWorkClient = Network.getInstance();
+    const botService = new BotService()
     let QuestionManagerClient = examQuestionManger.getInstance();
 
     let finalquestions: any = {};
 
     let { examid } = this.payload;
 
-    let examptternId = await newtWorkClient.getExamPatternId(examid);
+    let examptternId = await botService.exam.getExamPatternId(examid);
 
-    let exampattern: exam_pattern = await newtWorkClient.getExamPattern(
+    let exampattern = await botService.exam.getExamPattern(
       examptternId
     );
 
@@ -41,7 +39,7 @@ export class JecaDppExam implements IExamCreator {
       }
 
       let syllabus_data: (string | null)[] =
-        await newtWorkClient.getSyllabusDataForExamCreattion(syllabusid);
+        await botService.exam.getSyllabusDataForExamCreation(syllabusid);
 
 
       logger.info(syllabus_data)
@@ -93,17 +91,10 @@ export class JecaDppExam implements IExamCreator {
 
       // request to update exam status
 
-      let status = await newtWorkClient.examQuestionAddedStatusChange(examid);
+      let status = await botService.exam.checkExamCompletionStatus(examid);
       if (status) {
         // send notification
       }
-
-      // this.getredisClient().push({
-      //   type: "Notify",
-      //   status: true,
-      //   data: { examid: examid },
-      //   message: "exam created",
-      // });
       console.log("added notification");
     } else {
       console.log(" notification not updated");

@@ -1,6 +1,7 @@
 import { diffcultlevel, Prisma } from "@repo/prisma/client.js";
 import prisma from "@repo/db/index.js";
 import { questionInput_type } from "@/zod/question.zod";
+import { logger } from "@/lib/helper/logger";
 
 export class QuestionService {
     async updateQuestion(userId: string, data: any) {

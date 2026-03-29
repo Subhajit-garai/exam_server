@@ -1,5 +1,5 @@
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
-import { BotService } from "../../services/bot.service.js";
+import { BotService } from "../../services/bot/bot.service.js";
 
 const botService = new BotService();
 

@@ -1,7 +1,7 @@
-import { BotAdminService } from "./bot/bot.admin.service.js";
-import { BotExamService } from "./bot/bot.exam.service.js";
-import { BotScoreService } from "./bot/bot.score.service.js";
-import { BotTelegramService } from "./bot/bot.telegram.service.js";
+import { BotAdminService } from "./bot.admin.service.js";
+import { BotExamService } from "./bot.exam.service.js";
+import { BotScoreService } from "./bot.score.service.js";
+import { BotTelegramService } from "./bot.telegram.service.js";
 
 export class BotService {
     public admin: BotAdminService;

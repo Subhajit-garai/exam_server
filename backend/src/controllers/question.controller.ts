@@ -171,8 +171,6 @@ export const deleteQuestion = async (req: any, res: any) => {
 export const getAllQuestions = asyncHandler(async (req: any, res: any) => {
 
   let body = QuestionFilterDataFetchZodSchema.safeParse(req.query);
-  logger.info("------> filter body is  ", body);
-
   if (!body.success) {
     throw ZodDataSafeParse(body)
   }

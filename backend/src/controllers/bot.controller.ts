@@ -1,7 +1,7 @@
 import prisma from "@repo/db/index.js";
 import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 import { Request, Response } from "express";
-import { BotService } from "../services/bot.service.js";
+import { BotService } from "../services/bot/bot.service.js";
 
 // Instantiate the service
 const botService = new BotService();

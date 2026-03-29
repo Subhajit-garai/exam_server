@@ -49,6 +49,7 @@ export class ActivityChallengeService {
     async getDailyChallengeHistory() {
         return prisma.dailyChallenge.findMany({
             orderBy: { date: "desc" },
+            take: 20
         });
     }
 }

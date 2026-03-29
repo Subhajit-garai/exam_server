@@ -1,6 +1,6 @@
 import { hashPasswordFn } from "@/lib/security/hash.js";
 import { bot_singupZodSchema, update_botwebhook_ZodSchema } from "@/zod/bot.zod.js";
-import { BotService } from "../../services/bot.service.js";
+import { BotService } from "../../services/bot/bot.service.js";
 
 const botService = new BotService();
 

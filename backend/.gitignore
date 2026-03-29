@@ -8,3 +8,4 @@ dist
 dockercompose.copy
 scripts
 /seeds/data/*
+.vscode/*

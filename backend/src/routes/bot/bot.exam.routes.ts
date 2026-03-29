@@ -10,6 +10,7 @@ export const botExamRouter = Router();
 botExamRouter.get("/patternid/get/:examid", getExamPatternId);
 botExamRouter.get("/update/creation/status/:examid", updatExamCrationStatus); // call is to update , no data
 botExamRouter.get("/details/get/:examid", getExamDetails);
+
 botExamRouter.get("/question/add/status/:examid", examQuestionAddedCompletionStatusCheck);
 
 

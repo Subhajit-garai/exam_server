@@ -23,8 +23,9 @@ botRouter.use("/", botauthenticate, botSecureRouter);
 
 
 
-botSecureRouter.use("/user", botUserRouter);
 botSecureRouter.use("/exam", botExamRouter);
+
+botSecureRouter.use("/user", botUserRouter);
 botSecureRouter.use("/question", botQuestionRouter);
 botSecureRouter.use("/quiz", botQuizRouter);
 botSecureRouter.use("/telegram", botTelegramRouter);

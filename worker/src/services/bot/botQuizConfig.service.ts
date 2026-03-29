@@ -6,7 +6,8 @@ export class BotQuizConfigService {
 
 
 
-    async getQuizConfig(chatid: string) {
+    async getQuizConfig(chatid: string | number) {
+        chatid = String(chatid)
         const config = await prisma.botQuizConfig.findFirst({
             where: {
                 chatId: chatid,

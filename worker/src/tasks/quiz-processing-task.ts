@@ -30,7 +30,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
           break;
         case "group":
           {
-            let groupData = await botService.telegram.getGroupInfo(chatid);
+            let groupData = await botService.telegram.getGroupInfo(String(chatid));
             if (!groupData) {
               throw new Error(
                 `No group data found or it may be banned",${chatid}`
@@ -42,7 +42,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
           {
             console.log("supergroup chat");
 
-            let groupData = await botService.telegram.getGroupInfo(chatid);
+            let groupData = await botService.telegram.getGroupInfo(String(chatid));
 
             if (!groupData) {
               throw new Error(
@@ -62,7 +62,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
                 name: string;
                 topicId: number;
               } | null = await botService.telegram.getGroupTopicInfo(
-                chatid,
+                String(chatid),
                 "quiz"
               );
 

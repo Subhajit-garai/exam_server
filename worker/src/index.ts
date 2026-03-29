@@ -1,7 +1,8 @@
-import { Task } from "@/lib/types/types";
-import { RedisProvider } from "@/lib/radisProvider";
-import { network } from "@/utils/network";
-import { runWorker } from "./tasks/worker-runner";
+import { Task } from "@/lib/types/types.js";
+import { RedisProvider } from "@/lib/radisProvider.js";
+import { runWorker } from "./tasks/worker-runner.js";
+import { logger } from "./utils/logger.js";
+import "dotenv/config";
 
 // demo structure of tasks
 //  {
@@ -14,26 +15,28 @@ import { runWorker } from "./tasks/worker-runner";
 //   type: "CREATE_QUIZ",
 //   id: "b9437e1a-5483-4893-831a-98fb018839a6",
 //   payload: {
-//     quizId: 'b9437e1a-5483-4893-831a-98fb018839a6',
+//     quizId: '3cad3ae6-eff6-4f17-bb6a-2491abc5af81',
 //     userid: 'cmiumcgir0001jwbukh9xs97h',
 //     examtype: 'Quiz'
 //   },
 //   variant: "Quiz",
 //   category: "JECA",
 // };
-let QUIZ_Processing_TASK: Task = {
-  type: "SEND_QUIZ_DATA",
-  id: "b9437e1a-5483-4893-831a-98fb018839a6",
-  payload: {
-    cburl: 'https://153280c08a5f.ngrok-free.app/survertask',
-    userid: 7057093987,
-    chatid: -1002506753144,
-    platfrom: 'TELEGRAM',
-    chat_type: 'supergroup'
-  },
-  variant: "Quiz",
-  category: "JECA",
-};
+
+
+// let QUIZ_Processing_TASK: Task = {
+//   type: "SEND_QUIZ_DATA",
+//   id: "b9437e1a-5483-4893-831a-98fb018839a6",
+//   payload: {
+//     cburl: 'https://153280c08a5f.ngrok-free.app/survertask',
+//     userid: 7057093987,
+//     chatid: -1002506753144,
+//     platfrom: 'TELEGRAM',
+//     chat_type: 'supergroup'
+//   },
+//   variant: "Quiz",
+//   category: "JECA",
+// };
 
 
 // let CREATE_EXAM_TASK: Task = {
@@ -71,8 +74,9 @@ let QUIZ_Processing_TASK: Task = {
 
 const main = async () => {
   try {
+    logger.info("Worker started");
     let redisClient = RedisProvider.getInstance();
-    // await redisClient.push(QUIZ_Processing_TASK); // added testing
+    // await redisClient.push(CREATE_QUIZ_TASK); // added testing
 
     while (true) {
       let data = await redisClient.pop();
@@ -89,14 +93,6 @@ const main = async () => {
   }
 };
 
-const run = async () => {
-  while (!network.islogin) {
-    console.log("⏳ Waiting for network login...");
-    await new Promise((r) => setTimeout(r, 1000)); // check every 500ms
-  }
-  console.log("🌐 Network ready, starting worker...");
-  await main();
-};
 
 // process.on("SIGINT", async () => {
 //   console.log("🧹 Shutting down worker...");
@@ -104,4 +100,4 @@ const run = async () => {
 //   process.exit(0);
 // });
 
-run();
+main();

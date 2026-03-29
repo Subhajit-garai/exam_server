@@ -1,10 +1,10 @@
 // src/workers/worker-runner.ts
 
-import { Task } from "@/lib/types/types";
-import { TaskFactory } from "./task-factory";
-import { logger } from "@/utils/logger";
-import { metrics } from "@/utils/metrics";
-import { BaseWorkerTask } from "./base-task";
+import { Task } from "@/lib/types/types.js";
+import { TaskFactory } from "./task-factory.js";
+import { logger } from "@/utils/logger.js";
+import { metrics } from "@/utils/metrics.js";
+import { BaseWorkerTask } from "./base-task.js";
 
 export async function runWorker(task: Task) {
   let name: string = "NoEvent";

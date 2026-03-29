@@ -1,0 +1,91 @@
+model DailyChallenge {
+    id          String   @id @default(cuid())
+    date        DateTime @unique
+    title       String
+    description String
+    xp          Int
+    createdBy   String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+}
+
+model UserActivity {
+    id        String       @id @default(cuid())
+    userId    String
+    date      DateTime
+    type      ActivityType
+    meta      Json?
+    xp        Int
+    createdAt DateTime     @default(now())
+    user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([date])
+}
+
+model UserStreak {
+    userId       String    @id
+    streak       Int       @default(0)
+    maxStreak    Int       @default(0)
+    lastActivity DateTime?
+    updatedAt    DateTime  @updatedAt
+    user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Badge {
+    id          String    @id @default(cuid())
+    name        String    @unique
+    description String
+    icon        String?
+    ruleType    BadgeRule
+    condition   Json // dynamic conditions e.g. { "count": 5, "type": "quiz" }
+    xpBonus     Int       @default(0)
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    UserBadge UserBadge[]
+}
+
+model UserBadge {
+    id       String   @id @default(cuid())
+    userId   String
+    badgeId  String
+    earnedAt DateTime @default(now())
+    user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, badgeId])
+}
+
+enum ActivityType {
+    DAILY_CHALLENGE
+    QUIZ
+    TEST
+    DPP
+    MOCK
+    CHAPTER
+    STREAK_BONUS
+    OTHER
+}
+
+enum BadgeRule {
+    ACTIVITY_COUNT
+    STREAK_COUNT
+    XP_THRESHOLD
+    TOPIC_MASTERY
+}
+
+model ActivityLeaderboard {
+    id        String   @id @default(cuid())
+    date      DateTime
+    userId    String
+    rank      Int
+    score     Int
+    type      String   @default("daily") // "daily", "weekly", "global"
+    createdAt DateTime @default(now())
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([date, userId, type])
+    @@index([date])
+    @@index([userId])
+}

@@ -1,0 +1,51 @@
+model QuestionProcessing {
+    id            String   @id @unique @default(cuid())
+    // Question fields
+    title         String
+    options       String[]
+    old_topic     String?
+    old_sub_topic String?
+
+    extra Json?
+
+    ans        String[]
+    topic_id   String
+    subject_id String
+
+    format          examformat    @default(Text)
+    category        String
+    difficulty      diffcultlevel
+    is_multiple_ans Boolean       @default(false)
+    history         String[]      @default([""])
+    explanation     String?       @default("no explanation added")
+    links           String[]      @default([""])
+    status          Status        @default(Processing)
+    weight          Int           @default(0)
+
+    created_by String
+    created_at DateTime
+
+    // Processing specific fields
+    question_id       String? // If updating existing question
+    processing_status ProcessingStatus @default(Pending)
+    admin_comment     String?
+
+    processed_by String?
+    processed_at DateTime?
+
+    User            User  @relation("CreatedBy", fields: [created_by], references: [id])
+    ProcessedByUser User? @relation("ProcessedBy", fields: [processed_by], references: [id])
+
+    Subject Subject @relation(fields: [subject_id], references: [id])
+    Topic   Topic   @relation(fields: [topic_id], references: [id])
+
+    @@index([topic_id])
+    @@index([subject_id])
+    @@index([processing_status])
+}
+
+enum ProcessingStatus {
+    Pending
+    Approved
+    Rejected
+}

@@ -5,13 +5,13 @@ import {
   ansType,
   Right_Wrong_set_type,
   Task,
-} from "./types/types";
-import { RedisProvider } from "./radisProvider";
-import { debuglog } from "../utils/debugLog";
-import { Network } from "@/utils/network";
-import { exam_question_format_type } from "./types/ans-prossing-types";
-import { logger } from "@/utils/logger";
+} from "./types/types.js";
+import { RedisProvider } from "./radisProvider.js";
+import { debuglog } from "../utils/debugLog.js";
+import { exam_question_format_type } from "./types/ans-prossing-types.js";
+import { logger } from "@/utils/logger.js";
 import { log } from "util";
+import { BotService } from "@/services/bot/bot.service.js";
 
 export class examAnsManager {
   AnsStore: AnsStoreType;
@@ -19,14 +19,14 @@ export class examAnsManager {
   ExamPatternStore: any;
   private static instance: examAnsManager;
   private ansclient: RedisProvider;
-  private Network: Network;
+  private botService: BotService;
 
   private constructor() {
     this.AnsStore = {};
     this.AnsKeys = {};
     this.ExamPatternStore = {};
     this.ansclient = RedisProvider.getInstance();
-    this.Network = Network.getInstance();
+    this.botService = new BotService();
   }
 
   public static getInstance() {
@@ -44,7 +44,7 @@ export class examAnsManager {
       let Examsans;
       let isExist = await this.getAnsSheet(examid);
       if (!isExist) {
-        Examsans = await this.Network.getExamQuestionsAns(examid);
+        Examsans = await this.botService.exam.getExamAnswers(examid);
         this.setAnsSheet(Examsans, examid, 18000);
       } else {
         Examsans = JSON.parse(isExist as string);
@@ -89,8 +89,8 @@ export class examAnsManager {
       // exam pattern
       let isExist = await this.getExamPattern(examid);
       if (!isExist) {
-        let exam_pattern_id = await this.Network.getExamPatternId(examid);
-        Exampattern = await this.Network.getExamPattern(exam_pattern_id);
+        let exam_pattern_id = await this.botService.exam.getExamPatternId(examid);
+        Exampattern = await this.botService.exam.getExamPattern(exam_pattern_id);
         this.setExamPattern(Exampattern, examid, 18000);
       } else {
         Exampattern = JSON.parse(isExist as string);
@@ -210,7 +210,7 @@ export class examAnsManager {
     let keys = await this.ansclient.scanKeys(key);
 
     if (keys.length > 0) {
-    
+
       const values = await this.ansclient.getclient().mget(keys);
       /* [ { number: { ans: null, part: 'part1' } ]*/
       const ans_array = keys.map((key, index) => {
@@ -261,7 +261,7 @@ export class examAnsManager {
     try {
       // console.log("in data base save function  score is ", Score);
 
-      let examData = await this.Network.getExamDetails(examid);
+      let examData = await this.botService.exam.getExamDetails(examid);
 
       if (!examData) throw new Error("Exam type not found");
       let examType = examData?.examtype;
@@ -270,9 +270,8 @@ export class examAnsManager {
         case "Mock":
           {
             console.log("user score adding into db . exam is -> Mock");
-            let Score = await this.Network.getUserScore(examid, userid);
-            let isScore = Score && Score.length > 0 ? true : false;
-            if (isScore) {
+            let Score = await this.botService.score.getUserScore(examid, userid);
+            if (Score) {
               console.log("user score already Stored");
               return 1;
             }
@@ -282,9 +281,9 @@ export class examAnsManager {
         case "PYQ":
           {
             console.log("user score adding into db . exam is -> PYQ");
-            let Score = await this.Network.getUserScore(examid, userid);
-            let isScore = Score && Score.length > 0 ? true : false;
-            if (isScore) {
+            let Score = await this.botService.score.getUserScore(examid, userid);
+
+            if (Score) {
               console.log("user score already Stored");
               return 1;
             }
@@ -293,9 +292,9 @@ export class examAnsManager {
         case "Test":
           {
             console.log("user score adding into db . exam is -> TEST");
-            let Score = await this.Network.getUserScore(examid, userid);
-            let isScore = Score && Score.length > 0 ? true : false;
-            if (isScore) {
+            let Score = await this.botService.score.getUserScore(examid, userid);
+
+            if (Score) {
               console.log("user score already Stored");
               return 1;
             }
@@ -304,9 +303,8 @@ export class examAnsManager {
         case "Dpp":
           {
             console.log("user score adding into db . exam is -> DPP");
-            let Score = await this.Network.getUserScore(examid, userid);
-            let isScore = Score && Score.length > 0 ? true : false;
-            if (isScore) {
+            let Score = await this.botService.score.getUserScore(examid, userid);
+            if (Score) {
               console.log("user score already Stored");
               return 1;
             }
@@ -329,16 +327,17 @@ export class examAnsManager {
         time: new Date(),
       };
 
-      let res = await this.Network.setUserScore(examid, userid, userSocre);
+      let res = await this.botService.score.setUserScore(examid, userid, userSocre);
 
       // if (!res) {
       //   return 0;
       // }
       // add infomation to progress
-      let updatedProgress = await this.Network.setUserProgress(userid, {
-        lastExamid: examid,
-        examType: examType,
-      });
+
+      // let updatedProgress = await this.botService.score.updateUserProgress(userid, {
+      //   lastExamid: examid,
+      //   examType: examType,
+      // });
 
       return null;
     } catch (error) {
@@ -348,7 +347,7 @@ export class examAnsManager {
 
   async setUserAnsIntoDb(userans: any) {
     // store user ans data in to score table
-    let isSended = await this.Network.SetUserAns(userans);
+    let isSended = await this.botService.score.setUserAnswer(userans);
 
     if (!isSended) {
       // push into task queue

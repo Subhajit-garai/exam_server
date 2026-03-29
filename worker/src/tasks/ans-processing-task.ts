@@ -1,8 +1,8 @@
-import { Task } from "@/lib/types/types";
-import { BaseWorkerTask } from "./base-task";
-import { examAnsManager } from "@/lib/ExamAnsProcessor";
-import { question_ans_db_save_formt } from "@/lib/types/ans-prossing-types";
-import { logger } from "@/utils/logger";
+import { Task } from "@/lib/types/types.js";
+import { BaseWorkerTask } from "./base-task.js";
+import { examAnsManager } from "@/lib/ExamAnsProcessor.js";
+import { question_ans_db_save_formt } from "@/lib/types/ans-prossing-types.js";
+import { logger } from "@/utils/logger.js";
 
 // src/workers/ans-processing-task.ts
 export class AnsProcessingTask extends BaseWorkerTask {

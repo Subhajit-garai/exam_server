@@ -1,0 +1,21 @@
+model Tier {
+  id        String        @id @default(cuid())
+  name      primeStatus   @unique
+  benefits  TierBenefit[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  subcriptionOffers subcriptionOffers[]
+}
+
+model TierBenefit {
+  id        String   @id @default(cuid())
+  tierId    String
+  feature   ExamType // "Exam", "Mock"
+  access    Boolean // true then it is free access , false then it is paid access
+  limit     Int?
+  used      Int?
+  tier      Tier     @relation(fields: [tierId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([tierId, feature]) // prevent duplicates
+}

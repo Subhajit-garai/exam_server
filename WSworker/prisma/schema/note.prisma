@@ -1,0 +1,107 @@
+model Subject {
+  id          String    @id @unique @default(cuid())
+  order       Int       @unique
+  name        String    @unique
+  shortName   String?   @unique
+  description String?   @default("No description provided")
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  slug        String    @unique
+  iconUrl     String? // URL to an icon/image
+  color       String? // hex color or Tailwind class
+  isPublic    Boolean   @default(true)
+  category    String // e.g. "Computer Science"
+  categoryId  String?
+  Category    Category? @relation(fields: [categoryId], references: [id])
+  level       String? // e.g. "Beginner", "Advanced"
+  difficulty  Int? // e.g. 1-5 scale
+
+  topics             Topic[]
+  Question           Question[]
+  QuestionProcessing QuestionProcessing[]
+  SubjectSyllabusMap SubjectSyllabusMap[]
+}
+
+model Category {
+  id           String         @id @default(cuid())
+  name         String         @unique
+  slug         String         @unique
+  shortName    String?        @unique
+  description  String?
+  iconUrl      String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  subjects     Subject[]
+  targetExams  TargetExam[]
+  examPatterns Exam_pattern[]
+  Question     Question[]
+}
+
+model TopicNoteVersion {
+  id          String   @id @default(cuid())
+  topicId     String
+  content     String?
+  version     Int?
+  attachments String[] @default([])
+  createdAt   DateTime @default(now())
+  topic       Topic    @relation(fields: [topicId], references: [id])
+}
+
+model Topic {
+  id   String @id @unique @default(cuid())
+  name String @unique
+
+  subjectId     String
+  isparentTopic Boolean @default(false) //  NEW: Flag to indicate if this is a parent topic
+  parentTopicId String? //  NEW: FK to parent topic (optional)
+  parentTopic   Topic?  @relation("SubTopics", fields: [parentTopicId], references: [id])
+  subtopics     Topic[] @relation("SubTopics")
+  shortName     String? @unique
+
+  order Int @default(100)
+
+  description String?  @default("No description provided")
+  slug        String   @unique
+  iconUrl     String? // URL to an icon/image
+  color       String? // hex color or Tailwind class
+  tags        String[] @default([]) // or make a separate Tag model for many-to-many
+
+  content String @default("no content added ")
+
+  like      Int @default(0) // Number of likes
+  dislike   Int @default(0) // Number of dislikes
+  readCount Int @default(0) // Number of times the topic has been read
+  comments  Int @default(0) // Number of comments on the topic
+
+  isPublic          Boolean   @default(false)
+  commentEnabled    Boolean   @default(true)
+  verified          Boolean   @default(false)
+  estimatedReadTime Int? // in minutes
+  version           Int       @default(100)
+  attachments       String[]  @default([])
+  publishedAt       DateTime? // When the topic was published
+
+  language         String? // e.g. "en", "hi", "bn"
+  status           TopicStatus        @default(draft)
+  subject          Subject            @relation(fields: [subjectId], references: [id])
+  Comment          Comment[]
+  TopicNoteVersion TopicNoteVersion[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  createdBy String?
+  updatedBy String?
+
+  relatedTopics   Topic[] @relation("RelatedTopics")
+  relatedByTopics Topic[] @relation("RelatedTopics")
+  User            User?   @relation(fields: [createdBy], references: [id])
+
+  Question           Question[]
+  QuestionProcessing QuestionProcessing[]
+  TopicsSubjectMap   TopicsSubjectMap[]
+  UserTopicProgress  UserTopicProgress[]
+
+  @@unique([subjectId, order])
+  @@index([subjectId])
+}

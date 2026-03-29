@@ -1,9 +1,9 @@
-import { BaseWorkerTask } from "./base-task";
-import { Network } from "@/utils/network";
+import { BaseWorkerTask } from "./base-task.js";
 import {
   examQuestionManger,
   SelectQuestion_type,
-} from "@/lib/ExamQuestionProcessor";
+} from "@/lib/ExamQuestionProcessor.js";
+import { BotService } from "@/services/bot/bot.service.js";
 import axios from "axios";
 
 // src/workers/ans-processing-task.ts
@@ -11,7 +11,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
   async execute(): Promise<void> {
     console.log("Running QuizProcessingTask with data:", this.task.payload);
 
-    let newtWorkClient = Network.getInstance();
+    const botService = new BotService();
     let QuestionManagerClient = examQuestionManger.getInstance();
 
     let { chatid, userid, cburl, platform, chat_type } = this.task.payload;
@@ -30,7 +30,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
           break;
         case "group":
           {
-            let groupData = await newtWorkClient.telegramgroupinfo(chatid);
+            let groupData = await botService.telegram.getGroupInfo(chatid);
             if (!groupData) {
               throw new Error(
                 `No group data found or it may be banned",${chatid}`
@@ -42,7 +42,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
           {
             console.log("supergroup chat");
 
-            let groupData = await newtWorkClient.telegramgroupinfo(chatid);
+            let groupData = await botService.telegram.getGroupInfo(chatid);
 
             if (!groupData) {
               throw new Error(
@@ -61,7 +61,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
                 groupId: string;
                 name: string;
                 topicId: number;
-              } | null = await newtWorkClient.telegramGroupTopicInfo(
+              } | null = await botService.telegram.getGroupTopicInfo(
                 chatid,
                 "quiz"
               );
@@ -88,10 +88,8 @@ export class QuizProcessingTask extends BaseWorkerTask {
           break;
       }
 
-      let quizConfig = await newtWorkClient.getQuizConfigData(
-        chatid,
-        platform,
-        userid
+      let quizConfig = await botService.quiz.getQuizConfig(
+        chatid
       );
 
 
@@ -99,7 +97,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
       let {
         total_questions,
         topics,
-        ismultiple,
+        is_multiple_ans,
         nextQuestionTime,
         quizOpenFor,
       } = quizConfig;
@@ -107,7 +105,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
       let data = await QuestionManagerClient.selectQuestions(
         total_questions,
         topics,
-        ismultiple // is_multiple_ans
+        is_multiple_ans
       );
 
       let Question_array: string[] = [];
@@ -120,7 +118,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
       });
 
 
-      let finalquestions = await newtWorkClient.getQuestions_byIds(
+      let finalquestions = await botService.exam.getQuestionsByIds(
         Question_array
       );
       if (finalquestions) {

@@ -1,9 +1,9 @@
 // src/exam-factories/jeca-factory.ts
-import { IExamCreator } from "./base-exam";
-import { JecaDppExam } from "./jeca/dpp-exam";
-import { JecaMockExam } from "./jeca/mock-exam";
-import { JecaQuizExam } from "./jeca/quiz-exam";
-import { JecaTestExam } from "./jeca/test-exam";
+import { IExamCreator } from "./base-exam.js";
+import { JecaDppExam } from "./jeca/dpp-exam.js";
+import { JecaMockExam } from "./jeca/mock-exam.js";
+import { JecaQuizExam } from "./jeca/quiz-exam.js";
+import { JecaTestExam } from "./jeca/test-exam.js";
 export class JecaExamFactory {
   static create(variant: string, payload: any): IExamCreator {
 

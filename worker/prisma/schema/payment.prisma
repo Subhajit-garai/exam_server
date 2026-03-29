@@ -1,0 +1,33 @@
+enum purchaseType {
+  SUBSCRIPTION
+  TOKEN
+}
+
+model Order {
+  id                String       @id @default(cuid())
+  userId            String // Link to your user model
+  razorpay_order_id String       @unique // if it is payment then it store rezorpay_order_id
+  amount            Int
+  type              purchaseType @default(TOKEN)
+  token             Int?         @default(0)
+  subcription       primeStatus? @default(None)
+  couponId          String?
+  status            String       @default("pending") // Track order status
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  User              User         @relation(fields: [userId], references: [id])
+}
+
+model payment {
+  id                  String   @id @unique @default(cuid())
+  razorpay_order_id   String   @unique
+  razorpay_payment_id String   @unique
+  razorpay_signature  String
+  amount              Int // Payment amount (in smallest currency unit, e.g., paise for INR)
+  currency            String   @default("INR") // Default currency is INR
+  status              String   @default("pending") // Payment status: pending, success, or failed
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  userId              String // Link to your user model
+  User                User     @relation(fields: [userId], references: [id])
+}

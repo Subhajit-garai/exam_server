@@ -8,8 +8,6 @@ RUN npm ci
 
 COPY . .
 
-# Build the application
-RUN npm run build
-
 # Start the application
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npm run gen && npm run build && npm run start" ]
+

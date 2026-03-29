@@ -22,6 +22,12 @@
       ],
       "@repo/utils/*": [
         "./src/utils/*"
+      ],
+      "@repo/db/*": [
+        "./src/db/*"
+      ],
+      "@repo/prisma/*": [
+        "./prisma/generated/prisma/*"
       ]
     },
     "rootDir": "." /* Specify the root folder within your source files. */,

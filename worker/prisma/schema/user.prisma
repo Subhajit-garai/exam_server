@@ -1,0 +1,127 @@
+model User {
+  id                  String        @id @unique @default(cuid())
+  name                String
+  avater              String?
+  email               String        @unique
+  contactno           String?       @default("0000000000") // only india
+  password            String
+  targeted_exam_id    String?       @default("not set")
+  exam_year_id        String?       @default("not set")
+  academicProfile     Json?
+  school              String?
+  standard            String?
+  stream              String?
+  examProgress        ExamProgress?
+  dppProgress         DppProgress?
+  quizProgress        QuizProgress?
+  role                UserRole      @default(User)
+  join_at             DateTime      @default(now())
+  forgotpasswordToken String? // forget password
+  resetTokenExpires   DateTime      @default(now()) // forget password
+  accesstoken         String[]      @default([]) // only one device access token
+
+  isOnline Boolean  @default(false)
+  lastSeen DateTime @default(now())
+
+  Exam                        Exam[]
+  Exam_pattern                Exam_pattern[]
+  Question                    Question[]
+  QuestionProcessingCreated   QuestionProcessing[]  @relation("CreatedBy")
+  QuestionProcessingProcessed QuestionProcessing[]  @relation("ProcessedBy")
+  social                      Social[]
+  balance                     balance?
+  Order                       Order[]
+  payment                     payment[]
+  leaderboard                 leaderboard[]
+  quiz                        quiz[]
+  prime                       prime?
+  Comment                     Comment[]
+  Topic                       Topic[]
+  botQuizConfig               botQuizConfig[]
+  CouponUsages                CouponUsage[] // Relation: which users used it
+  Coupon                      Coupon[]
+  botInfo                     botInfo[]
+  userActivities              UserActivity[]
+  userStreaks                 UserStreak[]
+  userBadges                  UserBadge[]
+  activityLeaderboards        ActivityLeaderboard[]
+  userTopicProgresses         UserTopicProgress[]
+
+  @@index([role])
+}
+
+model Social {
+  id         String         @id @default(cuid())
+  userId     String
+  platform   SocialPlatform
+  link       String
+  isVerified Boolean        @default(false)
+  updatedAt  DateTime       @updatedAt
+  User       User           @relation(fields: [userId], references: [id])
+
+  @@unique([userId, platform])
+  @@unique([platform, link])
+}
+
+model prime {
+  id          String      @id @unique @default(cuid())
+  status      primeStatus @default(None)
+  userid      String      @unique
+  expiryInday Int?        @default(0)
+  expiry      DateTime    @default(now())
+  User        User        @relation(fields: [userid], references: [id])
+  updatedAt   DateTime    @default(now()) @updatedAt
+}
+
+model balance {
+  id          String   @id @unique @default(cuid())
+  userid      String   @unique
+  amount      Int      @default(0)
+  ticket      Int      @default(0)
+  last_update DateTime @updatedAt
+  User        User     @relation(fields: [userid], references: [id])
+}
+
+model UserAns {
+  id             String   @id @unique @default(cuid())
+  number         Int      @default(0) // 0- >  not updated 
+  part           String   @default("part1")
+  examId         String
+  userId         String
+  questionId     String   @default("not set")
+  shuffleMap     Int[]
+  selectedOption String[]
+  isCorrect      Boolean? // it  may  later    , if user not ansed then  it null
+  createdAt      DateTime @default(now())
+  Question       Question @relation(fields: [questionId], references: [id])
+
+  @@unique([examId, userId, questionId])
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  link      String? // optional URL
+  type      String // e.g., "exam", "system", "payment"
+  createdAt DateTime  @default(now())
+  seen      Boolean   @default(false)
+  seenAt    DateTime?
+}
+
+enum primeStatus {
+  None
+  Bronze
+  Silver
+  Gold
+}
+
+enum UserRole {
+  Admin
+  User
+  Tutor // have more privilage than normal user but less than Admin
+  Bot
+}
+
+//progress

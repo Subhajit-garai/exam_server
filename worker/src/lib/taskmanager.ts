@@ -1,22 +1,22 @@
 // import axios from "axios";
 // import _ from "lodash";
 
-// import { ExamAnsProcessor } from "./ExamAnsProcessor";
+// import { ExamAnsProcessor } from "./ExamAnsProcessor.js";
 // import {
 //   ExamQuestionProcessor,
 //   SelectQuestion_type,
-// } from "./ExamQuestionProcessor";
-// import { RedisProvider } from "./radisProvider";
+// } from "./ExamQuestionProcessor.js";
+// import { RedisProvider } from "./radisProvider.js";
 // import {
 //   ansType,
 //   Right_Wrong,
 //   Right_Wrong_set_type,
 //   Task,
-// } from "./types/types";
+// } from "./types/types.js";
 // import fs from "fs";
-// import { CreationTypes, Network } from "../utils/network";
-// import { debuglog } from "../utils/debugLog";
-// import { waitForSomeThink } from "./delay";
+// import { CreationTypes, Network } from "../utils/network.js";
+// import { debuglog } from "../utils/debugLog.js";
+// import { waitForSomeThink } from "./delay.js";
 
 // // types
 

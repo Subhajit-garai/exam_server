@@ -1,10 +1,10 @@
 // src/exam-factories/gate-factory.ts
 
-import { IExamCreator } from "./base-exam";
-import { GateDppExam } from "./gate/dpp-exam";
-import { GateMockExam } from "./gate/mock-exam";
-import { GateQuizExam } from "./gate/quiz-exam";
-import { GateTestExam } from "./gate/test-exam";
+import { IExamCreator } from "./base-exam.js";
+import { GateDppExam } from "./gate/dpp-exam.js";
+import { GateMockExam } from "./gate/mock-exam.js";
+import { GateQuizExam } from "./gate/quiz-exam.js";
+import { GateTestExam } from "./gate/test-exam.js";
 
 export class GateExamFactory {
   static create(variant: string, payload: any): IExamCreator {

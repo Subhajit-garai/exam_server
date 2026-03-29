@@ -10,7 +10,8 @@ export class BotTelegramService {
     /**
      * Handles bot notifications (ban/unban).
      */
-    async processNotification(type: string, data: any, botUserId: string) {
+    async processNotification(type: string, data: any, botUserId: string | number) {
+        botUserId = String(botUserId)
         switch (type) {
             case "unbanuser":
                 return this.handleUnbanUser(data);
@@ -50,7 +51,9 @@ export class BotTelegramService {
         return { message: "User unbanned successfully" };
     }
 
-    private async handleBanUser(data: any, botUserId: string) {
+    private async handleBanUser(data: any, botUserId: string | number) {
+        botUserId = String(botUserId)
+
         const validation = banuser_notification_zod_type.safeParse(data);
         if (!validation.success) throw new Error("Invalid data format for banuser");
 
@@ -104,8 +107,8 @@ export class BotTelegramService {
             }));
     }
 
-    async getGroupTopicInfo(groupId: string, name: string) {
-
+    async getGroupTopicInfo(groupId: string | number, name: string) {
+        groupId = String(groupId)
         const info = await prisma.telegramGroupTopic.findFirst({
             where: {
                 group: {
@@ -118,13 +121,15 @@ export class BotTelegramService {
         return info;
     }
 
-    async getGroupInfo(chatid: string) {
+    async getGroupInfo(chatid: string | number) {
+        chatid = String(chatid)
         return await prisma.telegramGroupInfo.findFirst({
             where: { groupid: chatid },
         });
     }
 
-    async isGroupJoinable(chatid: string) {
+    async isGroupJoinable(chatid: string | number) {
+        chatid = String(chatid)
         const groupInfo = await prisma.telegramGroupInfo.findFirst({
             where: { groupid: chatid },
         });
@@ -147,8 +152,8 @@ export class BotTelegramService {
         return users;
     }
 
-    async isPrimeUser(telegramid: string) {
-
+    async isPrimeUser(telegramid: string | number) {
+        telegramid = String(telegramid)
         const userTelegramdata = await prisma.social.findUnique({
             where: {
 
@@ -172,7 +177,8 @@ export class BotTelegramService {
         return user.prime?.status !== "None";
     }
 
-    async getQuizConfig(chatid: string) {
+    async getQuizConfig(chatid: string | number) {
+        chatid = String(chatid)
         const config = await prisma.botQuizConfig.findFirst({
             where: { chatId: chatid },
             select: {

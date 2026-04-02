@@ -11,14 +11,11 @@ import {
   getExamAttemptQuestionMetaData,
   getUserAnsSetOfAnExam,
   getExamsById,
-  updateTargetedExamYear,
-  getAvailableTargetExam,
-  getAvailableTargetExamAll,
-  getExamYearInfo,
-  fetchTargetedExamById,
   getCategoryName,
+  CreateExam,
 } from "../controllers/exam.controller.js";
-import { create_targeted_exam, create_targeted_exam_year, CreateExam } from "@/controllers/exam/exam.create.controller.js";
+import { create_targeted_exam, fetchTargetedExamById, getAvailableTargetExam, getAvailableTargetExamAll } from "@/controllers/targetexam.controller.js";
+import { create_targeted_exam_year, getExamYearInfo, updateTargetedExamYear } from "@/controllers/targetexamyear.controller.js";
 
 
 export const examAdminRouter = Router();

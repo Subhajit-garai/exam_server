@@ -5,6 +5,7 @@ import {
 import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
 import { SubmitedQuestionAnsZodSchema } from "../zod/question.zod.js";
 import { ExamService } from "../services/exam.service.js";
+import { ExamCreateInputeSchema } from "@/zod/user.zod.js";
 
 const examService = new ExamService();
 
@@ -33,25 +34,21 @@ export const test = asyncHandler(async (req: any, res: any) => {
 
 // done
 
-export const updateTargetedExamYear = asyncHandler(
-  async (req: any, res: any) => {
-    let processedData = updare_targated_exam_year_zodSchemea.safeParse(
-      req.body
-    );
+export const CreateExam = asyncHandler(async (req: any, res: any) => {
+  let data = ExamCreateInputeSchema.safeParse(req.body);
 
-    if (!processedData.success) {
-      throw ZodDataSafeParse(processedData);
-    }
-
-    let updated_target_exam_year = await examService.updateTargetedExamYear(processedData.data);
-
-    res.json({
-      success: true,
-      message: "  updated_target_exam_year successfuly",
-      data: updated_target_exam_year,
-    });
+  if (!data.success) {
+    throw ZodDataSafeParse(data, true);
   }
-);
+
+  let response = await examService.createExam(data.data, req.user);
+
+  res.json({
+    success: true,
+    message: `New ${response.examtype}  Created Successful`,
+  });
+});
+
 
 export const getUserAnsSetOfAnExam = async (req: any, res: any) => {
   try {
@@ -116,18 +113,6 @@ export const getCategoryName = asyncHandler(async (req: any, res: any) => {
 });
 
 
-export const fetchTargetedExamById = asyncHandler(
-  async (req: any, res: any) => {
-    let { id } = req.query;
-    let target_exam = await examService.fetchTargetedExamById(id);
-
-    return res.json({
-      success: true,
-      message: "targated_exam created successfuly",
-      data: target_exam.name,
-    });
-  }
-);
 
 export const getExamAttemptQuestionMetaData = asyncHandler(
   async (req: any, res: any) => {
@@ -237,17 +222,7 @@ export const examJoinRequestProcess = asyncHandler(
   }
 );
 
-export const getExamYearInfo = asyncHandler(async (req: any, res: any) => {
-  let { examname, id } = req.query;
 
-  let exam_year = await examService.getExamYearInfo(examname, id);
-
-  return res.json({
-    success: true,
-    message: `Exam Submited Successfully ...`,
-    data: exam_year,
-  });
-});
 
 export const getExamsById = asyncHandler(async (req: any, res: any) => {
   let response = await examService.getExamsById(req.query.id);
@@ -289,79 +264,6 @@ export const getExams = asyncHandler(async (req: any, res: any) => {
   });
 });
 
-export const getAvailableTargetExamAll = asyncHandler(
-  async (req: any, res: any) => {
-    try {
-      let availableExam = await examService.getAvailableTargetExamAll();
 
-      return res.json({
-        success: true,
-        message: ` available Exam  names`,
-        data: availableExam,
-      });
-    } catch (error: any) {
-      throw error;
-    }
-  }
-);
-export const getAvailableTargetExam = asyncHandler(
-  async (req: any, res: any) => {
-    let category = req.query.category;
-    try {
-      let availableExam = await examService.getAvailableTargetExam(category);
 
-      return res.json({
-        success: true,
-        message: ` available Exam  names`,
-        data: availableExam,
-      });
-    } catch (error: any) {
-      throw error;
-    }
-  }
-);
 
-export const getAvailableExamPattern = asyncHandler(
-  async (req: any, res: any) => {
-    let exam = req.query.exam.toUpperCase();
-    let user = req.user;
-
-    let response = await examService.getAvailableExamPattern(exam, user);
-
-    res.json({
-      success: true,
-      message: `available Exam patterns`,
-      data: response,
-    });
-  }
-);
-
-export const getExamPatternById = asyncHandler(async (req: any, res: any) => {
-  let { id } = req.params;
-  let response = await examService.getExamPatternById(id);
-  res.json({
-    success: true,
-    message: "Exam Pattern fetched successfully",
-    data: response,
-  });
-});
-
-export const updateExamPattern = asyncHandler(async (req: any, res: any) => {
-  let { id } = req.body;
-  let response = await examService.updateExamPattern(req.body, req.user);
-  res.json({
-    success: true,
-    message: "Exam Pattern updated successfully",
-    data: response,
-  });
-});
-
-export const deleteExamPattern = asyncHandler(async (req: any, res: any) => {
-  let { id } = req.params;
-  let response = await examService.deleteExamPattern(id);
-  res.json({
-    success: true,
-    message: "Exam Pattern deleted successfully",
-    data: response,
-  });
-});

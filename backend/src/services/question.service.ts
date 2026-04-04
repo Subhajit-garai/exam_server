@@ -1,7 +1,7 @@
 import { diffcultlevel, Prisma } from "@repo/prisma/client.js";
 import prisma from "@repo/db/index.js";
-import { questionInput_type } from "@/zod/question.zod";
-import { logger } from "@/lib/helper/logger";
+import { questionInput_type } from "@/zod/question.zod.js";
+import { logger } from "@/lib/helper/logger.js";
 
 export class QuestionService {
     async updateQuestion(userId: string, data: any) {
@@ -291,6 +291,7 @@ export class QuestionService {
                 },
                 select: {
                     id: true,
+                    name: true
                 },
             })
 
@@ -307,6 +308,7 @@ export class QuestionService {
                     },
                     select: {
                         id: true,
+                        name: true
                     },
                 })
 
@@ -322,17 +324,19 @@ export class QuestionService {
         }
 
         let filtertitle: any;
+
         if (title?.trim()) {
             filtertitle = {
                 contains: title.trim(),
                 mode: "insensitive", // Case-insensitive search
             };
         }
+
         let Formatedfilter: any = id
+
             ? { id: id }
             : {
                 ...(category && { category: category }), // Removed toUpperCase to allow exact match or case sensitive if needed, or keep consistent with frontend
-                ...(topic && { old_topic: topic }), // Removed toUpperCase
                 ...(difficulty && { difficulty: difficulty }),
                 ...(format && { format: format }),
                 ...(status && { status: status }),
@@ -354,6 +358,7 @@ export class QuestionService {
                 ...(created_by && { created_by: created_by }),
             };
 
+
         if (id) {
             responce = await prisma.question.findMany({
                 where: Formatedfilter
@@ -370,7 +375,6 @@ export class QuestionService {
         const total = await prisma.question.count({
             where: Formatedfilter,
         });
-
         return { questions: responce, total: total, currentPage: page };
     }
 
@@ -378,5 +382,136 @@ export class QuestionService {
         let responce = await prisma.question.findMany({});
         const total = await prisma.question.count({});
         return { questions: responce, total: total };
+    }
+
+    async getSubjectCounts(category?: string) {
+        let categoryIdFilter: string | undefined;
+
+        if (category) {
+            const categoryData = await prisma.category.findFirst({
+                where: { name: category },
+                select: { id: true }
+            });
+            if (categoryData) {
+                categoryIdFilter = categoryData.id;
+            } else {
+                return []; // Category not found, no questions to group
+            }
+        }
+
+        const counts = await prisma.question.groupBy({
+            by: ['subject_id'],
+            where: {
+                ...(categoryIdFilter && { categoryid: categoryIdFilter }),
+            },
+            _count: {
+                id: true
+            }
+        });
+
+        if (counts.length === 0) return [];
+
+        const subjectIds = counts.reduce((acc, c) => {
+            if (c.subject_id) acc.push(c.subject_id);
+            return acc;
+        }, [] as string[]);
+
+        if (subjectIds.length === 0) return [];
+
+        const subjects = await prisma.subject.findMany({
+            where: {
+                id: {
+                    in: subjectIds
+                }
+            },
+            select: {
+                id: true,
+                name: true,
+            }
+        });
+
+        const subjectMap = new Map();
+        for (const s of subjects) {
+            subjectMap.set(s.id, s.name);
+        }
+
+        const result = counts.reduce((acc, c) => {
+            if (c.subject_id && subjectMap.has(c.subject_id)) {
+                acc.push({
+                    id: c.subject_id,
+                    subject: subjectMap.get(c.subject_id),
+                    count: c._count.id
+                });
+            }
+            return acc;
+        }, [] as any[]);
+
+        return result.sort((a: any, b: any) => b.count - a.count);
+    }
+
+    async getTopicCounts(subjectId: string, category?: string) {
+        let categoryIdFilter: string | undefined;
+
+        if (category) {
+            const categoryData = await prisma.category.findFirst({
+                where: { name: category },
+                select: { id: true }
+            });
+            if (categoryData) {
+                categoryIdFilter = categoryData.id;
+            } else {
+                return []; // Category not found, return early
+            }
+        }
+
+        const counts = await prisma.question.groupBy({
+            by: ['topic_id'],
+            where: {
+                subject_id: subjectId,
+                ...(categoryIdFilter && { categoryid: categoryIdFilter }),
+            },
+            _count: {
+                id: true
+            }
+        });
+
+        if (counts.length === 0) return [];
+
+        const topicIds = counts.reduce((acc, c) => {
+            if (c.topic_id) acc.push(c.topic_id);
+            return acc;
+        }, [] as string[]);
+
+        if (topicIds.length === 0) return [];
+
+        const topics = await prisma.topic.findMany({
+            where: {
+                id: {
+                    in: topicIds
+                }
+            },
+            select: {
+                id: true,
+                name: true,
+            }
+        });
+
+        const topicMap = new Map();
+        for (const t of topics) {
+            topicMap.set(t.id, t.name);
+        }
+
+        const result = counts.reduce((acc, c) => {
+            if (c.topic_id && topicMap.has(c.topic_id)) {
+                acc.push({
+                    id: c.topic_id,
+                    topic: topicMap.get(c.topic_id),
+                    count: c._count.id
+                });
+            }
+            return acc;
+        }, [] as any[]);
+
+        return result.sort((a: any, b: any) => b.count - a.count);
     }
 }

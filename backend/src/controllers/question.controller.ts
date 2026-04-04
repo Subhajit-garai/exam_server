@@ -210,3 +210,32 @@ export const backupQuestion = async (req: any, res: any) => {
     });
   }
 };
+
+export const getSubjectCounts = asyncHandler(async (req: any, res: any) => {
+
+  const category = req.query.category;
+  const data = await questionService.getSubjectCounts(category);
+  res.status(200).json({
+    success: true,
+    data: data,
+  });
+
+});
+
+export const getTopicCounts = asyncHandler(async (req: any, res: any) => {
+
+  const subjectId = req.params.subjectId;
+  if (!subjectId) {
+    return res.status(400).json({
+      success: false,
+      message: "Subject ID is required",
+    });
+  }
+
+  const data = await questionService.getTopicCounts(subjectId, req.query.category);
+  res.status(200).json({
+    success: true,
+    data: data,
+  });
+
+});

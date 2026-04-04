@@ -2,7 +2,6 @@ import {
     ExamType,
     SocialPlatform,
     Visibility,
-    syllabusType,
 } from "@repo/prisma/client.js";
 import prisma from "@repo/db/index.js";
 import { ExamManager } from "@repo/lib/manager/examManager.js";
@@ -12,10 +11,9 @@ import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
 import { getServiceCharge, TokenDeduction } from "@repo/lib/helper/payment.js";
-import { ConvertInSlug } from "@/lib/slug.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { ProgressService } from "./progress.service.js";
-import { ExampatternInputType } from "@/zod/user.zod.js";
+
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -29,37 +27,6 @@ export class ExamService {
     //     return response;
     // }
 
-    async updateTargetedExamYear(data: any) {
-        let isTargetdExam_Year = await prisma.examYear.findUnique({
-            where: {
-                id: data.exam_year_id,
-            },
-        });
-
-        if (!isTargetdExam_Year) {
-            throw new Error("Provided exam year id is invalid ");
-        }
-
-        let updated_target_exam_year = await prisma.examYear.update({
-            where: {
-                id: data?.exam_year_id,
-            },
-            data: {
-                ...(data.category ? { category: data.category } : undefined),
-                ...(data.registrationOpenDate
-                    ? { registrationOpenDate: data.registrationOpenDate }
-                    : undefined),
-                ...(data.registrationCloseDate
-                    ? { registrationCloseDate: data.registrationCloseDate }
-                    : undefined),
-                ...(data.notes ? { notes: data.notes } : undefined),
-                ...(data.status ? { status: data.status } : undefined),
-                ...(data.slug ? { slug: data.slug } : undefined),
-            },
-        });
-
-        return updated_target_exam_year;
-    }
 
     async getUserAnsSetOfAnExam(userId: string, examId: string) {
         let data = await prisma.userAns.findMany({
@@ -176,17 +143,6 @@ export class ExamService {
             throw new Error("Can not find any Category");
         }
         return Category;
-    }
-
-    async fetchTargetedExamById(id: string) {
-        let target_exam = await prisma.targetExam.findFirst({
-            where: {
-                id: id,
-            },
-        });
-
-        if (!target_exam) throw Error("Target exam not found");
-        return target_exam;
     }
 
     async getExamAttemptQuestionMetaData(userId: string, examId: string) {
@@ -342,26 +298,64 @@ export class ExamService {
         return true;
     }
 
-    async getExamYearInfo(examname: string, id: string) {
-        let exam_year;
-        if (id) {
-            exam_year = await prisma.examYear.findFirst({
-                where: {
-                    id: id,
+
+    async createExam(data: any, userId: string) {
+        let {
+            name,
+            exam_pattern_id,
+            Visibility,
+            duration,
+            date,
+            jointime,
+            starttime,
+            examtype,
+        } = data;
+
+        let response = await prisma.exam.create({
+            data: {
+                name,
+                Visibility,
+                examtype: examtype,
+                starttime: starttime ? starttime : "no limit",
+                jointime: jointime ? jointime : "no limit",
+                duration: duration ? duration : "02:00 h",
+                date: date,
+                exam_pattern: {
+                    connect: { id: exam_pattern_id },
                 },
-            });
-        } else {
-            exam_year = await prisma.examYear.findMany({
-                where: {
-                    targetExam: {
-                        shortCode: examname,
-                    },
+                User: {
+                    connect: { id: userId }, // createdby
                 },
-            });
+                ContestRegister: {
+                    create: {},
+                },
+            },
+        });
+
+        if (!response) {
+            throw new Error(`${examtype} not created , try again later `);
         }
 
-        if (!exam_year) throw Error("exam year info not  found");
-        return exam_year;
+        // send it into queue to process question
+        let { id } = response;
+        let Notifystatus = await em.getRedisClient().push({
+            type: "CREATE_EXAM",
+            id: id,
+            payload: {
+                examid: id,
+                userid: userId,
+                examtype: response.examtype,
+            },
+            variant: response.examtype,
+            category: "JECA",
+        });
+
+        // call back to user
+        if (Notifystatus) {
+            console.log(`${examtype} Created ....`);
+        }
+
+        return response;
     }
 
     async getExamsById(id: string) {
@@ -479,313 +473,6 @@ export class ExamService {
         });
 
         return { exams: response, total, currentPage: page };
-    }
-
-    async getAvailableTargetExamAll() {
-        let response = await prisma.targetExam.findMany({
-            select: {
-                name: true,
-                shortCode: true,
-                id: true,
-            },
-        });
-
-        if (!(response.length > 0)) {
-            throw new Error("Can not find any exam");
-        }
-
-        let availableExam = response.flat();
-        return availableExam;
-    }
-
-    async getAvailableTargetExam(category: string) {
-
-
-        let response = await prisma.targetExam.findMany({
-            where: {
-                Category: {
-                    name: category
-                }
-            },
-            select: {
-                name: true,
-                shortCode: true,
-                id: true,
-            },
-        });
-
-        if (!(response.length > 0)) {
-            throw new Error("Can not find any exam");
-        }
-
-        let availableExam = response.flat();
-        return availableExam;
-    }
-
-    async getAvailableExamPattern(exam: string, userId: string) {
-        let response = await prisma.exam_pattern.findMany({
-            where: {
-                examname: exam,
-                created_by: userId,
-            },
-            select: {
-                id: true,
-                title: true,
-                examname: true,
-                difficulty: true,
-                format: true,
-            },
-        });
-
-        if (!response) {
-            throw new Error("Can not find any exampattern");
-        }
-
-        return response;
-    }
-
-    async createExamPattern(data: ExampatternInputType, userId: string) {
-        let {
-            title,
-            checkbox,
-            format,
-            examname,
-            category,
-            topics,
-            difficulty,
-            part,
-            part_Count,
-            total_questions,
-            checktype,
-            marks_values,
-            neg_values,
-            examyear,
-            syllabus,
-        } = data;
-
-        let syllabusData;
-
-        if (checkbox) {
-            if (!syllabus) throw Error("syllabus not found ");
-
-            let examYearData = await prisma.examYear.findFirst({
-                where: {
-                    targetExam: {
-                        name: examname,
-                    },
-                    year: parseInt(examyear),
-                },
-            });
-
-            if (!examYearData) throw Error("examYearData not found ");
-
-            syllabusData = await prisma.syllabus.findFirst({
-                where: {
-                    exam_year_id: examYearData.id,
-                    title: syllabus,
-                },
-            });
-
-            if (!syllabusData) throw Error("syllabusdata not found ");
-
-        } else {
-            if ((topics?.length as number) < 1) {
-                throw new Error("Topics is Empty ");
-            }
-        }
-
-        let response = await prisma.exam_pattern.create({
-            data: {
-                title,
-                format,
-                examname,
-                ...(category ? { Category: { connect: { name: category } } } : {}),
-                topics,
-                difficulty,
-                part,
-                part_Count: parseInt(part_Count),
-                total_questions,
-                check: checktype,
-                checkbox,
-                marks_values,
-                neg_values,
-                syllabus: checkbox ? syllabusType.Syllabus : syllabusType.Generic,
-                ...(syllabusData && { syllabusid: syllabusData.id }),
-                User: {
-                    connect: { id: userId },
-                },
-            },
-        });
-
-        if (!response) throw Error(" exam patten not created ");
-
-        return response;
-    }
-
-    async createTargetedExam(data: any) {
-        let categoryData = await prisma.category.findFirst({
-            where: {
-                name: data.category,
-            },
-        });
-
-        if (!categoryData) throw Error("category not found ");
-
-        let { category, ...rest } = data;
-        let target_exam = await prisma.targetExam.create({
-            data: {
-                ...rest,
-                ...(categoryData && { Category: { connect: { id: categoryData.id } } }),
-            },
-        });
-
-        return target_exam;
-    }
-
-    async createTargetedExamYear(data: any) {
-        let target_exam_data = await prisma.targetExam.findFirst({
-            where: {
-                id: data.targetExamId,
-            },
-        });
-
-        if (!target_exam_data) throw new Error("select valid exam name ");
-
-        data.slug = ConvertInSlug(
-            `${target_exam_data.shortCode} ${data.year}`
-        );
-
-        let target_exam_year = await prisma.examYear.create({
-            data: {
-                ...data,
-                slug: data.slug,
-                year: parseInt(data.year),
-            },
-        });
-
-        if (!target_exam_year) throw new Error("targated_exam_year not created ");
-        return target_exam_year;
-    }
-
-    async createExam(data: any, userId: string) {
-        let {
-            name,
-            exam_pattern_id,
-            Visibility,
-            duration,
-            date,
-            jointime,
-            starttime,
-            examtype,
-        } = data;
-
-        let response = await prisma.exam.create({
-            data: {
-                name,
-                Visibility,
-                examtype: examtype,
-                starttime: starttime ? starttime : "no limit",
-                jointime: jointime ? jointime : "no limit",
-                duration: duration ? duration : "02:00 h",
-                date: date,
-                exam_pattern: {
-                    connect: { id: exam_pattern_id },
-                },
-                User: {
-                    connect: { id: userId }, // createdby
-                },
-                ContestRegister: {
-                    create: {},
-                },
-            },
-        });
-
-        if (!response) {
-            throw new Error(`${examtype} not created , try again later `);
-        }
-
-        // send it into queue to process question
-        let { id } = response;
-        let Notifystatus = await em.getRedisClient().push({
-            type: "CREATE_EXAM",
-            id: id,
-            payload: {
-                examid: id,
-                userid: userId,
-                examtype: response.examtype,
-            },
-            variant: response.examtype,
-            category: "JECA",
-        });
-
-        // call back to user
-        if (Notifystatus) {
-            console.log(`${examtype} Created ....`);
-        }
-
-        return response;
-    }
-
-
-    async getExamPatternById(id: string) {
-        let response = await prisma.exam_pattern.findUnique({
-            where: { id: id },
-            include: {
-                Category: true
-            }
-        });
-        if (!response) throw new Error("Exam Pattern not found");
-        return response;
-    }
-
-    async updateExamPattern(data: any, userId: string) {
-        let { id, ...updateData } = data;
-
-        // Remove fields that shouldn't be updated or transform them if needed
-        if (updateData.checkbox && !updateData.syllabus) {
-            // If checkbox is enabling syllabus but syllabus not provided, we might need logic here
-            // but schema validation should handle it.
-            // For now, pass all data.
-        }
-
-        // Logic similar to create for syllabus mapping if needed
-        let syllabusData;
-        if (updateData.checkbox && updateData.syllabus && updateData.examname && updateData.examyear) {
-            let examYearData = await prisma.examYear.findFirst({
-                where: {
-                    targetExam: { name: updateData.examname },
-                    year: parseInt(updateData.examyear),
-                },
-            });
-            if (examYearData) {
-                syllabusData = await prisma.syllabus.findFirst({
-                    where: { exam_year_id: examYearData.id, title: updateData.syllabus },
-                });
-            }
-        }
-
-        let response = await prisma.exam_pattern.update({
-            where: { id: id },
-            data: {
-                ...updateData,
-                ...(syllabusData && { syllabusid: syllabusData.id }),
-                // userId not updated usually, or track last updated by?
-            }
-        });
-        return response;
-    }
-
-    async deleteExamPattern(id: string) {
-        // Check if used in any Exam
-        let usage = await prisma.exam.findFirst({
-            where: { exam_pattern_id: id }
-        });
-        if (usage) throw new Error("Cannot delete pattern: It is used in one or more Exams.");
-
-        let response = await prisma.exam_pattern.delete({
-            where: { id: id }
-        });
-        return response;
     }
 
     private isExamSessionActive(exam: any) {

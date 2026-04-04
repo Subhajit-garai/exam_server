@@ -173,7 +173,21 @@ export class MockService {
                     examid: mockId
                 },
                 include: {
-                    question: true
+                    question: {
+                        include: {
+                            Topic: {
+                                select: {
+                                    name: true
+                                }
+                            },
+                            Subject: {
+                                select: {
+                                    name: true
+                                }
+                            }
+                        }
+
+                    }
                 }
             })
         }

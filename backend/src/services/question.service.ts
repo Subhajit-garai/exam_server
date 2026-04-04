@@ -359,18 +359,21 @@ export class QuestionService {
             };
 
 
-        if (id) {
-            responce = await prisma.question.findMany({
-                where: Formatedfilter
-            });
-        } else {
-            responce = await prisma.question.findMany({
-                where: Formatedfilter,
-                skip: (page - 1) * questionsPerPage,
-                take: questionsPerPage,
-                orderBy: { id: "desc" },
-            });
+        const queryOptions: any = {
+            where: Formatedfilter,
+            include: {
+                Topic: { select: { name: true } },
+                Subject: { select: { name: true } }
+            }
+        };
+
+        if (!id) {
+            queryOptions.skip = (page - 1) * questionsPerPage;
+            queryOptions.take = questionsPerPage;
+            queryOptions.orderBy = { id: "desc" };
         }
+
+        responce = await prisma.question.findMany(queryOptions);
 
         const total = await prisma.question.count({
             where: Formatedfilter,

@@ -23,7 +23,7 @@ export const examAdminRouter = Router();
 export const examPublicRouter = Router();
 
 // Public Routes
-examPublicRouter.get("/refresh/:examid", refreshExam);
+
 examPublicRouter.get("/tokensystem", getTokenSystem);
 examPublicRouter.get("/category/name", getCategoryName);
 examPublicRouter.get("/joinrequest", examJoinRequestProcess);
@@ -47,3 +47,4 @@ examAdminRouter.post("/create", CreateExam);
 examAdminRouter.post("/create/target/exam", create_targeted_exam);
 examAdminRouter.post("/create/target/examyear", create_targeted_exam_year);
 examAdminRouter.put("/update/target/examyear/info", updateTargetedExamYear);
+examAdminRouter.post("/refresh/:examid", refreshExam);

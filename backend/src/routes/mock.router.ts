@@ -8,8 +8,8 @@ export const mockRouter = Router();
 // mock set
 
 
-mockRouter.get("/refresh/:mockid", refreshMock);
-mockRouter.get("/question/random/:mockid", SelectRandomQuestion);
+mockRouter.post("/refresh/:mockid", refreshMock);
+mockRouter.post("/question/random/:mockid", SelectRandomQuestion);
 mockRouter.get("/getall", get_all_mock);
 mockRouter.get("/get", get_mock_by_id);
 mockRouter.get("/get/questions", getmockQuestion);

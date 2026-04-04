@@ -1,5 +1,5 @@
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker";
+import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 import { TargetExamService } from "@/services/targetexam.service.js";
 import { create_targated_exam_zodSchemea } from "@/zod/exam.zod.js";
 

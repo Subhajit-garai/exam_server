@@ -1,9 +1,11 @@
-import { ExampatternInputType } from "@/zod/user.zod";
-import prisma from "@repo/db/index.js";
-import { syllabusType } from "@repo/prisma/enums";
+import { ExampatternInputType } from "@/zod/user.zod.js";
+import prisma, { Prisma } from "@repo/db/index.js";
+import { syllabusType } from "@repo/prisma/enums.js";
 
 
 export class ExampatternService {
+
+
 
 
     async createExamPattern(data: ExampatternInputType, userId: string) {

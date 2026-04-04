@@ -34,6 +34,23 @@ export const test = asyncHandler(async (req: any, res: any) => {
 
 // done
 
+
+export const refreshExam = asyncHandler(async (req: any, res: any) => {
+  const userId = req.user;
+  const { examid } = req.params;
+  if (!examid) throw new Error("Exam Set ID is required");
+
+
+  const response = await examService.refresh(examid, userId);
+
+  if (!response) throw new Error("Exam set not added for refresh");
+
+  res.json({
+    success: true,
+    message: "Exam set addded for refresh",
+  });
+});
+
 export const CreateExam = asyncHandler(async (req: any, res: any) => {
   let data = ExamCreateInputeSchema.safeParse(req.body);
 

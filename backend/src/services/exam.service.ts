@@ -206,16 +206,6 @@ export class ExamService {
 
     async examJoinRequestProcess(userId: string, examId: string) {
 
-        // removing telegram form here
-
-        // let istelegramVerified = await prisma.social.findFirst({
-        //     where: {
-        //         userId: userId,
-        //         platform: SocialPlatform.telegram
-
-        //     },
-        // });
-
         let isEmailVerified = await prisma.social.findFirst({
             where: {
                 userId: userId,
@@ -227,8 +217,7 @@ export class ExamService {
 
         if (
             !(
-                isEmailVerified?.isVerified  // &&
-                //istelegramVerified?.isVerified
+                isEmailVerified?.isVerified
             )
         ) {
             throw new CustomError(
@@ -335,20 +324,7 @@ export class ExamService {
         if (!response) {
             throw new Error(`${examtype} not created , try again later `);
         }
-
-        // send it into queue to process question
-        let { id } = response;
-        let Notifystatus = await em.getRedisClient().push({
-            type: "CREATE_EXAM",
-            id: id,
-            payload: {
-                examid: id,
-                userid: userId,
-                examtype: response.examtype,
-            },
-            variant: response.examtype,
-            category: "JECA",
-        });
+        let Notifystatus = await em.refresh(response.id, userId)
 
         // call back to user
         if (Notifystatus) {
@@ -356,6 +332,11 @@ export class ExamService {
         }
 
         return response;
+    }
+
+
+    async refresh(examid: string, userid: string) {
+        return em.refresh(examid, userid)
     }
 
     async getExamsById(id: string) {

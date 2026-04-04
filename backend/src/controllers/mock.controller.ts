@@ -3,6 +3,39 @@ import { MockService } from "../services/mock.service.js";
 
 const mockService = new MockService();
 
+export const SelectRandomQuestion = asyncHandler(async (req: any, res: any) => {
+    const userId = req.user;
+    const { mockid } = req.params;
+    if (!mockid) throw new Error("Mock Set ID is required");
+
+
+    const response = await mockService.selectRandomQuestion(mockid, userId);
+
+    if (!response) throw new Error("Mock set not added for refresh");
+
+    res.json({
+        success: true,
+        message: "Mock set addded for refresh",
+    });
+});
+export const refreshMock = asyncHandler(async (req: any, res: any) => {
+    const userId = req.user;
+    const { mockid } = req.params;
+    if (!mockid) throw new Error("Mock Set ID is required");
+
+
+    const response = await mockService.refresh(mockid, userId);
+
+    if (!response) throw new Error("Mock set not added for refresh");
+
+    res.json({
+        success: true,
+        message: "Mock set addded for refresh",
+    });
+});
+
+
+
 export const get_all_mock = asyncHandler(async (req: any, res: any) => {
     const userId = req.user;
     const response = await mockService.getAllMock(userId);

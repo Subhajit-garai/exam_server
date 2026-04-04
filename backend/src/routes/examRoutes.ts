@@ -13,6 +13,7 @@ import {
   getExamsById,
   getCategoryName,
   CreateExam,
+  refreshExam,
 } from "../controllers/exam.controller.js";
 import { create_targeted_exam, fetchTargetedExamById, getAvailableTargetExam, getAvailableTargetExamAll } from "@/controllers/targetexam.controller.js";
 import { create_targeted_exam_year, getExamYearInfo, updateTargetedExamYear } from "@/controllers/targetexamyear.controller.js";
@@ -22,6 +23,7 @@ export const examAdminRouter = Router();
 export const examPublicRouter = Router();
 
 // Public Routes
+examPublicRouter.get("/refresh/:examid", refreshExam);
 examPublicRouter.get("/tokensystem", getTokenSystem);
 examPublicRouter.get("/category/name", getCategoryName);
 examPublicRouter.get("/joinrequest", examJoinRequestProcess);

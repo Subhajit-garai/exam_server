@@ -1,4 +1,4 @@
-import { AddQuestionIntoMock, get_all_mock, get_mock_by_id, getAvailableMock, getExampatternFormock, getmockQuestion, RemoveQuestionFromMock } from "@/controllers/mock.controller.js";
+import { AddQuestionIntoMock, get_all_mock, get_mock_by_id, getAvailableMock, getExampatternFormock, getmockQuestion, refreshMock, RemoveQuestionFromMock, SelectRandomQuestion } from "@/controllers/mock.controller.js";
 import { Router } from "express";
 
 
@@ -8,6 +8,8 @@ export const mockRouter = Router();
 // mock set
 
 
+mockRouter.get("/refresh/:mockid", refreshMock);
+mockRouter.get("/question/random/:mockid", SelectRandomQuestion);
 mockRouter.get("/getall", get_all_mock);
 mockRouter.get("/get", get_mock_by_id);
 mockRouter.get("/get/questions", getmockQuestion);

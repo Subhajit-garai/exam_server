@@ -1,8 +1,10 @@
-import { Question_Data_type, Questions_type } from "@/lib/types/types.js";
+
 import { IExamCreator } from "../base-exam.js";
 import _ from "lodash";
+import { examQuestionManger, SelectQuestion_type } from "@/lib/ExamQuestionProcessor.js";
+import { logger } from "@/utils/logger.js";
 import { BotService } from "@/services/bot/bot.service.js";
-import { CreationTypes } from "@repo/prisma/enums.js";
+
 
 // src/exam-factories/jeca/mock-exam.ts
 
@@ -10,152 +12,103 @@ export class JecaMockExam implements IExamCreator {
   constructor(private payload: any) { }
 
   async run(): Promise<void> {
-    console.log("🧾 Creating JECA MOCK Exam:", this.payload);
-
-    // Your logic here
 
     const botService = new BotService()
+    let QuestionManagerClient = examQuestionManger.getInstance();
 
-    let { mockid, action } = this.payload;
+    console.log("🧾 Creating JECA MOCK  Exam:", this.payload);
+    let finalquestions: any = {};
 
-    let questionCount: number[] = [];
-    let parts = [];
-    let ismultiple_part = false;
-    let Mock_Questions: Questions_type = {};
-    let difficulty_count = { Easy: 0, Medium: 0, Hard: 0 };
-    let topic_wise_count: { [key: string]: number } = {}; //{ "OS": 0, "DBMS": 0, "C": 0 }
-    let question_part_count: { [key: string]: number } = {}; // { "part1": 0, "part2": 0 }
-    let isprocessingDone = false;
-    let MockSet_Status: CreationTypes = "Suspended";
-    let isError = false; // if error true then status suspended
+    let { examid } = this.payload;
 
-    const mockSet: any = await botService.exam.setMockQuestionSetStatus(
-      mockid,
-      "Processing"
+    let examptternId = await botService.exam.getExamPatternId(examid);
+
+    let exampattern = await botService.exam.getExamPattern(
+      examptternId
     );
 
-    if (mockSet) {
+    if (!exampattern) {
+      throw Error("exam pattern not found ");
+    }
 
-      let exam_pattern_info = await botService.exam.getMockSetExamPattern(
-        mockSet.pattern
-      );
+    let { topics, total_questions, is_multiple_ans, syllabus, syllabusid } =
+      exampattern;
 
-      if (!exam_pattern_info) {
-        new Error("exam_pattern_info not found");
+    if (syllabus === "Syllabus") {
+      if (!syllabusid) {
+        throw Error("exam pattern's syllabusid not found ");
       }
 
-      let MockSetQuestion = await botService.exam.getQuestionsForExam(mockSet.id);
+      let syllabus_data: (string | null)[] =
+        await botService.exam.getSyllabusDataForExamCreation(syllabusid);
 
-      // question count checking
-      if (!MockSetQuestion) new Error("questions not found in mock set");
 
-      MockSetQuestion.map((questionInfo: any) => {
-        if (!Mock_Questions[questionInfo.part])
-          Mock_Questions[questionInfo.part] = [];
+      logger.info(syllabus_data)
 
-        Mock_Questions[questionInfo.part].push(questionInfo.questionid);
-      });
-
-      // Mock_Questions = mockSet?.questions as Questions_type;
-
-      if (exam_pattern_info?.total_questions.length > 1) {
-        // is pattern have multiple parts
-        if (!(Object.keys(Mock_Questions).length > 1)) {
-          throw new Error(
-            `Exam pattern have multiple part , but current mock set doesnot have multiple part . part length is --->${Object.keys(Mock_Questions).length
-            }`
+      syllabus_data.map((subject) => {
+        if (subject) {
+          topics.push(subject);
+        } else {
+          throw Error(
+            "----RED---- subject short Name Null recive and ignoring it for Exam question selection"
           );
         }
-
-        ismultiple_part = true;
-      }
-
-      // setting part info
-      parts = Object.keys(Mock_Questions);
-
-      for (const part of parts) {
-        let questions = Mock_Questions[part];
-        // done
-        if (questions.length > 0) {
-          let questionFullInfo = await botService.exam.getQuestionDetailsForBot(questions);
-
-          questionFullInfo.map((question) => {
-            if (!question_part_count[part]) {
-              question_part_count[part] = 0;
-            }
-            question_part_count[part] += 1;
-
-            if (question.difficulty) {
-              difficulty_count[question.difficulty] += 1;
-            }
-            if (question.Topic) {
-              if (!topic_wise_count[question.Topic.name]) {
-                topic_wise_count[question.Topic.name] = 0;
-              }
-              topic_wise_count[question.Topic.name] += 1;
-
-              // check other topic not added
-              if (!exam_pattern_info.topics.includes(question.Topic.name)) {
-                isError = true;
-                console.log("unkown topic found in mock set question ....");
-              }
-            }
-          });
-          questionCount.push(question_part_count[part]);
-        }
-      }
-
-      // comparing the mock set info count
-
-      exam_pattern_info?.total_questions.map((num: number, index: number) => {
-        if (num !== questionCount[index]) {
-          console.error("question count is not matching for", index + 1);
-        } else {
-          console.log("question count is matching for", index + 1);
-        }
       });
+    } else {
+      console.log("generic type exam");
+    }
+    // here syllabus is enum syllabus  or Gereric
 
-      isprocessingDone = true;
+    let promises = total_questions.map(
+      async (question_number: number, index: number) => {
 
-      // console.log("questionCount is ", questionCount);
-      // console.log("question_part_count is ", question_part_count);
-      // console.log("topic_wise_count is ", topic_wise_count);
-      // console.log("difficulty_count is ", difficulty_count);
 
-      // all  topic added or not
-      if (
-        !_.isEqual(
-          [...exam_pattern_info.topics].sort(),
-          Object.keys(topic_wise_count).sort()
-        )
-      ) {
-        console.log("---- topic ----> ", [...exam_pattern_info.topics].sort());
-        console.log("----  ----> ", topic_wise_count);
-        console.log("----  ----> ", Object.keys(topic_wise_count).sort());
 
-        console.log(
-          "In mock set's some topic's questions are not present  .. "
+        let data = await QuestionManagerClient.selectQuestions(
+          question_number,
+          topics,
+          is_multiple_ans[index]
         );
-        isError = true;
-      }
-      // check if all topic question are add at list one
-      if (!Object.values(topic_wise_count).every((val) => val >= 1)) {
-        console.log(
-          " In mock set's some topic is empty add at leat 1 question per topic .. "
-        );
-        isError = true;
-      }
 
-      // check question count
-      if (!_.isEqual(exam_pattern_info.total_questions, questionCount)) {
-        console.log("mock set's question count is not equel .. ");
-        isError = true;
-      }
-      console.log(" error ---->", isError);
 
-      if (!isError) {
-        MockSet_Status = "Done";
+
+        let Question_array: string[] = [];
+
+        Object.keys(data as SelectQuestion_type).map((d) => {
+          data &&
+            data[d].map((ele) => {
+              Question_array.push(ele);
+            });
+        });
+        return (finalquestions[`part${index + 1}`] = Question_array);
       }
+    );
+    await Promise.all(promises);
+
+    let responce = await QuestionManagerClient.AddQuestionsIntoExam(
+      examid,
+      finalquestions
+    );
+
+
+
+    // add ansset
+    if (responce) {
+
+      console.log("mock Question added");
+
+      // request to update exam status
+
+      let status = await botService.exam.checkExamCompletionStatus(examid);
+      if (status) {
+        // send notification
+      }
+      console.log("added notification");
+    } else {
+      console.log(" notification not updated");
+      // i can a fn fron send message to admin via backend and tel-bot
     }
   }
+
+
 }

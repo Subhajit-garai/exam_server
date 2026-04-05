@@ -60,12 +60,17 @@ export class JecaTestExam implements IExamCreator {
     // here syllabus is enum syllabus  or Gereric
 
     let promises = total_questions.map(
-      async (question: number, index: number) => {
+      async (question_number: number, index: number) => {
+
+
+
         let data = await QuestionManagerClient.selectQuestions(
-          question,
+          question_number,
           topics,
           is_multiple_ans[index]
         );
+
+
 
         let Question_array: string[] = [];
 
@@ -84,8 +89,12 @@ export class JecaTestExam implements IExamCreator {
       examid,
       finalquestions
     );
+
+
+
     // add ansset
     if (responce) {
+
       console.log("exam Question added");
 
       // request to update exam status
@@ -94,13 +103,6 @@ export class JecaTestExam implements IExamCreator {
       if (status) {
         // send notification
       }
-
-      // this.getredisClient().push({
-      //   type: "Notify",
-      //   status: true,
-      //   data: { examid: examid },
-      //   message: "exam created",
-      // });
       console.log("added notification");
     } else {
       console.log(" notification not updated");

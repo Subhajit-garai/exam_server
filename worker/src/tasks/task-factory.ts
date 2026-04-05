@@ -6,6 +6,7 @@ import { CreateExamTask } from "./create-exam-task.js";
 import { CreateScoreTask } from "./create-score-task.js";
 import { QuizProcessingTask } from "./quiz-processing-task.js";
 import { QuizCreateTask } from "./quiz/quiz-create-task.js";
+import { MockProcessingTask } from "./mock-processing-task.js";
 
 export class TaskFactory {
   static create(task: Task): BaseWorkerTask {
@@ -16,6 +17,8 @@ export class TaskFactory {
         return new CreateScoreTask(task);
       case "ANS_PROCESSING":
         return new AnsProcessingTask(task);
+      case "MOCK_PROCESSING":
+        return new MockProcessingTask(task);
       case "CREATE_QUIZ":
         return new QuizCreateTask(task);
       case "SEND_QUIZ_DATA": // for bot like telegram or whatsapp

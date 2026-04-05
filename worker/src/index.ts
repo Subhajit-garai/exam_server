@@ -43,9 +43,9 @@ import "dotenv/config";
 //   type: "CREATE_EXAM",
 //   id: "cmjgn8tmd000bn8buxruxtn1v",
 //   payload: {
-//     examid: "cmjgn8tmd000bn8buxruxtn1v",
-//     userid: "cmiumcgir0001jwbukh9xs97h",
-//     examtype: "Test",
+//     examid: 'cmncc106c000330s2j6mc4293',
+//     userid: 'cmiumcgir0001jwbukh9xs97h',
+//     examtype: 'Test'
 //   },
 //   variant: "Test",
 //   category: "JECA",
@@ -72,11 +72,24 @@ import "dotenv/config";
 //   },
 // };
 
+
+// let MOCK_PROCESSING: Task = {
+//   type: 'MOCK_PROCESSING',
+//   id: 'cmjk47lc300034oru1etspyx7',
+//   payload: {
+//     examid: 'cmjk47lc300034oru1etspyx7',
+//     userid: 'cmiumcgir0001jwbukh9xs97h',
+//     examtype: 'Mock'
+//   },
+//   variant: 'Mock',
+//   category: 'JECA'
+// }
+
 const main = async () => {
   try {
-    logger.info("Worker started");
+    logger.info(" Worker started");
     let redisClient = RedisProvider.getInstance();
-    // await redisClient.push(CREATE_QUIZ_TASK); // added testing
+    // await redisClient.push(MOCK_PROCESSING); // added testing
 
     while (true) {
       let data = await redisClient.pop();

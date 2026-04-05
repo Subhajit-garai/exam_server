@@ -52,6 +52,7 @@ export type CreationTypes = "Created" | "Updated" | "Processing" | "Done" | "Sus
 export type TaskType =
 
   | "CREATE_EXAM"
+  | "MOCK_PROCESSING"
   | "CREATE_QUIZ"
   | "CREATE_SCORE"
   | "ANS_PROCESSING"

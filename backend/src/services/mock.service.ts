@@ -37,11 +37,11 @@ export class MockService {
 
 
     async refresh(mockid: string, userid: string) {
-        return em.refresh(mockid, userid)
+        return em.refresh(mockid, userid, "MOCK_PROCESSING")
     }
 
     async selectRandomQuestion(mockid: string, userid: string) {
-        return em.refresh(mockid, userid, "MOCK_PROCESSING")
+        return em.refresh(mockid, userid)
     }
 
     async getMockById(id: string) {

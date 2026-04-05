@@ -1,4 +1,5 @@
 import { QuestionsId } from "@/lib/ExamQuestionProcessor.js";
+import { logger } from "@/utils/logger.js";
 import prisma from "@repo/db/index.js";
 import { CreationTypes } from "@repo/prisma/enums.js";
 
@@ -11,8 +12,21 @@ export class BotExamService {
 
 
     async setMockQuestionSetStatus(mockid: string, status: CreationTypes) {
-        console.log("not implemented yet");
-        return null
+
+        let res = await prisma.exam.findFirst({
+            where: { id: mockid }
+        })
+
+        if (!res) throw new Error("Mock not found");
+
+
+        let statusRes = await prisma.exam.update({
+            where: { id: mockid },
+            data: { creationstatus: status },
+            select: { id: true, name: true, creationstatus: true },
+        })
+
+        return statusRes
 
     }
     async checkExamCompletionStatus(examid: string) {
@@ -62,7 +76,7 @@ export class BotExamService {
             select: {
                 SubjectSyllabusMap: {
                     select: {
-                        subject: { select: { shortName: true } },
+                        subject: { select: { name: true } },
                     },
                 },
             },
@@ -70,7 +84,7 @@ export class BotExamService {
 
         if (!syllabusData) throw new Error("Syllabus data not found");
 
-        const syllabus = syllabusData.SubjectSyllabusMap.map((item) => item.subject.shortName);
+        const syllabus = syllabusData.SubjectSyllabusMap.map((item) => item.subject.name);
         return syllabus;
     }
 
@@ -143,7 +157,6 @@ export class BotExamService {
             finalSelectedQuestion = questionData
         }
 
-        console.log("    finalSelectedQuestion data ----> ", finalSelectedQuestion);
 
         if (!finalSelectedQuestion || finalSelectedQuestion.length === 0) throw new Error("Questions not found");
         return finalSelectedQuestion;
@@ -232,41 +245,29 @@ export class BotExamService {
         return questions;
     }
 
-    async getQuestionsForExam(examid: string) {
+    async getQuestionsInfoForExam(examid: string) {
         const questionMapData = await prisma.question_map.findMany({
-            where: { examid },
+            where: { examid }
         });
 
         if (!questionMapData || questionMapData.length === 0) throw new Error("Given exam doesn't contain any questions");
-
-        const questionIds = questionMapData.map((q) => q.questionid);
-
-        const questions = await prisma.question.findMany({
-            where: { id: { in: questionIds } },
-            select: {
-                ans: true,
-                id: true,
-                explanation: true,
-                title: true,
-                options: true,
-                extra: true,
-                format: true,
-            },
-        });
-
-        return questions;
+        return questionMapData;
     }
 
     async addQuestionsToExam(questions: any[]) {
         return await prisma.question_map.createMany({
             data: questions,
         });
+
     }
 
     // ### Exam Pattern Logic
-    async getMockSetExamPattern(title: string) {
-        const info = await prisma.exam_pattern.findFirst({
-            where: { title },
+    async getMockSetExamPattern(mockid: string) {
+        const info = await prisma.exam.findFirst({
+            where: { id: mockid },
+            select: {
+                exam_pattern: true
+            },
         });
         if (!info) throw new Error("Exam pattern info not found");
         return info;

@@ -1,5 +1,5 @@
 import { RedisProvider } from "../radisProvider.js";
-import { ExamQuestionsids } from "../types.js";
+import { ExamCategory, TaskType } from "../types.js";
 import prisma from "@repo/db/index.js";
 import {
   exam_question_format_for_ui_type,
@@ -103,6 +103,71 @@ export class ExamManager {
   }
 
   // --- Question Management ---
+
+
+  async refresh(id: string, userid: string, Tasktype: TaskType = "CREATE_EXAM") {
+
+
+    let Examinfo = await prisma.exam.findFirst({
+      where: {
+        id: id,
+      },
+      select: {
+        exam_pattern: {
+          select: {
+            syllabusid: true
+          },
+
+        },
+        examtype: true,
+        id: true
+      },
+    });
+
+    if (!Examinfo) throw Error("exam info not found")
+    let syllabus_id = Examinfo?.exam_pattern?.syllabusid;
+
+    if (!syllabus_id) throw new Error("Syllabus ID not found");
+    let categoryexamdata = await prisma?.syllabus.findFirst({
+      where: {
+        id: syllabus_id,
+      },
+      select: {
+        exam_year: {
+          select: {
+            targetExam: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!categoryexamdata) throw new Error("Category Exam not found");
+
+    let categoryexam = categoryexamdata.exam_year?.targetExam.name.toUpperCase() as ExamCategory
+
+
+    let Notifystatus = await this.getRedisClient().push({
+      type: Tasktype,
+      id: Examinfo?.id,
+      payload: {
+        examid: Examinfo?.id,
+        userid: userid,
+        examtype: Examinfo?.examtype,
+      },
+      variant: Examinfo?.examtype,
+      category: categoryexam,
+    });
+
+    return Notifystatus;
+
+  }
+
+
+
 
   async addExam(examId: string) {
     const examQuestions = await prisma.question_map.findMany({

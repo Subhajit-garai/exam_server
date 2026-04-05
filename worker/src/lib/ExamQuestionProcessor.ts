@@ -1,6 +1,8 @@
 import { BotService } from "@/services/bot/bot.service.js";
 import { exam_question_map_format } from "./types/types.js";
 import { logger } from "@/utils/logger.js";
+import { question_map } from "@repo/prisma/browser.js";
+import { question_mapCreateManyArgs } from "@repo/prisma/models.js";
 export type SelectQuestionNumber_type = Record<string, number>;
 export type SelectQuestion_type = Record<string, string[]>;
 
@@ -239,8 +241,10 @@ export class examQuestionManger {
       // select question id
 
       if (is_multiple_ans) {
+
         let Questions = this.Questions.multipleAns; // multiple ans  questions
         let singleAns_Questions = this.Questions.normal; // normal ans  questions for varience
+
         if (Object.keys(questionset).length <= singleAns_Questions.length) {
 
           if (
@@ -248,51 +252,59 @@ export class examQuestionManger {
             Object.keys(questionset).length <= singleAns_Questions.length
           ) {
             // here topic changed into old_topic , in new archi tecture we saprate subjcet , topic tables for note
-            Questions.forEach((topic) => {
+
+            Object.keys(questionset).map((selectedTopic) => {
               singleAns_Questions.forEach((singleTopic) => {
 
+                if (selectedTopic == singleTopic.subject_name) {
 
-                if (topic.subject_name == singleTopic.subject_name) {
-                  Object.keys(questionset).map((selectedTopic) => {
+                  let multiple_question_set: QuestionsId = {
+                    subject_name: "",
+                    ids: []
+                  }
+
+                  Questions.forEach((topic) => {
                     if (topic.subject_name == selectedTopic) {
-                      let normalShuffled = [...singleTopic.ids].sort(
-                        () => Math.random() - 0.5
-                      ); // Shuffle elements
-                      normalShuffled = [...normalShuffled].sort(
-                        () => Math.random() - 0.5
-                      ); // Shuffle elements
-                      normalShuffled = [...normalShuffled].sort(
-                        () => Math.random() - 0.5
-                      ); // Shuffle elements
-
-                      let select_normal_question_number: number = 5;
-
-                      while (
-                        select_normal_question_number + topic.ids.length <
-                        questionset[topic.subject_name]
-                      ) {
-                        select_normal_question_number += 5;
-                      }
-
-                      selectedNormal = [
-                        ...normalShuffled.slice(
-                          0,
-                          select_normal_question_number
-                        ),
-                      ];
-                      let shuffled = [...topic.ids].sort(
-                        () => Math.random() - 0.5
-                      ); // Shuffle elements
-                      shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
-                      shuffled = [...shuffled, ...selectedNormal].sort(
-                        () => Math.random() - 0.5
-                      ); // merge ans shuffle normal and multiple
-
-                      selectedElements[topic.subject_name] = [
-                        ...shuffled.slice(0, questionset[topic.subject_name]),
-                      ];
+                      multiple_question_set = topic
                     }
-                  });
+                  })
+
+
+                  let normalShuffled = [...singleTopic.ids].sort(
+                    () => Math.random() - 0.5
+                  ); // Shuffle elements
+                  normalShuffled = [...normalShuffled].sort(
+                    () => Math.random() - 0.5
+                  ); // Shuffle elements
+
+
+                  let select_normal_question_number: number = 5;
+
+                  while (
+                    select_normal_question_number + multiple_question_set.ids.length <
+                    questionset[multiple_question_set.subject_name]
+                  ) {
+                    select_normal_question_number += 5;
+                  }
+
+                  selectedNormal = [
+                    ...normalShuffled.slice(
+                      0,
+                      select_normal_question_number
+                    ),
+                  ];
+
+                  let shuffled = [...multiple_question_set.ids].sort(() => Math.random() - 0.5); // Shuffle elements
+                  shuffled = [...shuffled, ...selectedNormal].sort(
+                    () => Math.random() - 0.5
+                  ); // merge ans shuffle normal and multiple
+
+                  selectedElements[selectedTopic] = [
+                    ...shuffled.slice(0, questionset[selectedTopic]),
+                  ];
+
+
+
                 }
               });
             });
@@ -307,6 +319,7 @@ export class examQuestionManger {
       } else {
 
         let Questions = this.Questions.normal; // normal ans  questions
+
         if (Object.keys(questionset).length <= Questions.length) {
 
           Questions.forEach((topic) => {
@@ -317,8 +330,8 @@ export class examQuestionManger {
                 shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
                 shuffled = [...shuffled].sort(() => Math.random() - 0.5); // Shuffle elements
 
-                selectedElements[topic.subject_name] = [
-                  ...shuffled.slice(0, questionset[topic.subject_name]),
+                selectedElements[selectedTopic] = [
+                  ...shuffled.slice(0, questionset[selectedTopic]),
                 ];
               }
             });
@@ -329,32 +342,31 @@ export class examQuestionManger {
           );
         }
       }
-
-      // logger.success(selectedElements)
       return selectedElements;
+
+
     } catch (error) {
       console.log("Error in selecteQuestionsNumber fn", error);
       return null;
     }
   };
 
-  async AddQuestionsIntoExam(examid: string, questions: any) {
-    let formated_questions: exam_question_map_format[] = [];
+  async AddQuestionsIntoExam(examid: string, questions: SelectQuestion_type) {
+    const data: exam_question_map_format[] = [];
 
-    Object.keys(questions).map((part) => {
-      questions[part].map((questionid: string, idx: number) => {
-        let temp: exam_question_map_format = {
+    Object.keys(questions).forEach((part) => {
+      questions[part].forEach((questionid: string, idx: number) => {
+        data.push({
           number: idx + 1,
           questionid: questionid,
           part: part,
           examid: examid,
-        };
-
-        formated_questions.push(temp);
+        });
       });
     });
 
-    let res = await this.BotService.exam.addQuestionsToExam(formated_questions);
+
+    let res = await this.BotService.exam.addQuestionsToExam(data);
     return res ? res : false;
   }
 

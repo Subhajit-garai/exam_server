@@ -1,6 +1,9 @@
-import { ExamType, Visibility } from "@repo/prisma/client.js";
+import { ExamType, Prisma, Visibility } from "@repo/prisma/client.js";
 import prisma from "@repo/db/index.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
+import { ExamManager } from "@/lib/manager/examManager.js";
+
+const em = ExamManager.getInstance();
 
 export class MockService {
 
@@ -30,6 +33,15 @@ export class MockService {
             }
         });
         return response;
+    }
+
+
+    async refresh(mockid: string, userid: string) {
+        return em.refresh(mockid, userid, "MOCK_PROCESSING")
+    }
+
+    async selectRandomQuestion(mockid: string, userid: string) {
+        return em.refresh(mockid, userid)
     }
 
     async getMockById(id: string) {
@@ -90,16 +102,6 @@ export class MockService {
     }
 
     async removeQuestionFromMock(mockId: string, questionId: string) {
-        // Delete from question_map
-        // We might need to handle 'part' if a question can be in multiple parts, 
-        // but typically a question is once per exam? 
-        // Schema: @@unique([examid, questionid, part])
-        // If we don't have part, we might delete all occurrences or fail?
-        // Let's assume we delete all for this question in this exam for now, or request requires part.
-        // For simplicity, let's try deleteMany or expect part in request if strict.
-        // Given the requirement "removeQuestionFromMockQuestionSet", I'll use deleteMany for safety 
-        // or findFirst then delete.
-
         const response = await prisma.question_map.deleteMany({
             where: {
                 examid: mockId,
@@ -116,9 +118,6 @@ export class MockService {
                 exam_pattern: {
                     select: {
                         syllabus: true,
-                        // might need resolved topics if syllabus is a type or relation
-                        // Schema says: syllabus syllabusType @default(Syllabus)
-                        // And topics String[]
                         topics: true
                     }
                 }

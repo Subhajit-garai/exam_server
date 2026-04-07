@@ -15,7 +15,7 @@ model Coupon {
     createdBy      String? // Admin/user who created it
     createdAt      DateTime  @default(now())
 
-    createdUser  User?         @relation(fields: [createdBy], references: [id])
+    createdUser  User?         @relation(fields: [createdBy], references: [id], onDelete: SetNull)
     CouponUsages CouponUsage[] // Relation: which users used it
 }
 

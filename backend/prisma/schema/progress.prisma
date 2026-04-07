@@ -9,7 +9,7 @@ model ExamProgress {
     lastExamDate            DateTime?
     lastRank                Int       @default(0)
     bestRank                Int       @default(0)
-    User                    User      @relation(fields: [userId], references: [id])
+    User                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model DppProgress {
@@ -20,7 +20,7 @@ model DppProgress {
     lastDppId       String?
     lastDppDate     DateTime?
     currentStreak   Int       @default(0) // Specific streak for DPPs if needed
-    User            User      @relation(fields: [userId], references: [id])
+    User            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model QuizProgress {
@@ -30,7 +30,7 @@ model QuizProgress {
     totalScore   Int       @default(0)
     lastQuizId   String?
     lastQuizDate DateTime?
-    User         User      @relation(fields: [userId], references: [id])
+    User         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // New Model: Track individual topic engagement

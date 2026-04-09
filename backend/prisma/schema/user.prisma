@@ -58,7 +58,7 @@ model Social {
   link       String
   isVerified Boolean        @default(false)
   updatedAt  DateTime       @updatedAt
-  User       User           @relation(fields: [userId], references: [id])
+  User       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, platform])
   @@unique([platform, link])

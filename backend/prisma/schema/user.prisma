@@ -46,6 +46,7 @@ model User {
   userBadges                  UserBadge[]
   activityLeaderboards        ActivityLeaderboard[]
   userTopicProgresses         UserTopicProgress[]
+  userAns                     UserAns[]
 
   @@index([role])
 }
@@ -57,7 +58,7 @@ model Social {
   link       String
   isVerified Boolean        @default(false)
   updatedAt  DateTime       @updatedAt
-  User       User           @relation(fields: [userId], references: [id])
+  User       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, platform])
   @@unique([platform, link])
@@ -69,7 +70,7 @@ model prime {
   userid      String      @unique
   expiryInday Int?        @default(0)
   expiry      DateTime    @default(now())
-  User        User        @relation(fields: [userid], references: [id])
+  User        User        @relation(fields: [userid], references: [id], onDelete: Cascade)
   updatedAt   DateTime    @default(now()) @updatedAt
 }
 
@@ -79,7 +80,7 @@ model balance {
   amount      Int      @default(0)
   ticket      Int      @default(0)
   last_update DateTime @updatedAt
-  User        User     @relation(fields: [userid], references: [id])
+  User        User     @relation(fields: [userid], references: [id], onDelete: Cascade)
 }
 
 model UserAns {
@@ -94,6 +95,7 @@ model UserAns {
   isCorrect      Boolean? // it  may  later    , if user not ansed then  it null
   createdAt      DateTime @default(now())
   Question       Question @relation(fields: [questionId], references: [id])
+  User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([examId, userId, questionId])
 }

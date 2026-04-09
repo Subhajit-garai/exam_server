@@ -492,10 +492,20 @@ export class UserService {
             }
         });
 
+
+        // calculate expiry
+        const expiry = user.prime?.expiry;
+        const expiryInday = user.prime?.expiryInday;  // we are not updating plan expriy 
+
+        if (!expiry || !expiryInday) throw new Error("Expiry not found");
+        const expiryDate = new Date(expiry);
+        const today = new Date();
+        const diffInDays = Math.floor((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
         return {
             currentPlan: currentStatus,
             expiry: user.prime?.expiry,
-            expiryInday: user.prime?.expiryInday,
+            expiryInday: diffInDays,
             tierDetails: tier,
             lastPayment: lastPayment ? {
                 amount: lastPayment.amount,
@@ -504,4 +514,5 @@ export class UserService {
             } : null
         };
     }
+
 }

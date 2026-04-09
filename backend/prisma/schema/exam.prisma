@@ -55,9 +55,9 @@ model Exam_pattern {
   marks_values    Int[]
   neg_values      Int[]
   is_multiple_ans Int[]         @default([0, 0]) // 0 mean false 1 mean it is multiple value ans
-  created_by      String
+  created_by      String?
   Exam            Exam[]
-  User            User          @relation(fields: [created_by], references: [id])
+  User            User?         @relation(fields: [created_by], references: [id], onDelete: SetNull)
 }
 
 model Exam {
@@ -83,10 +83,10 @@ model Exam {
   question_part_count        Json? // { "part1": 0, "part2": 0 }
 
   created_at DateTime? @default(now())
-  created_by String
+  created_by String?
 
   ContestRegister ContestRegister @relation(fields: [register_id], references: [id])
-  User            User            @relation(fields: [created_by], references: [id])
+  User            User?           @relation(fields: [created_by], references: [id], onDelete: SetNull)
   exam_pattern    Exam_pattern    @relation(fields: [exam_pattern_id], references: [id])
   leaderboard     leaderboard[]
   questionsMap    question_map[]  @relation("ExamRelation")

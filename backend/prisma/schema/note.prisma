@@ -95,7 +95,7 @@ model Topic {
 
   relatedTopics   Topic[] @relation("RelatedTopics")
   relatedByTopics Topic[] @relation("RelatedTopics")
-  User            User?   @relation(fields: [createdBy], references: [id])
+  User            User?   @relation(fields: [createdBy], references: [id], onDelete: SetNull)
 
   Question           Question[]
   QuestionProcessing QuestionProcessing[]

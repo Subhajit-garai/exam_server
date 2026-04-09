@@ -41,7 +41,7 @@ model leaderboard {
   time    DateTime @default(now())
   // user       User     @relation(fields: [user_id], references: [id])
   exam    Exam     @relation(fields: [exam_id], references: [id])
-  User    User?    @relation(fields: [user_id], references: [id])
+  User    User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
 
   @@unique([user_id, exam_id, time]) // Ensures one rank per user per exam
 }

@@ -497,7 +497,7 @@ export class UserService {
         const expiry = user.prime?.expiry;
         const expiryInday = user.prime?.expiryInday;  // we are not updating plan expriy 
 
-        if (!expiry || !expiryInday) throw new Error("Expiry not found");
+        if (!expiry) throw new Error("Expiry not found");
         const expiryDate = new Date(expiry);
         const today = new Date();
         const diffInDays = Math.floor((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));

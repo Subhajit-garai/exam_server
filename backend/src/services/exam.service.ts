@@ -246,6 +246,7 @@ export class ExamService {
                 starttime: true,
                 jointime: true,
                 date: true,
+                access_type: true
             },
         });
 
@@ -267,21 +268,27 @@ export class ExamService {
             }
 
             // transaction point
-            await prisma.$transaction(async (tx: any) => {
-                let transaction = await TokenDeduction(
-                    tx,
-                    userId,
-                    exam.examtype,
-                    "service"
-                );
 
-                if (transaction) {
-                    await em.addExam(exam.id);
-                    console.log("date added into exam manager");
-                    await em.addUser(examId, userId);
-                    console.log("user added into exam manager");
-                }
-            });
+            if (exam.access_type === "Paid") {
+
+
+                await prisma.$transaction(async (tx: any) => {
+                    await TokenDeduction(
+                        tx,
+                        userId,
+                        exam.examtype,
+                        "service"
+                    );
+                });
+
+            }
+
+
+            await em.addExam(exam.id);
+            console.log("date added into exam manager");
+            await em.addUser(examId, userId);
+            console.log("user added into exam manager");
+
         }
 
         return true;

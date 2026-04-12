@@ -375,6 +375,7 @@ export class ExamService {
                 examtype: true,
                 starttime: true,
                 creationstatus: true,
+                access_type: true,
 
                 date: true,
                 duration: true,
@@ -442,6 +443,7 @@ export class ExamService {
                 examtype: true,
                 starttime: true,
                 creationstatus: true,
+                access_type: true,
                 date: true,
                 duration: true,
                 jointime: true,

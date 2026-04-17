@@ -3,13 +3,13 @@ import axios from "axios";
 let MESSAGER_TOKEN = process.env.TELEGRAM_MESSAGER_BOT_TOKEN;
 let url = `https://api.telegram.org/bot${MESSAGER_TOKEN}/sendMessage`;
 
-export const sendMessage_HtmlParse = async (
-  chat_id: number,
-  message: string
+export const sendMessage = async (
+  chat_id: string,
+  message: string // html or markdown
 ) => {
   try {
     let sendedMessage = await axios.post(url, {
-      chat_id: chat_id,
+      chat_id: parseInt(chat_id),
       text: message,
       parse_mode: "HTML", // for markdown and html
     });
@@ -23,24 +23,6 @@ export const sendMessage_HtmlParse = async (
     console.error("Error sending message:", error);
   }
 
-  return false;
-};
-
-export const sendMessage = async (chat_id: number, message: string) => {
-  try {
-    let sendedMessage = await axios.post(url, {
-      chat_id: chat_id,
-      text: message,
-    });
-
-    if (sendedMessage.status === 200) {
-      console.log("sended message");
-      let id = sendedMessage?.data?.result?.message_id;
-      return id;
-    }
-  } catch (error) {
-    console.error("Error sending message:", error);
-  }
   return false;
 };
 

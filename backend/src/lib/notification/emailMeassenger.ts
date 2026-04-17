@@ -1,4 +1,5 @@
 import nodemailer, { Transporter } from "nodemailer";
+import { logger } from "../helper/logger";
 
 class Mailer {
   private transporter: Transporter;
@@ -17,22 +18,25 @@ class Mailer {
     });
   }
 
-  async sendMail(to: string, subject: string, text: string): Promise<void> {
+
+
+  async sendHtmlMail(to: string, subject: string, html: string): Promise<void> {
     try {
       const mailOptions = {
         from: process.env.EMAIL_USER?.trim() as string,
-        to,
-        subject,
-        text,
+        to: to,
+        subject: subject,
+        html: html,
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      console.log("Email sent:", info.response);
+      logger.success("Email sent:", info.response);
     } catch (error) {
-      console.error("Error sending email:", error);
+      logger.error("Error sending email:", error);
       throw error;
     }
   }
 }
 
 export default Mailer;
+

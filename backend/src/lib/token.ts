@@ -18,7 +18,11 @@ export const genToken = (
 ): string => {
     const payload: any = { id };
     if (extra) payload.extra = extra;
-    return jwt.sign(payload, jwtSecret, { expiresIn });
+    return jwt.sign(payload, jwtSecret,
+        {
+            expiresIn
+        }
+    );
 };
 
 

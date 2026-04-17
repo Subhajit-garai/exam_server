@@ -15,7 +15,6 @@ import { IssuePublicRouter } from "./routes/IssueRouter.js";
 import { paymentVerification } from "./controllers/payment.controller.js";
 import { metrixRoute } from "./routes/metrix.route.js";
 import { paymentRouter } from "./routes/paymentRouter.js";
-import { botRouter } from "./routes/bot/botRouter.js";
 import { DataManageRouter } from "./routes/DataManageRouter.js";
 import { examPublicRouter } from "./routes/examRoutes.js";
 import { examPatternPublicRouter } from "./routes/examPattern.routes.js";
@@ -90,7 +89,6 @@ app.post("/api/v1/payment/paymentverification", paymentVerification);
 
 
 app.use("/api/v1/stats", statsRouter);
-app.use("/api/v1/bot", botRouter);
 app.use("/api/v1/user", CommonuserRoutes);
 app.use("/api/v1/category", categoryPublicRouter);
 

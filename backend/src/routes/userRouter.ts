@@ -7,7 +7,6 @@ import { activityRouter } from "./activity.routes.js";
 import { profileRouter } from "./profileRouter.js";
 import { genToken } from "@/lib/token.js";
 import { getAllNoteSubjectForUser } from "@/controllers/note.controller.js";
-import { botQuizConfigUserRouter } from "./botQuizConfig.routes.js";
 
 
 export const userRouter = Router();
@@ -31,4 +30,4 @@ userRouter.get("/rewards", getUserRewards);
 
 userRouter.use("/activity", activityRouter)
 userRouter.use("/profile", profileRouter);
-userRouter.use("/quizconfig", botQuizConfigUserRouter);
+

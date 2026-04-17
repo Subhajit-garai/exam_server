@@ -1,4 +1,4 @@
-import { AddQuestionIntoMock, get_all_mock, get_mock_by_id, getAvailableMock, getExampatternFormock, getmockQuestion, refreshMock, RemoveQuestionFromMock, SelectRandomQuestion } from "@/controllers/mock.controller.js";
+import { AddQuestionIntoMock, deleteQuestionsFromMock, get_all_mock, get_mock_by_id, getAvailableMock, getExampatternFormock, getmockQuestion, refreshMock, RemoveQuestionFromMock, SelectRandomQuestion } from "@/controllers/mock.controller.js";
 import { Router } from "express";
 
 
@@ -10,6 +10,8 @@ export const mockRouter = Router();
 
 mockRouter.post("/refresh/:mockid", refreshMock);
 mockRouter.post("/question/random/:mockid", SelectRandomQuestion);
+mockRouter.delete("/questions/:mockid", deleteQuestionsFromMock
+)
 mockRouter.get("/getall", get_all_mock);
 mockRouter.get("/get", get_mock_by_id);
 mockRouter.get("/get/questions", getmockQuestion);

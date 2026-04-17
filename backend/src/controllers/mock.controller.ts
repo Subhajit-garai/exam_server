@@ -3,6 +3,26 @@ import { MockService } from "../services/mock.service.js";
 
 const mockService = new MockService();
 
+
+
+export const deleteQuestionsFromMock = asyncHandler(async (req: any, res: any) => {
+    const { mockid } = req.params;
+    if (!mockid) throw new Error("Mock Set ID is required");
+
+
+    //  confirm  with a email code 
+
+
+    const response = await mockService.deleteQuestionsFromMock(mockid);
+
+    if (!response) throw new Error("Failed to delete questions from mock");
+
+    res.json({
+        success: true,
+        message: "Questions deleted from mock",
+    });
+})
+
 export const SelectRandomQuestion = asyncHandler(async (req: any, res: any) => {
     const userId = req.user;
     const { mockid } = req.params;
@@ -18,6 +38,8 @@ export const SelectRandomQuestion = asyncHandler(async (req: any, res: any) => {
         message: "Mock set addded for refresh",
     });
 });
+
+
 export const refreshMock = asyncHandler(async (req: any, res: any) => {
     const userId = req.user;
     const { mockid } = req.params;

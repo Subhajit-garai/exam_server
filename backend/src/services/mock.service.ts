@@ -44,6 +44,23 @@ export class MockService {
         return em.refresh(mockid, userid)
     }
 
+
+
+    async deleteQuestionsFromMock(mockid: string) {
+
+        let status = await prisma.question_map.deleteMany({
+            where: {
+                examid: mockid
+            }
+        })
+
+        if (!status) throw new Error("Failed to delete questions from mock");
+
+        return status
+    }
+
+
+
     async getMockById(id: string) {
         const response = await prisma.exam.findUnique({
             where: {

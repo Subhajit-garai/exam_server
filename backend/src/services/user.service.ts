@@ -13,7 +13,7 @@ import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { ProfileService } from "./profile.service.js";
 import { logger } from "@/lib/helper/logger.js";
 import { buildEmailNotification, buildTelegramNotification } from "@subhajit60/notification-engine";
-import { MessagerDispatcher } from "@/lib/notification/notificatinProcesser.js";
+import { MessageDispatcher } from "@/lib/notification/notificatinProcesser.js";
 
 
 const profileService = new ProfileService();
@@ -140,7 +140,7 @@ export class UserService {
 
 
         let message = buildEmailNotification('token', 'success', `Your validation token is ${token}`, "User email validation")
-        MessagerDispatcher.dispatch(message, email)
+        MessageDispatcher.dispatch(message, email)
 
         return true;
     }
@@ -243,7 +243,7 @@ export class UserService {
 
 
         let message = buildTelegramNotification('token', 'success', MESSAGE, "Telegram Token")
-        MessagerDispatcher.dispatch(message, telegramid)
+        MessageDispatcher.dispatch(message, telegramid)
 
         return true;
     }
@@ -321,7 +321,7 @@ export class UserService {
         }
 
         let message = buildEmailNotification('token', 'success', `Your reset password token is ${token}`, "Reset Password")
-        MessagerDispatcher.dispatch(message, email)
+        MessageDispatcher.dispatch(message, email)
 
         return true;
     }

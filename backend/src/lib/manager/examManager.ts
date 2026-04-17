@@ -6,6 +6,7 @@ import {
   exam_question_format_type,
 } from "../types/questionTypes.js";
 import { shuffleArraySeeded } from "../helper/shuffle.js";
+import { logger } from "../helper/logger.js";
 
 interface ExamMetaData {
   id: string;
@@ -125,6 +126,14 @@ export class ExamManager {
     });
 
     if (!Examinfo) throw Error("exam info not found")
+
+    if (Examinfo.examtype == "Mock" || Examinfo.examtype == "PYQ") {
+
+      logger.info(`exam type is ${Examinfo.examtype} , so no need to refresh / add question by random`)
+
+      return true;
+    }
+
     let syllabus_id = Examinfo?.exam_pattern?.syllabusid;
 
     if (!syllabus_id) throw new Error("Syllabus ID not found");
@@ -170,6 +179,7 @@ export class ExamManager {
 
 
   async addExam(examId: string) {
+
     const examQuestions = await prisma.question_map.findMany({
       where: { examid: examId },
       select: {

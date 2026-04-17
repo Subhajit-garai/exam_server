@@ -3,9 +3,6 @@ import prisma from "../../db/index.js";
 import dayjs from "dayjs";
 
 import { Client } from "pg";
-import { MockSetProcessingStatus, ProcessMockSet } from "./Mockset.processing.js";
-import { isFeatureAvailable } from "../../controllers/tier.controller.js";
-import axios from "axios";
 import {
   timeToCron,
   timeToCronWeekly,
@@ -15,7 +12,6 @@ import { events } from "../types/EventTypes.js";
 import { eventRunner } from "./jobs/event/event-runner.js";
 import { resetWeeklyLeaderboard } from "./jobs/activity.cron.js";
 import { updateSystemStats, initSystemStats } from "./jobs/stats.cron.js";
-import { SocialPlatform } from "@repo/prisma/enums.js";
 import { logger } from "../helper/logger.js";
 
 const pgClient = new Client({ connectionString: process.env.DATABASE_URL });
@@ -44,86 +40,6 @@ pgClient.connect().then(async () => {
             }
           }
           break;
-
-        case "mock_set_channel":
-          {
-            console.log("mock_set channel notification received");
-            console.log(`Event ${id} was ${action}`);
-            let status = await MockSetProcessingStatus(id);
-            if (status && (status == "Updated" || status == "Created"))
-              await ProcessMockSet(id, action);
-          }
-          break;
-
-        // case "prime_status_channel":
-        //   {
-        //     console.log("mock_set prime_status_channel notification received");
-        //     console.log(`Event ${id} was ${action}`);
-
-        //     let prime = await prisma.prime.findUnique({
-        //       where: {
-        //         id: id,
-        //       },
-        //     });
-        //     if (!prime) throw new Error("Prime not found");
-        //     let userData = await prisma.user.findFirst({
-        //       where: {
-        //         id: prime?.userid,
-        //       },
-        //       select: {
-        //         social: {
-        //           where: {
-        //             platform: SocialPlatform.telegram
-        //           },
-        //         },
-        //       },
-        //     });
-
-        //     if (!userData) throw new Error("userData not found");
-        //     // telegram quiz
-        //     let status = await isFeatureAvailable(prime?.status, "Quiz");
-        //     if (!status) {
-        //       throw new Error("Feature not available for user");
-        //     } else {
-        //       if (status.access) {
-
-
-        //         let bot_user = await prisma.user.findFirst({
-        //           where: {
-        //             role: "Bot",
-        //           },
-        //         });
-        //         let bot_webhook = await prisma.botInfo.findFirst({
-        //           where: {
-        //             botuser_id: bot_user?.id,
-        //           },
-        //         });
-        //         if (!bot_webhook) {
-        //           console.log("No bot webhook found");
-        //         }
-
-        //         let webhook: webhook_type =
-        //           bot_webhook?.webhook as webhook_type;
-        //         let cbUrl = `${webhook.baseurl}${webhook.endpoint.survertask}`;
-
-        //         let userTelegramId = userData?.social[0].link;
-        //         let responce = await axios.post(cbUrl, {
-        //           type: "unbanuser",
-        //           user_id: userTelegramId
-        //         });
-        //         if (responce) {
-        //           console.log("User unbanned successfully");
-        //         } else {
-        //           // setTimeout(() => {
-        //         }
-        //       }
-        //     }
-        //     // is user prime status include prime group service
-
-        //     // send
-        //   }
-        //   break;
-
         default:
           console.log("Unknown channel", msg.channel);
 

@@ -1,10 +1,10 @@
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 
 import { Task } from "./types.js";
 
 export class RedisProvider {
   private static instance: RedisProvider;
-  private redisClient: Redis;
+  private redisClient: InstanceType<typeof Redis>;
   private queue: string = "task";
 
   public static getInstance() {
@@ -17,13 +17,13 @@ export class RedisProvider {
   private constructor() {
 
     this.redisClient = new Redis(process.env.REDIS_URL!);
-    this.redisClient.on("error", (err) =>
+    this.redisClient.on("error", (err: Error) =>
       console.log("Redis Client Error", err)
     );
 
   }
 
-  getclient(): Redis {
+  getclient(): InstanceType<typeof Redis> {
     return this.redisClient;
   }
 
@@ -43,19 +43,19 @@ export class RedisProvider {
     return null;
   }
 
-  set(id: string, data: any) {
-    let taskdata: string;
-    taskdata = JSON.stringify(data);
-    this.redisClient.set(`question:${id}`, taskdata, "EX", 86400, "XX", (err, success) => {
-      if (err) {
-        console.error("Redis SETXX Error:", err);
+  async set(id: string, data: any): Promise<void> {
+    const taskdata = JSON.stringify(data);
+    const key = `question:${id}`;
+    try {
+      // Update only if key already exists (XX), with 24h TTL
+      const result = await this.redisClient.set(key, taskdata, "EX", 86400, "XX");
+      if (!result) {
+        // Key didn't exist yet — create it (NX), with 24h TTL
+        await this.redisClient.set(key, taskdata, "EX", 86400, "NX");
       }
-
-      if (!success) {
-        this.redisClient.set(`question:${id}`, taskdata, "EX", 86400, "NX")
-      }
-    })
-
+    } catch (err) {
+      console.error("Redis SET Error:", err);
+    }
   }
 
   async get(id: string) {

@@ -1,7 +1,7 @@
 import { Response, Request } from "express";
 import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 import { ExamManager } from "@repo/lib/manager/examManager.js";
-import { activity_quiz_create_data_ZodSchema, create_quiz_data_ZodSchema, createQuizType } from "../zod/quiz.zod.js";
+import { activity_quiz_create_data_ZodSchema } from "../zod/quiz.zod.js";
 import { QuizService } from "../services/quiz.service.js";
 import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 

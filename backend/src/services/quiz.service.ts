@@ -1,7 +1,6 @@
 import prisma from "@repo/db/index.js";
-import { QuizeSetupFunction } from "@/lib/helper/TelegramQuiz.js";
 import { QuizManager, QuizMetaData } from "@/lib/manager/quizManager.js";
-import { activity_quiz_create_data_type } from "@/zod/quiz.zod";
+import type { activity_quiz_create_data_type } from "@/zod/quiz.zod.js";
 const qm = QuizManager.getInstance();
 
 
@@ -24,10 +23,6 @@ export class QuizService {
 
         if (!config) throw new Error("Quiz config not found");
         return config;
-    }
-    async setupQuiz(botUser: string, data: any) {
-        const notifyStatus = await QuizeSetupFunction(botUser, data);
-        return notifyStatus;
     }
 
     async createQuiz(userid: string, userRole: string, data: activity_quiz_create_data_type) {

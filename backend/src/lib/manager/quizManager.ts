@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { activity_quiz_create_data_type } from "@/zod/quiz.zod.js";
 import { CreationTypes } from "@repo/prisma/enums.js";
 import { logger } from "../helper/logger.js";
-import Redis from "ioredis";
+import type { Redis } from "ioredis";
 
 export interface QuizMetaData {
     id: string;

@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { updateAppConfig, SendAppConfig, getAllbotUser } from "../controllers/settings.controller.js";
-import { addbotToken, createNewBot, setQuizTopic, updateBotWebhook } from "@/controllers/bot/bot.admin.controller.js";
 import { examTimelineAdminRouter } from "./examTimeline.routes.js";
 import { syllabusAdminRouter } from "./syllabusRouter.js";
 import { categoryAdminRouter } from "./category.routes.js";
@@ -12,7 +11,6 @@ import { IssueAdminRouter } from "./IssueRouter.js";
 import { noteAdminRouter } from "./noteRoute.js";
 import { examAdminRouter } from "./examRoutes.js";
 import { examPatternAdminRouter } from "./examPattern.routes.js";
-import { botQuizConfigAdminRouter } from "./botQuizConfig.routes.js";
 import { offerRouter } from "./offer.routes.js";
 import { subscriptionRouter } from "./subscription.routes.js";
 import { dashboardRouter } from "./dashboard.routes.js";
@@ -26,14 +24,6 @@ adminRouter.put("/settings/update/appconfig", updateAppConfig)
 adminRouter.get("/settings/get/appconfig", SendAppConfig)
 adminRouter.get("/bot/get/all", getAllbotUser)
 
-
-adminRouter.post("/setquiztopic", setQuizTopic);
-adminRouter.post("/setToken", addbotToken)
-
-adminRouter.post("/bot/create", createNewBot)
-adminRouter.put("/bot/botWebhook", updateBotWebhook)
-// adminRouter.post("/event",isAdmin, addbotToken)
-
 adminRouter.use("/timeline", examTimelineAdminRouter)
 adminRouter.use("/syllabus", syllabusAdminRouter)
 adminRouter.use("/event", eventAdminRouter)
@@ -45,7 +35,6 @@ adminRouter.use("/issue", IssueAdminRouter)
 adminRouter.use("/note", noteAdminRouter)
 adminRouter.use("/exam", examAdminRouter)
 adminRouter.use("/exampattern", examPatternAdminRouter)
-adminRouter.use("/quizconfig", botQuizConfigAdminRouter)
 adminRouter.use("/offer", offerRouter)
 adminRouter.use("/subscription", subscriptionRouter)
 adminRouter.use("/dashboard", dashboardRouter)

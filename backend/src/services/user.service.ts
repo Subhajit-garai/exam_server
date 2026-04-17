@@ -6,12 +6,14 @@ import {
     hashPasswordFn,
     veryfyhashPasswordFn,
 } from "@repo/lib/security/hash.js";
-import Mailer from "@repo/lib/messageService/nodemail.js";
+import Mailer from "@/lib/notification/emailMeassenger.js";
 import dayjs from "dayjs";
-import { sendMessage_HtmlParse } from "@repo/lib/messageService/telgramMessenger.js";
+import { sendMessage } from "@/lib/notification/telgramMessenger.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { ProfileService } from "./profile.service.js";
 import { logger } from "@/lib/helper/logger.js";
+import { buildEmailNotification, buildTelegramNotification } from "@subhajit60/notification-engine";
+import { MessageDispatcher } from "@/lib/notification/notificatinProcesser.js";
 
 
 const profileService = new ProfileService();
@@ -135,12 +137,10 @@ export class UserService {
             throw new CustomError("token not set");
         }
 
-        let mailer = new Mailer();
-        await mailer.sendMail(
-            email,
-            "User email validation",
-            `Your validation token is ${token}`
-        );
+
+
+        let message = buildEmailNotification('token', 'success', `Your validation token is ${token}`, "User email validation")
+        MessageDispatcher.dispatch(message, email)
 
         return true;
     }
@@ -239,14 +239,11 @@ export class UserService {
 ⚠️ <i>Do not share this token with anyone.</i>
 ⚠️ <i>You can hold the token to copy it.</i>
 `;
-        let message_state = await sendMessage_HtmlParse(
-            parseInt(telegramid),
-            MESSAGE
-        );
 
-        if (!message_state) {
-            throw new Error("token not send");
-        }
+
+
+        let message = buildTelegramNotification('token', 'success', MESSAGE, "Telegram Token")
+        MessageDispatcher.dispatch(message, telegramid)
 
         return true;
     }
@@ -323,12 +320,8 @@ export class UserService {
             throw new Error("token not set");
         }
 
-        let mailer = new Mailer();
-        await mailer.sendMail(
-            email,
-            "Reset Password",
-            `Your reset password token is ${token}`
-        );
+        let message = buildEmailNotification('token', 'success', `Your reset password token is ${token}`, "Reset Password")
+        MessageDispatcher.dispatch(message, email)
 
         return true;
     }

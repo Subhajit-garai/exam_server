@@ -1,4 +1,4 @@
-import { events } from "@repo/prisma/client";
+import { events } from "@repo/prisma/client.js";
 import { BaseEvent } from "../bace-event.js";
 import { event_Quiz_data_type } from "@/lib/types/EventTypes.js";
 import { run_webapp_quiz_event } from "../event_statergis/quiz/run-webapp-quiz-event.js";

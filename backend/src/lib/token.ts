@@ -20,7 +20,7 @@ export const genToken = (
     if (extra) payload.extra = extra;
     return jwt.sign(payload, jwtSecret,
         {
-            expiresIn
+            expiresIn: expiresIn as any
         }
     );
 };

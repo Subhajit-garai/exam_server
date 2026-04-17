@@ -5,7 +5,6 @@ import dayjs from "dayjs";
 import { Client } from "pg";
 import { MockSetProcessingStatus, ProcessMockSet } from "./Mockset.processing.js";
 import { isFeatureAvailable } from "../../controllers/tier.controller.js";
-import { webhook_type } from "../types/botTypes.js";
 import axios from "axios";
 import {
   timeToCron,
@@ -56,74 +55,74 @@ pgClient.connect().then(async () => {
           }
           break;
 
-        case "prime_status_channel":
-          {
-            console.log("mock_set prime_status_channel notification received");
-            console.log(`Event ${id} was ${action}`);
+        // case "prime_status_channel":
+        //   {
+        //     console.log("mock_set prime_status_channel notification received");
+        //     console.log(`Event ${id} was ${action}`);
 
-            let prime = await prisma.prime.findUnique({
-              where: {
-                id: id,
-              },
-            });
-            if (!prime) throw new Error("Prime not found");
-            let userData = await prisma.user.findFirst({
-              where: {
-                id: prime?.userid,
-              },
-              select: {
-                social: {
-                  where: {
-                    platform: SocialPlatform.telegram
-                  },
-                },
-              },
-            });
+        //     let prime = await prisma.prime.findUnique({
+        //       where: {
+        //         id: id,
+        //       },
+        //     });
+        //     if (!prime) throw new Error("Prime not found");
+        //     let userData = await prisma.user.findFirst({
+        //       where: {
+        //         id: prime?.userid,
+        //       },
+        //       select: {
+        //         social: {
+        //           where: {
+        //             platform: SocialPlatform.telegram
+        //           },
+        //         },
+        //       },
+        //     });
 
-            if (!userData) throw new Error("userData not found");
-            // telegram quiz
-            let status = await isFeatureAvailable(prime?.status, "Quiz");
-            if (!status) {
-              throw new Error("Feature not available for user");
-            } else {
-              if (status.access) {
+        //     if (!userData) throw new Error("userData not found");
+        //     // telegram quiz
+        //     let status = await isFeatureAvailable(prime?.status, "Quiz");
+        //     if (!status) {
+        //       throw new Error("Feature not available for user");
+        //     } else {
+        //       if (status.access) {
 
 
-                let bot_user = await prisma.user.findFirst({
-                  where: {
-                    role: "Bot",
-                  },
-                });
-                let bot_webhook = await prisma.botInfo.findFirst({
-                  where: {
-                    botuser_id: bot_user?.id,
-                  },
-                });
-                if (!bot_webhook) {
-                  console.log("No bot webhook found");
-                }
+        //         let bot_user = await prisma.user.findFirst({
+        //           where: {
+        //             role: "Bot",
+        //           },
+        //         });
+        //         let bot_webhook = await prisma.botInfo.findFirst({
+        //           where: {
+        //             botuser_id: bot_user?.id,
+        //           },
+        //         });
+        //         if (!bot_webhook) {
+        //           console.log("No bot webhook found");
+        //         }
 
-                let webhook: webhook_type =
-                  bot_webhook?.webhook as webhook_type;
-                let cbUrl = `${webhook.baseurl}${webhook.endpoint.survertask}`;
+        //         let webhook: webhook_type =
+        //           bot_webhook?.webhook as webhook_type;
+        //         let cbUrl = `${webhook.baseurl}${webhook.endpoint.survertask}`;
 
-                let userTelegramId = userData?.social[0].link;
-                let responce = await axios.post(cbUrl, {
-                  type: "unbanuser",
-                  user_id: userTelegramId
-                });
-                if (responce) {
-                  console.log("User unbanned successfully");
-                } else {
-                  // setTimeout(() => {
-                }
-              }
-            }
-            // is user prime status include prime group service
+        //         let userTelegramId = userData?.social[0].link;
+        //         let responce = await axios.post(cbUrl, {
+        //           type: "unbanuser",
+        //           user_id: userTelegramId
+        //         });
+        //         if (responce) {
+        //           console.log("User unbanned successfully");
+        //         } else {
+        //           // setTimeout(() => {
+        //         }
+        //       }
+        //     }
+        //     // is user prime status include prime group service
 
-            // send
-          }
-          break;
+        //     // send
+        //   }
+        //   break;
 
         default:
           console.log("Unknown channel", msg.channel);

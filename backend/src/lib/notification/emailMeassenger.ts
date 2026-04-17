@@ -1,5 +1,5 @@
 import nodemailer, { Transporter } from "nodemailer";
-import { logger } from "../helper/logger";
+import { logger } from "@/lib/helper/logger.js";
 
 class Mailer {
   private transporter: Transporter;

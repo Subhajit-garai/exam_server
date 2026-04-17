@@ -12,16 +12,16 @@ import {
   UserRole,
   Visibility,
   SocialPlatform
-} from "./generated/prisma/enums";
+} from "./generated/prisma/enums.js";
 import fs from "fs";
 import path from "path";
 
-import { PrismaClient } from "./generated/prisma/client";
-import { hashPasswordFn } from "../src/lib/security/hash";
+import { PrismaClient } from "./generated/prisma/client.js";
+import { hashPasswordFn } from "../src/lib/security/hash.js";
 import {
   event_exam_data_type,
   event_Quiz_data_type,
-} from "../src/lib/types/EventTypes";
+} from "../src/lib/types/EventTypes.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const adapter = new PrismaPg({

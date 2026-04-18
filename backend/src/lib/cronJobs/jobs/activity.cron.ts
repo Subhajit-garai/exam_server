@@ -1,6 +1,6 @@
 import { logger } from "@repo/lib/helper/logger.js";
 import { CronJob } from "cron";
-import { RedisProvider } from "../../radisProvider.js";
+import { RedisProvider } from "../../redisProvider.js";
 
 const redis = RedisProvider.getInstance().getclient();
 

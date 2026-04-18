@@ -1,4 +1,4 @@
-import { RedisProvider } from "../radisProvider.js";
+import { RedisProvider } from "../redisProvider.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { v4 as uuidv4 } from "uuid";
 import { activity_quiz_create_data_type } from "@/zod/quiz.zod.js";

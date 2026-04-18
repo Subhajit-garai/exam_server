@@ -1,7 +1,7 @@
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import prisma from "@repo/db/index.js";
 import { ProgressStatus } from "@repo/prisma/client.js";
-import { RedisProvider } from "@/lib/radisProvider.js";
+import { RedisProvider } from "@/lib/redisProvider.js";
 
 export class ProgressService {
 

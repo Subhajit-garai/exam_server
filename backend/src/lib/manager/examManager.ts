@@ -1,4 +1,4 @@
-import { RedisProvider } from "../radisProvider.js";
+import { RedisProvider } from "../redisProvider.js";
 import { ExamCategory, TaskType } from "../types.js";
 import prisma from "@repo/db/index.js";
 import {

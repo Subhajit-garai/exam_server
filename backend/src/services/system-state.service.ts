@@ -1,4 +1,4 @@
-import { RedisProvider } from "../lib/radisProvider.js";
+import { RedisProvider } from "../lib/redisProvider.js";
 import prisma from "@repo/db/index.js";
 import { logger } from "../lib/helper/logger.js";
 

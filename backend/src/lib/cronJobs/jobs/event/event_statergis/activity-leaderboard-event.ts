@@ -1,6 +1,6 @@
 import { BaseEvent } from "../bace-event.js";
 import prisma from "@repo/db/index.js";
-import { RedisProvider } from "@/lib/radisProvider.js";
+import { RedisProvider } from "@/lib/redisProvider.js";
 import dayjs from "dayjs";
 import { logger } from "@/lib/helper/logger.js";
 

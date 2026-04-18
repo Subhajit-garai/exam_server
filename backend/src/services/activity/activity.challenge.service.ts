@@ -1,5 +1,5 @@
 import prisma from "@repo/db/index.js";
-import { RedisProvider } from "../../lib/radisProvider.js";
+import { RedisProvider } from "../../lib/redisProvider.js";
 import dayjs from "dayjs";
 
 export class ActivityChallengeService {

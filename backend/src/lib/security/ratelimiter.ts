@@ -1,5 +1,5 @@
 import rateLimit from "express-rate-limit";
-import { RedisProvider } from "../radisProvider.js";
+import { RedisProvider } from "../redisProvider.js";
 import { RedisReply, RedisStore, SendCommandFn } from 'rate-limit-redis';
 import { logger } from "../helper/logger.js";
 

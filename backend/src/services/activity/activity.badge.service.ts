@@ -1,5 +1,5 @@
 import prisma from "@repo/db/index.js";
-import { RedisProvider } from "../../lib/radisProvider.js";
+import { RedisProvider } from "../../lib/redisProvider.js";
 
 export class ActivityBadgeService {
     private redis = RedisProvider.getInstance().getclient();

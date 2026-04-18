@@ -1,5 +1,5 @@
 import prisma from "@repo/db/index.js";
-import { RedisProvider } from "../../lib/radisProvider.js";
+import { RedisProvider } from "../../lib/redisProvider.js";
 
 export type activity_time_range = "today" | 'weekly' | 'global'
 export class ActivityLeaderboardService {

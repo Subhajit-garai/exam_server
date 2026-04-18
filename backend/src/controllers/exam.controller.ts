@@ -6,6 +6,8 @@ import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
 import { SubmitedQuestionAnsZodSchema } from "../zod/question.zod.js";
 import { ExamService } from "../services/exam.service.js";
 import { ExamCreateInputeSchema } from "@/zod/user.zod.js";
+import { logger } from "@/lib/helper/logger.js";
+
 
 const examService = new ExamService();
 
@@ -76,7 +78,7 @@ export const getUserAnsSetOfAnExam = async (req: any, res: any) => {
 
     res.json({ success: true, message: "message", data: data });
   } catch (error) {
-    console.log("Error in metrix --->", error);
+    logger.error("Error in getUserAnsSetOfAnExam:", error);
   }
 };
 
@@ -89,7 +91,7 @@ export const getUserMetaDataForExam = async (req: any, res: any) => {
 
     res.json({ success: true, message: "message", data: data });
   } catch (error) {
-    console.log("Error in metrix --->", error);
+    logger.error("Error in getUserMetaDataForExam:", error);
   }
 };
 
@@ -107,7 +109,7 @@ export const getTokenSystem = async (req: any, res: any) => {
       data: data,
     });
   } catch (error) {
-    console.log("error -> ", error);
+    logger.error("Error in getTokenSystem:", error);
 
     return res.status(400).json({
       success: false,
@@ -154,8 +156,8 @@ export const submitAnswerHandler = asyncHandler(async (req: any, res: any) => {
 
   // call back to user
   if (status) {
-    console.log("status", status);
-    console.log("ans added ....");
+    logger.debug("submitAnswer status:", status);
+    logger.debug("Answer collected");
   }
 
   if (!status) {
@@ -179,8 +181,8 @@ export const finalSubmitExam = asyncHandler(async (req: any, res: any) => {
   let status = await examService.finalSubmitExam(userid, examid);
   // call back to user
   if (status) {
-    console.log("status", status);
-    console.log("Exam Submitted  ....");
+    logger.debug("finalSubmitExam status:", status);
+    logger.success("Exam Submitted");
   }
 
   if (!status) {
@@ -206,7 +208,7 @@ export const getJoinedExamData = asyncHandler(async (req: any, res: any) => {
   let part = req.query.part;
   let userid = req.user;
 
-  console.log("--> ", req.query);
+  logger.debug("getJoinedExamData query:", req.query);
 
 
   let question = await examService.getJoinedExamData(userid, examid, type, number, part);

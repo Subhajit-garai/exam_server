@@ -1,6 +1,8 @@
 import { Router } from "express";
 import prisma from "@repo/db/index.js";
 import { backupQuestion } from "../controllers/question.controller.js";
+import { logger } from "../lib/helper/logger.js";
+
 
 export const DataManageRouter = Router();
 
@@ -64,7 +66,7 @@ async function backupMockAndPyq(req: any, res: any) {
       data: { test: result, mock_set: mock_question_set },
     });
   } catch (error) {
-    console.log(error);
+    logger.error("Error in backupMockAndPyq:", error);
 
     res.status(500).json({
       success: false,
@@ -83,7 +85,7 @@ async function insertBulkData(req: any, res: any) {
       skipDuplicates: true, // Optional: skips records with duplicate unique keys
     });
 
-    console.log("result", result);
+    logger.debug("insertBulkData result:", result);
 
     if (!result) {
       return res.status(500).json({
@@ -97,7 +99,7 @@ async function insertBulkData(req: any, res: any) {
       message: "surver add bulk questions",
     });
   } catch (error) {
-    console.log(error);
+    logger.error("Error in insertBulkData:", error);
 
     res.status(500).json({
       success: false,
@@ -147,7 +149,7 @@ async function backupImportantTables(req: any, res: any) {
       },
     });
   } catch (error) {
-    console.error("Backup error:", error);
+    logger.error("Backup error:", error);
     res.status(500).json({ success: false, message: "Backup failed" });
   }
 }

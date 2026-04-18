@@ -1,3 +1,4 @@
+import { logger } from "./logger.js";
 
 export function waitForSomeThink(condition: () => boolean,timeout:number): Promise<void> {
   return new Promise((resolve) => {
@@ -5,7 +6,7 @@ export function waitForSomeThink(condition: () => boolean,timeout:number): Promi
       if (condition()) {
         resolve();
       } else {
-        console.log("checking again ...");
+        logger.debug("Condition not met, retrying...");
 
         setTimeout(check, timeout*1000); // check again after 1 second
       }

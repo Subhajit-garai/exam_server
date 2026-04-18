@@ -7,6 +7,8 @@ import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 import { PaymentService } from "../services/payment.service.js";
 import { couponService } from "@/services/coupon.service.js";
+import { logger } from "@/lib/helper/logger.js";
+
 
 const paymentService = new PaymentService();
 
@@ -101,7 +103,7 @@ export const getSubcriptionAndOfferFormated = asyncHandler(
 
   async (req: any, res: any) => {
 
-    console.log("run ---> ");
+    logger.debug("getSubcriptionAndOfferFormated called");
 
     let data = await paymentService.getSubcriptionAndOfferFormated();
 
@@ -111,7 +113,7 @@ export const getSubcriptionAndOfferFormated = asyncHandler(
         message: "offer not found",
       });
     }
-    console.log("data is ", data);
+    logger.debug("getSubcriptionAndOfferFormated data:", data);
 
     return res.json({
       success: true,

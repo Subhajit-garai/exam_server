@@ -1,6 +1,7 @@
 import { Redis } from "ioredis";
-
 import { Task } from "./types.js";
+import { logger } from "./helper/logger.js";
+
 
 export class RedisProvider {
   private static instance: RedisProvider;
@@ -18,7 +19,7 @@ export class RedisProvider {
 
     this.redisClient = new Redis(process.env.REDIS_URL!);
     this.redisClient.on("error", (err: Error) =>
-      console.log("Redis Client Error", err)
+      logger.error("Redis Client Error", err)
     );
 
   }
@@ -28,7 +29,7 @@ export class RedisProvider {
   }
 
   push(data: Task) {
-    if (!this.redisClient) console.log("not connected....");
+    if (!this.redisClient) logger.error("Redis not connected");
     let taskdata: string;
     taskdata = JSON.stringify(data);
     return this.redisClient.lpush(this.queue, taskdata);
@@ -54,7 +55,7 @@ export class RedisProvider {
         await this.redisClient.set(key, taskdata, "EX", 86400, "NX");
       }
     } catch (err) {
-      console.error("Redis SET Error:", err);
+      logger.error("Redis SET Error:", err);
     }
   }
 

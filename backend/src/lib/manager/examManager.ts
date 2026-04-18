@@ -45,12 +45,12 @@ export class ExamManager {
 
   async addUser(examId: string, userId: string) {
     await this.redis.sadd(`exam:users:${examId}`, userId);
-    console.log(`User ${userId} added to exam ${examId}`);
+    logger.debug(`User ${userId} added to exam ${examId}`);
   }
 
   async removeUser(examId: string, userId: string) {
     await this.redis.srem(`exam:users:${examId}`, userId);
-    console.log(`User ${userId} removed from exam ${examId}`);
+    logger.debug(`User ${userId} removed from exam ${examId}`);
   }
 
   async isUserExist(examId: string, userId: string): Promise<boolean> {
@@ -100,7 +100,7 @@ export class ExamManager {
     await this.redis.del(`exam:users:${examId}`);
     // Also clean up questions if needed, but that might be expensive to find all keys
     // Assuming questions expire or are managed elsewhere
-    console.log(`Exam ${examId} removed`);
+    logger.info(`Exam ${examId} removed`);
   }
 
   // --- Question Management ---
@@ -227,7 +227,7 @@ export class ExamManager {
       );
     });
     await pipeline.exec();
-    console.log("Questions added to Redis");
+    logger.success("Questions added to Redis");
   }
 
   async getQuestion(

@@ -1,3 +1,4 @@
+import { logger } from "@repo/lib/helper/logger.js";
 // src/workers/base-task.ts
 
 import { events } from "@/lib/types/EventTypes.js";
@@ -18,16 +19,16 @@ export abstract class BaseEvent {
 
     while (attempts < this.maxRetries) {
       try {
-        console.log(`[${name}] Attempt ${attempts + 1} - Starting`);
+        logger.info(`[${name}] Attempt ${attempts + 1} - Starting`);
         await this.push();
-        console.log(`[${name}] Completed successfully ✅`);
+        logger.info(`[${name}] Completed successfully ✅`);
         return;
       } catch (err) {
         attempts++;
-        console.error(`[${name}] Failed on attempt ${attempts}:`, err);
+        logger.error(`[${name}] Failed on attempt ${attempts}:`, err);
 
         if (attempts >= this.maxRetries) {
-          console.error(`[${name}] ❌ Max retries reached`);
+          logger.error(`[${name}] ❌ Max retries reached`);
           throw err;
         }
         await new Promise(res => setTimeout(res, 1000 * attempts)); // exponential backoff

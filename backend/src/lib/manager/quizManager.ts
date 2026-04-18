@@ -55,7 +55,7 @@ export class QuizManager {
 
     async removeUser(quizId: string, userId: string) {
         await this.redis.srem(`quiz:users:${quizId}`, userId);
-        console.log(`User ${userId} removed from quiz ${quizId}`);
+        logger.debug(`User ${userId} removed from quiz ${quizId}`);
     }
 
     async isUserExist(quizId: string, userId: string): Promise<boolean> {
@@ -144,7 +144,7 @@ export class QuizManager {
     async removeQuiz(quizId: string) {
         await this.redis.del(`quiz:data:${quizId}`);
         await this.redis.del(`quiz:users:${quizId}`);
-        console.log(`Quiz ${quizId} removed`);
+        logger.info(`Quiz ${quizId} removed`);
     }
 
     async getQuizMetaData(quizId: string): Promise<QuizMetaData | null> {
@@ -166,7 +166,7 @@ export class QuizManager {
                     try {
                         quizzes.push(JSON.parse(val));
                     } catch (e) {
-                        console.error("Error parsing quiz meta", e);
+                        logger.error("Error parsing quiz meta", e);
                     }
                 }
             });
@@ -188,7 +188,7 @@ export class QuizManager {
 
         await this.redis.publish("WS_BROADCAST", message);
 
-        console.log(`Quiz ${quizId} started`);
+        logger.success(`Quiz ${quizId} started`);
     }
 
     async sendQuizLeaderboard(quizId: string) {

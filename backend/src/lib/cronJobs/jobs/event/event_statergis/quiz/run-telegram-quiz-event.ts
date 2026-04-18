@@ -5,7 +5,7 @@ import { logger } from "@/lib/helper/logger.js";
 
 export class run_telegram_quiz_event extends BaseEvent {
   async push(): Promise<void> {
-    console.log("Running run_telegram_quiz_event with data:", this.event.payload);
+    logger.info("Running run_telegram_quiz_event with data:", this.event.payload);
 
     try {
       const em = ExamManager.getInstance();
@@ -32,7 +32,7 @@ export class run_telegram_quiz_event extends BaseEvent {
       }
 
     } catch (error) {
-      console.log("error in task manager handleAns ", error);
+      logger.info("error in task manager handleAns ", error);
     }
   }
 }

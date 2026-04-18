@@ -1,4 +1,6 @@
 import axios from "axios";
+import { logger } from "../helper/logger.js";
+
 
 let MESSAGER_TOKEN = process.env.TELEGRAM_MESSAGER_BOT_TOKEN;
 let url = `https://api.telegram.org/bot${MESSAGER_TOKEN}/sendMessage`;
@@ -15,12 +17,12 @@ export const sendMessage = async (
     });
 
     if (sendedMessage.status === 200) {
-      console.log("sended message");
+      logger.success("Message sent");
       let id = sendedMessage?.data?.result?.message_id;
       return id;
     }
   } catch (error) {
-    console.error("Error sending message:", error);
+    logger.error("Error sending Telegram message:", error);
   }
 
   return false;

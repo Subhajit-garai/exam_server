@@ -1,5 +1,7 @@
-import { ExamType, primeStatus } from "@repo/prisma/client.js"
+import { ExamType, primeStatus } from "@repo/prisma/client.js";
 import { TierService } from "../services/tier.service.js";
+import { logger } from "@/lib/helper/logger.js";
+
 
 const tierService = new TierService();
 
@@ -13,7 +15,7 @@ type BenefitInput = {
 export async function createOrUpdateTierRequest(req: any, res: any) {
   try {
   } catch (error) {
-    console.error("Error in createOrUpdateTierRequest:", error);
+    logger.error("Error in createOrUpdateTierRequest:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 }
@@ -21,7 +23,7 @@ export async function DeleteTierRequest(req: any, res: any) {
   try {
     // let task =  await createOrUpdateTier()
   } catch (error) {
-    console.error("Error in DeleteTierRequest:", error);
+    logger.error("Error in DeleteTierRequest:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 }

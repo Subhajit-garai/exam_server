@@ -13,6 +13,8 @@ import customParseFormat from "dayjs/plugin/customParseFormat.js";
 import { getServiceCharge, TokenDeduction } from "@repo/lib/helper/payment.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { ProgressService } from "./progress.service.js";
+import { logger } from "@/lib/helper/logger.js";
+
 
 
 dayjs.extend(customParseFormat);
@@ -186,7 +188,7 @@ export class ExamService {
             const progressService = new ProgressService();
             await progressService.updateExamProgress(userId, examId);
         } catch (error) {
-            console.error("Failed to update user progress:", error);
+            logger.error("Failed to update user progress:", error);
         }
 
 
@@ -285,9 +287,9 @@ export class ExamService {
 
 
             await em.addExam(exam.id);
-            console.log("date added into exam manager");
+            logger.debug("Exam added to exam manager");
             await em.addUser(examId, userId);
-            console.log("user added into exam manager");
+            logger.debug("User added to exam manager");
 
         }
 
@@ -335,7 +337,7 @@ export class ExamService {
 
         // call back to user
         if (Notifystatus) {
-            console.log(`${examtype} Created ....`);
+            logger.success(`${examtype} created`);
         }
 
         return response;
@@ -493,7 +495,7 @@ export class ExamService {
                         .add(hours, "hour")
                         .add(minutes, "minute");
                 } else {
-                    console.error("Invalid jointime format:", jointime);
+                    logger.warn("Invalid jointime format:", jointime);
                 }
 
                 let isExamJoinTimeExecd = currentISTTime.isAfter(joinTimeLimit);

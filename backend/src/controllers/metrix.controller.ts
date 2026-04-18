@@ -1,5 +1,7 @@
 import { timeinpute } from "../zod/metrix.zod.js";
 import { MetrixService } from "../services/metrix.service.js";
+import { logger } from "@/lib/helper/logger.js";
+
 
 const metrixService = new MetrixService();
 
@@ -7,7 +9,7 @@ export const test = async (req: any, res: any) => {
   try {
     res.json({ success: true, message: "message", data: "data" });
   } catch (error) {
-    console.log("Error in metrix --->", error);
+    logger.error("Error in metrix test:", error);
   }
 };
 

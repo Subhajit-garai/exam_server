@@ -1,5 +1,7 @@
 import { QuestionProcessingService } from "../services/questionprocessing.service.js";
 import { questionInputZodSchema } from "../zod/question.zod.js";
+import { logger } from "@/lib/helper/logger.js";
+
 
 const questionProcessingService = new QuestionProcessingService();
 
@@ -21,7 +23,7 @@ export const createProcessedQuestion = async (req: any, res: any) => {
             data: question
         });
     } catch (error: any) {
-        console.log("error : ", error);
+        logger.error("error:", error);
         res.status(500).json({
             success: false,
             message: error.message || "Server error"
@@ -45,7 +47,7 @@ export const getProcessedQuestions = async (req: any, res: any) => {
             data: result
         });
     } catch (error: any) {
-        console.log("error : ", error);
+        logger.error("error:", error);
         res.status(500).json({
             success: false,
             message: error.message || "Server error"
@@ -73,7 +75,7 @@ export const reviewQuestion = async (req: any, res: any) => {
             data: result
         });
     } catch (error: any) {
-        console.log("error : ", error);
+        logger.error("error:", error);
         res.status(500).json({
             success: false,
             message: error.message || "Server error"
@@ -90,7 +92,7 @@ export const deleteProcessedQuestion = async (req: any, res: any) => {
             message: "Processed question deleted successfully"
         });
     } catch (error: any) {
-        console.log("error : ", error);
+        logger.error("error:", error);
         res.status(500).json({
             success: false,
             message: error.message || "Server error"
@@ -108,7 +110,7 @@ export const updateProcessedQuestion = async (req: any, res: any) => {
             data: updatedQuestion
         });
     } catch (error: any) {
-        console.log("error : ", error);
+        logger.error("error:", error);
         res.status(500).json({
             success: false,
             message: error.message || "Server error"

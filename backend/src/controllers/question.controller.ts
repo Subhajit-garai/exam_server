@@ -8,15 +8,16 @@ import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 import { logger } from "@/lib/helper/logger.js";
 
+
 const questionService = new QuestionService();
 
 export const updateQuestion = async (req: any, res: any) => {
   try {
-    console.log("req.body", req.body);
+    logger.debug("req.body", req.body);
 
     let data = questionUpdateZodSchema.safeParse(req.body);
     if (!data.success) {
-      console.log("data.error", data.error);
+      logger.warn("Zod validation error", data.error);
 
       return res.status(401).json({
         success: false,
@@ -36,7 +37,7 @@ export const updateQuestion = async (req: any, res: any) => {
       message: "Question updated successfully",
     });
   } catch (error) {
-    console.log("error : ", error);
+    logger.error("error:", error);
 
     res.status(500).json({
       error: error,
@@ -52,7 +53,7 @@ export const GetQuestionExplanation = async (req: any, res: any) => {
     let data = await questionService.getQuestionExplanation(questionid);
     res.json({ success: true, message: "Question Explanation", data: data });
   } catch (error) {
-    console.log("Error in metrix --->", error);
+    logger.error("Error in GetQuestionExplanation", error);
   }
 };
 
@@ -72,7 +73,7 @@ export const checkQuestion = async (req: any, res: any) => {
       message: "Question not exist",
     });
   } catch (error) {
-    console.log(error);
+    logger.error("Error in checkQuestion", error);
     return res.status(400).json({
       message: "Error in question check",
     });
@@ -158,7 +159,7 @@ export const deleteQuestion = async (req: any, res: any) => {
       data: question,
     });
   } catch (error: any) {
-    console.log("error : ", error);
+    logger.error("error:", error);
     // Determine status code based on error message (simple heuristic)
     const status = error.message?.includes("Cannot delete") ? 400 : 500;
     res.status(status).json({
@@ -202,7 +203,7 @@ export const backupQuestion = async (req: any, res: any) => {
       data: { questions: questions, total: total },
     });
   } catch (error) {
-    console.log("error in backupQuestion ", error);
+    logger.error("Error in backupQuestion", error);
 
     res.status(500).json({
       success: false,

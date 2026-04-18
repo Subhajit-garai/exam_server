@@ -1,10 +1,11 @@
+import { logger } from "@repo/lib/helper/logger.js";
 import { BaseEvent } from "../../bace-event.js";
 import { QuizManager } from "@/lib/manager/quizManager.js";
 import { event_Quiz_data_type } from "@/lib/types/EventTypes.js";
 
 export class run_webapp_quiz_event extends BaseEvent {
     async push(): Promise<void> {
-        console.log("Running run_webapp_quiz_event with data:", this.event.payload);
+        logger.info("Running run_webapp_quiz_event with data:", this.event.payload);
 
         try {
             const payload = this.event.payload as event_Quiz_data_type;
@@ -21,10 +22,10 @@ export class run_webapp_quiz_event extends BaseEvent {
             // const qm = QuizManager.getInstance();
             // await qm.startQuiz(quizId);
 
-            // console.log(`Webapp Quiz ${quizId} started successfully via event.`);
+            // logger.info(`Webapp Quiz ${quizId} started successfully via event.`);
 
         } catch (error) {
-            console.error("Error in run_webapp_quiz_event:", error);
+            logger.error("Error in run_webapp_quiz_event:", error);
         }
     }
 }

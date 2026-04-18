@@ -55,7 +55,7 @@ export const IsPurchasesOpen = async (req: any, res: any, next: () => any) => {
       }
     }
   } catch (error) {
-    console.log("error ", error);
+    logger.error("error", error);
 
     return res.status(401).json({
       success: false,
@@ -80,7 +80,7 @@ export const IsUserSignUpOpen = async (req: any, res: any, next: () => any) => {
     if (parsedSettings.success && parsedSettings.data.status === "open") {
       next();
     } else {
-      console.log("User signup service is closed");
+      logger.warn("User signup service is closed");
       return res.status(401).json({
         success: false,
         message: "User signup service is closed for now",
@@ -130,7 +130,7 @@ export const IsUserLoginOpen = async (req: any, res: any, next: () => any) => {
     if (parsedSettings.success && parsedSettings.data.status === "open") {
       next();
     } else {
-      console.log("checking admin log in .....");
+      logger.info("Checking admin login...");
       await isAdmin(req, res, next, "User login service is closed for now");
     }
   } catch (error) {
@@ -182,7 +182,7 @@ export const IsRazorpayTestAccessOpen = async (
           });
         }
       } else {
-        console.log("checking admin log in .....");
+        logger.info("Checking admin login...");
         await isAdmin(
           req,
           res,

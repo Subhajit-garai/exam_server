@@ -1,15 +1,10 @@
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 import {
-  AddSubjectInputZodSchemaById,
-  AddSubjectInputZodSchemaByName,
-  AddSubjectInputZodSchemaByShortName,
-  AddTopicInputZodSchemaById,
-  AddTopicInputZodSchemaByName,
-  AddTopicInputZodSchemaByShortName,
   SyllabusInputZodSchema,
 } from "@/zod/syllabus.zod.js";
 import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 import { SyllabusService } from "../services/syllabus.service.js";
+import { logger } from "@repo/lib/helper/logger.js";
 
 const syllabusService = new SyllabusService();
 
@@ -112,7 +107,7 @@ export const addSubject = asyncHandler(async (req: any, res: any) => {
 export const removeSubject = asyncHandler(async (req: any, res: any) => {
   let { syllabusid, subjectid } = req.query;
 
-  console.log("--->", req.query);
+  logger.debug("syllabus query:", req.query);
 
   const Subject_removed = await syllabusService.removeSubject(syllabusid, subjectid);
   return res.json({

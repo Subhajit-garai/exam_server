@@ -18,10 +18,10 @@ const pgClient = new Client({ connectionString: process.env.DATABASE_URL });
 
 // notification
 pgClient.connect().then(async () => {
-  console.log("PostgreSQL connected");
+  logger.info("PostgreSQL connected");
 
   pgClient.on("notification", async (msg: any) => {
-    console.log("Notification received:", msg);
+    logger.info("Notification received:", msg);
 
     const { id, action } = JSON.parse(msg.payload || "{}");
 
@@ -29,8 +29,8 @@ pgClient.connect().then(async () => {
       switch (msg.channel) {
         case "event_channel":
           {
-            console.log("Event channel notification received");
-            console.log(`Event ${id} was ${action}`);
+            logger.info("Event channel notification received");
+            logger.info(`Event ${id} was ${action}`);
             const event = await prisma.events.findUnique({ where: { id } });
             if (event) {
               if (scheduledJobs[event.id]) {
@@ -41,12 +41,12 @@ pgClient.connect().then(async () => {
           }
           break;
         default:
-          console.log("Unknown channel", msg.channel);
+          logger.info("Unknown channel", msg.channel);
 
           break;
       }
     } catch (error: any) {
-      console.log("error ----->", error);
+      logger.info("error ----->", error);
     }
   });
 

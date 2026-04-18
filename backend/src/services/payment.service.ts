@@ -1,6 +1,7 @@
 import { razorpayInstance } from "../server.js";
 import crypto from "crypto";
 import prisma from "@repo/db/index.js";
+import { logger } from "@/lib/helper/logger.js";
 import { primeStatus, purchaseType } from "@repo/prisma/client.js";
 import {
     isUserHavePrime,
@@ -44,7 +45,7 @@ export class PaymentService {
 
         let { price } = isPlanExist
 
-        console.log("plan price ", price);
+        logger.debug("plan price", price);
 
         let finalAmount = Number(amount);
 
@@ -75,7 +76,7 @@ export class PaymentService {
         try {
             order = await razorpayInstance.orders.create(options);
         } catch (error: any) {
-            console.error("Razorpay Order Error:", error);
+            logger.error("Razorpay Order Error:", error);
         }
 
         if (!order) throw Error("order not created");

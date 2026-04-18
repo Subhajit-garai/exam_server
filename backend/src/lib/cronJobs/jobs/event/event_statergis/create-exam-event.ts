@@ -1,3 +1,4 @@
+import { logger } from "@repo/lib/helper/logger.js";
 import { ExamManager } from "@/lib/manager/examManager.js";
 import { BaseEvent } from "../bace-event.js";
 import prisma from "@/db/index.js";
@@ -10,7 +11,7 @@ import dayjs from "dayjs";
 export class create_exam_event extends BaseEvent {
 
   async push(): Promise<void> {
-    console.log("Running create_exam_event with data:", this.event.payload);
+    logger.info("Running create_exam_event with data:", this.event.payload);
 
     try {
       // here i push task in task queue
@@ -36,7 +37,7 @@ export class create_exam_event extends BaseEvent {
       let dates: Date[] = [];
       const em = ExamManager.getInstance();
 
-      console.log("---> creating new exam");
+      logger.info("---> creating new exam");
 
       let lastExam = await prisma.exam.findFirst({
         where: {
@@ -64,7 +65,7 @@ export class create_exam_event extends BaseEvent {
         },
       });
 
-      // console.log("user: ", user);
+      // logger.info("user: ", user);
 
       if (time_limit) {
         let days_count = 0;
@@ -81,10 +82,10 @@ export class create_exam_event extends BaseEvent {
 
         for (let index = 0; index < days_count; index++) {
           let processing_day = index * gap_days;
-          console.log("processing_day: ", processing_day);
+          logger.info("processing_day: ", processing_day);
 
           let day = dayjs().add(processing_day, "day");
-          console.log("day: ", day.format("DD-MM-YYYY"));
+          logger.info("day: ", day.format("DD-MM-YYYY"));
 
           let isExamExaist = await prisma.exam.findMany({
             where: {
@@ -104,7 +105,7 @@ export class create_exam_event extends BaseEvent {
           if (isExamExaist.length > 0) {
             // some exam has already been created
             if (isExamExaist.length >= parseInt(count)) {
-              console.log("Exam already exist for this date");
+              logger.info("Exam already exist for this date");
             } else {
               // some exam has already  created so reduced exam creaction number
               let dif = parseInt(count) - isExamExaist.length;
@@ -124,7 +125,7 @@ export class create_exam_event extends BaseEvent {
 
 
       if (!create_exam_count_for_date.length) {
-        return console.log(
+        return logger.info(
           "all exam creation done , no need to create new ones"
         );
       }
@@ -161,7 +162,7 @@ export class create_exam_event extends BaseEvent {
         });
 
         if (!is_exam_pattern_id_valid) {
-          console.log("invalid exam_pattern id");
+          logger.info("invalid exam_pattern id");
           let get_exam_pattern_id = await prisma.exam_pattern.findFirst({
             where: {
               title: "JECA@PATTERN",
@@ -222,7 +223,7 @@ export class create_exam_event extends BaseEvent {
         }
       }
     } catch (error) {
-      console.log("error in task manager handleAns ", error);
+      logger.info("error in task manager handleAns ", error);
     }
   }
 }

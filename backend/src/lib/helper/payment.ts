@@ -2,6 +2,7 @@ import { ExamType, primeStatus, purchaseType } from "@repo/prisma/client.js";
 import prisma from "@repo/db/index.js";
 import dayjs from "dayjs";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
+import { logger } from "@repo/lib/helper/logger.js";
 
 // price is merketpricce
 export const getFinalPrice = (markedPrice: number, discountPercent: number) => {
@@ -123,7 +124,7 @@ export const ProvideSubcriptionTouser = async (
       },
     });
 
-    console.log(" checking getSubcriptionDetails .....", getSubcriptionDetails);
+    logger.debug("Checking subscription details...", getSubcriptionDetails);
 
     let time: number =
       parseInt(getSubcriptionDetails?.time?.split(" ")[0] as string) ?? 3;
@@ -131,7 +132,7 @@ export const ProvideSubcriptionTouser = async (
 
     if (timeUnit !== "month") throw new CustomError("time unit not valid");
 
-    console.log("timeUnit", timeUnit, time);
+    logger.debug("timeUnit:", timeUnit, "time:", time);
 
     // need dynamic plan and time
     let updatedStatus = await tx.prime.update({
@@ -212,7 +213,7 @@ export const TokenDeduction = async (
 
     // deduction process
 
-    console.log("charge -- >", charge);
+    logger.debug("charge:", charge);
 
     if (!charge && typeof charge != "number") {
       throw new Error("Invalid balance");

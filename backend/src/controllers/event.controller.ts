@@ -2,6 +2,8 @@ import { eventSchema } from "../zod/event.zod.js";
 import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
 import { asyncHandler } from "@/lib/helper/asyncHandler.js";
 import { EventService } from "../services/event.service.js";
+import { logger } from "@/lib/helper/logger.js";
+
 
 const eventService = new EventService();
 
@@ -9,14 +11,14 @@ export const test = async (req: any, res: any) => {
   try {
     res.json({ success: true, message: "message", data: "data" });
   } catch (error) {
-    console.log("Error in metrix --->", error);
+    logger.error("Error in test:", error);
   }
 };
 
 export const createEvent = asyncHandler(async (req: any, res: any) => {
   let eventdata = eventSchema.safeParse(req.body);
 
-  eventdata.error && console.log("[logging error]", eventdata.error);
+  eventdata.error && logger.warn("[Zod validation error]", eventdata.error);
 
   if (!eventdata.success) {
     throw ZodDataSafeParse(eventdata);
@@ -32,7 +34,7 @@ export const getAllEvents = async (req: any, res: any) => {
     let allEvents = await eventService.getAllEvents();
     res.json({ success: true, message: "message", data: allEvents });
   } catch (error) {
-    console.log("Error in metrix --->", error);
+    logger.error("Error in getAllEvents:", error);
     res.status(404).json({ success: false, message: "server error" });
   }
 };

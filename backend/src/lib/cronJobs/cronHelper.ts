@@ -1,3 +1,4 @@
+import { logger } from "@repo/lib/helper/logger.js";
 import dayjs from "dayjs";
 
 export function timeToCron(timeStr: string, islog: boolean = false): string {
@@ -5,7 +6,7 @@ export function timeToCron(timeStr: string, islog: boolean = false): string {
 
   const time = dayjs(timeStr, ["h:mm a"]);
 
-  islog && console.log("time is ", time.format("H:mm a"));
+  islog && logger.info("time is ", time.format("H:mm a"));
 
   const hour = time.format("H");
   const minute = time.format("m");
@@ -34,7 +35,7 @@ export function timeToCronWeekly(
   const timeOnly = `${parts[1]} ${parts[2]}`;
 
   const time = dayjs(timeOnly, ["h:mm a"]);
-  islog && console.log("time is ", time.format("H:mm a"));
+  islog && logger.info("time is ", time.format("H:mm a"));
 
   const hour = time.format("H");
   const minute = time.format("m");
@@ -81,7 +82,7 @@ export function timeToCronMonthly(
   const timeOnly = `${parts[1]} ${parts[2]}`;
 
   const time = dayjs(timeOnly, ["h:mm a"]);
-  islog && console.log("time is ", time.format("H:mm a"));
+  islog && logger.info("time is ", time.format("H:mm a"));
 
   const hour = time.format("H");
   const minute = time.format("m");

@@ -2,6 +2,8 @@ import zod from "zod";
 import { IssueInpute_zod_type } from "../zod/issue.zod.js";
 import { Status } from "@repo/prisma/client.js";
 import { IssueService } from "../services/issue.service.js";
+import { logger } from "@/lib/helper/logger.js";
+
 
 const issueService = new IssueService();
 
@@ -9,7 +11,7 @@ export const test = async (req: any, res: any) => {
   try {
     res.json({ success: true, message: "message", data: "data" });
   } catch (error) {
-    console.log("Error in updateStatus in issue  --->", error);
+    logger.error("Error in test:", error);
   }
 };
 
@@ -40,7 +42,7 @@ export const GetquestionIssuecount = async (req: any, res: any) => {
 
     res.json({ success: true, message: " total questionIssuecount", data: responce });
   } catch (error) {
-    console.log("Error in GetquestionIssuecount in issue --->", error);
+    logger.error("Error in GetquestionIssuecount:", error);
   }
 };
 
@@ -60,7 +62,7 @@ export const RemoveIssue = async (req: any, res: any) => {
     res.json({ success: true, message: "issue deleted", data: responce });
 
   } catch (error) {
-    console.log("Error in RemoveIssue in issue --->", error);
+    logger.error("Error in RemoveIssue:", error);
     res.status(500).json({ success: false, message: "Error deleting issue" });
   }
 };
@@ -86,7 +88,7 @@ export const updateStatus = async (req: any, res: any) => {
 
     res.json({ success: true, message: "message", data: responce });
   } catch (error) {
-    console.log("Error in updateStatus in issue --->", error);
+    logger.error("Error in updateStatus:", error);
   }
 };
 
@@ -105,7 +107,7 @@ export const CloseIssue = async (req: any, res: any) => {
 
     res.json({ success: true, message: "message", data: responce });
   } catch (error) {
-    console.log("Error in CloseIssue in issue  --->", error);
+    logger.error("Error in CloseIssue:", error);
   }
 };
 
@@ -124,7 +126,7 @@ export const setDownVote = async (req: any, res: any) => {
 
     res.json({ success: true, message: "voted ", data: responce });
   } catch (error) {
-    console.log("Error in SetDownVote in issue  --->", error);
+    logger.error("Error in setDownVote:", error);
   }
 };
 
@@ -143,7 +145,7 @@ export const setupVote = async (req: any, res: any) => {
 
     res.json({ success: true, message: "voted ", data: responce });
   } catch (error) {
-    console.log("Error in setUpVote in issue  --->", error);
+    logger.error("Error in setupVote:", error);
   }
 };
 
@@ -162,7 +164,7 @@ export const setPriorityVote = async (req: any, res: any) => {
 
     res.json({ success: true, message: "voted ", data: responce });
   } catch (error) {
-    console.log("Error in SetPriority in issue  --->", error);
+    logger.error("Error in setPriorityVote:", error);
   }
 };
 
@@ -177,12 +179,12 @@ export const Isprocessed_issue = async (req: any, res: any) => {
     }
     let id = data.data;
 
-    console.log("update_issue's id is ", id);
+    logger.debug("update_issue id:", id);
     let responce = await issueService.getIssueById(id);
 
     res.json({ success: true, message: "message", data: responce });
   } catch (error) {
-    console.log("Error in Isprocessed_issue in issue  --->", error);
+    logger.error("Error in Isprocessed_issue:", error);
     res.status(404).json({ success: false, message: "issue not found" });
   }
 };
@@ -198,7 +200,7 @@ export const update_issue = async (req: any, res: any) => {
     }
     let id = data.data;
 
-    console.log("update_issue's id is ", id);
+    logger.debug("update_issue id:", id);
 
     let newData = IssueInpute_zod_type.safeParse(req.body);
 
@@ -213,7 +215,7 @@ export const update_issue = async (req: any, res: any) => {
 
     res.json({ success: true, message: "message", data: responce });
   } catch (error) {
-    console.log("Error in update_issue in issue  --->", error);
+    logger.error("Error in update_issue:", error);
     res.status(404).json({ success: false, message: "issue not found" });
   }
 };
@@ -233,7 +235,7 @@ export const createNewIssue = async (req: any, res: any) => {
 
     res.json({ success: true, message: "message", data: responce });
   } catch (error) {
-    console.log("Error in createNewIssue in issue  --->", error);
+    logger.error("Error in createNewIssue:", error);
     res.status(404).json({ success: false, message: "issue not created" });
   }
 };
@@ -250,12 +252,12 @@ export const getIssueByid = async (req: any, res: any) => {
 
     let id = data.data;
 
-    console.log("getIssueByid's is ", id);
+    logger.debug("getIssueByid id:", id);
 
     let responce = await issueService.getIssueById(id);
     res.json({ success: true, message: "issue found", data: responce });
   } catch (error) {
-    console.log("Error in getIssueByid in issue  --->", error);
+    logger.error("Error in getIssueByid:", error);
     res.status(404).json({ success: false, message: "issue not found" });
   }
 };
@@ -265,7 +267,7 @@ export const getAllIssue = async (req: any, res: any) => {
     let getAllIssues = await issueService.getAllIssues();
     res.json({ success: true, message: "message", data: getAllIssues });
   } catch (error) {
-    console.log("Error in getAllIssue in issue  --->", error);
+    logger.error("Error in getAllIssue:", error);
     res.status(404).json({ success: false, message: "server error" });
   }
 };

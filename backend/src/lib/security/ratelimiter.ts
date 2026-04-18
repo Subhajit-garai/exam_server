@@ -1,6 +1,8 @@
 import rateLimit from "express-rate-limit";
 import { RedisProvider } from "../radisProvider.js";
-import { RedisReply, RedisStore, SendCommandFn } from 'rate-limit-redis'
+import { RedisReply, RedisStore, SendCommandFn } from 'rate-limit-redis';
+import { logger } from "../helper/logger.js";
+
 
 let otpLimiter_count = parseInt(process.env.OTP_RATE_LIMIT as string) || 5;
 let signinLimiter_count =
@@ -8,8 +10,8 @@ let signinLimiter_count =
 let passwordResetLimiter_count =
   parseInt(process.env.PASSWORD_RESET_RATE_LIMIT as string) || 5;
 
-console.log(
-  `limits are --> otp ->  ${otpLimiter_count} signin ->${signinLimiter_count}  passwordReset ${passwordResetLimiter_count}`
+logger.info(
+  `Rate limits — OTP: ${otpLimiter_count} | Signin: ${signinLimiter_count} | Password reset: ${passwordResetLimiter_count}`
 );
 
 const getClientIp = (req: any) => {
@@ -17,15 +19,15 @@ const getClientIp = (req: any) => {
   const forwardedFor = req.headers['x-forwarded-for'];
   const realIp = req.headers['x-real-ip'];
 
-  console.log("forwardedFor", forwardedFor);
-  console.log("realIp", realIp);
+  logger.debug("forwardedFor", forwardedFor);
+  logger.debug("realIp", realIp);
 
   if (forwardedFor) {
     const ips = forwardedFor.split(',');  // get list of IPs
     return ips[0];  // Return the first one (the original client IP)
   }
 
-  console.log("req.connection.remoteAddress", req.connection.remoteAddress);
+  logger.debug("req.connection.remoteAddress", req.connection.remoteAddress);
   return req.connection.remoteAddress;  // Fall back to the connection IP
 };
 

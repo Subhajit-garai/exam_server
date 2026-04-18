@@ -1,3 +1,4 @@
+import { logger } from "@repo/lib/helper/logger.js";
 
 import { CronJob } from "cron";
 import { SystemStateService } from "../../../services/system-state.service.js";
@@ -8,7 +9,7 @@ const systemStateService = new SystemStateService();
 export const updateSystemStats = new CronJob(
     "0 0 * * *",
     async () => {
-        console.log("Running midnight system stats update (Redis)...");
+        logger.info("Running midnight system stats update (Redis)...");
         await systemStateService.refreshSystemStats();
     },
     null,
@@ -19,10 +20,10 @@ export const updateSystemStats = new CronJob(
 // Function to run on startup to ensure cache is populated
 export const initSystemStats = async () => {
     try {
-        console.log("Initializing system stats (Redis check)...");
+        logger.info("Initializing system stats (Redis check)...");
         // Just calling getSystemStats will trigger refresh if missing
         await systemStateService.getSystemStats();
     } catch (e) {
-        console.log("Failed to init system stats", e);
+        logger.info("Failed to init system stats", e);
     }
 };

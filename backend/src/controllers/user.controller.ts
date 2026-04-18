@@ -21,7 +21,7 @@ export const userPurchases = async (req: any, res: any) => {
     let allPurchases = await userService.userPurchases(req.user);
 
     if (allPurchases) {
-      console.log("allPurchases", allPurchases);
+      logger.debug("allPurchases:", allPurchases);
 
       res.json({
         success: true,
@@ -30,7 +30,7 @@ export const userPurchases = async (req: any, res: any) => {
       });
     }
   } catch (error) {
-    console.log("error in userpurchases", error);
+    logger.error("Error in userPurchases:", error);
     res.status(404).json({
       success: false,
       message: "Server error",
@@ -55,7 +55,7 @@ export const Logout = asyncHandler(async (req: any, res: any) => {
     httpOnly: true,
   });
 
-  console.log("user log out ", req.user);
+  logger.info("User logged out:", req.user);
 
 
   res.status(200).json({

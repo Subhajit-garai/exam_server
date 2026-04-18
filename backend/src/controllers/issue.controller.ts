@@ -19,7 +19,7 @@ export const GetquestionIssuecount = async (req: any, res: any) => {
     if (!data.success) {
       return res.status(404).json({
         success: false,
-        message: "invalid inputes, event not created  ",
+        message: "Invalid inputs",
       });
     }
     let id = data.data;
@@ -50,7 +50,7 @@ export const RemoveIssue = async (req: any, res: any) => {
     if (!data.success) {
       return res.status(404).json({
         success: false,
-        message: "invalid inputes, event not created  ",
+        message: "Invalid inputs",
       });
     }
     let id = data.data;
@@ -77,7 +77,7 @@ export const updateStatus = async (req: any, res: any) => {
     if (!data.success) {
       return res.status(404).json({
         success: false,
-        message: "invalid inputes, event not created  ",
+        message: "Invalid inputs",
       });
     }
     let { id, status } = data.data;
@@ -96,7 +96,7 @@ export const CloseIssue = async (req: any, res: any) => {
     if (!data.success) {
       return res.status(404).json({
         success: false,
-        message: "invalid inputes, event not created  ",
+        message: "Invalid inputs",
       });
     }
     let id = data.data;
@@ -115,7 +115,7 @@ export const setDownVote = async (req: any, res: any) => {
     if (!data.success) {
       return res.status(404).json({
         success: false,
-        message: "invalid inputes, event not created  ",
+        message: "Invalid inputs",
       });
     }
     let id = data.data;
@@ -134,7 +134,7 @@ export const setupVote = async (req: any, res: any) => {
     if (!data.success) {
       return res.status(404).json({
         success: false,
-        message: "invalid inputes, event not created  ",
+        message: "Invalid inputs",
       });
     }
     let id = data.data;
@@ -153,7 +153,7 @@ export const setPriorityVote = async (req: any, res: any) => {
     if (!data.success) {
       return res.status(404).json({
         success: false,
-        message: "invalid inputes, event not created  ",
+        message: "Invalid inputs",
       });
     }
     let id = data.data;
@@ -172,7 +172,7 @@ export const Isprocessed_issue = async (req: any, res: any) => {
     if (!data.success) {
       return res.status(404).json({
         success: false,
-        message: "invalid inputes, event not created  ",
+        message: "Invalid inputs",
       });
     }
     let id = data.data;
@@ -193,7 +193,7 @@ export const update_issue = async (req: any, res: any) => {
     if (!data.success) {
       return res.status(404).json({
         success: false,
-        message: "invalid inputes, event not created  ",
+        message: "Invalid inputs",
       });
     }
     let id = data.data;
@@ -205,7 +205,7 @@ export const update_issue = async (req: any, res: any) => {
     if (!newData.success) {
       return res.status(404).json({
         success: false,
-        message: "invalid inputes, event not created  ",
+        message: "Invalid inputs",
       });
     }
 
@@ -225,7 +225,7 @@ export const createNewIssue = async (req: any, res: any) => {
     if (!data.success) {
       return res.status(404).json({
         success: false,
-        message: "invalid inputes, issue not created  ",
+        message: "Invalid inputs, issue not created",
       });
     }
 
@@ -244,7 +244,7 @@ export const getIssueByid = async (req: any, res: any) => {
     if (!data.success) {
       return res.status(404).json({
         success: false,
-        message: "invalid inputes, event not created  ",
+        message: "Invalid inputs",
       });
     }
 

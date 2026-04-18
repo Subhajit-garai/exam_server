@@ -12,7 +12,7 @@ const examService = new ExamService();
 export const test = asyncHandler(async (req: any, res: any) => {
   res.json({
     success: true,
-    message: " created successfuly",
+    message: " created successfully",
     data: "data",
   });
 });
@@ -180,7 +180,7 @@ export const finalSubmitExam = asyncHandler(async (req: any, res: any) => {
   // call back to user
   if (status) {
     console.log("status", status);
-    console.log("Exam Submited  ....");
+    console.log("Exam Submitted  ....");
   }
 
   if (!status) {
@@ -192,7 +192,7 @@ export const finalSubmitExam = asyncHandler(async (req: any, res: any) => {
 
   return res.json({
     success: true,
-    message: `Exam Submited Successfully ...`,
+    message: `Exam Submitted Successfully`,
     data: "collected",
   });
 });
@@ -233,7 +233,7 @@ export const examJoinRequestProcess = asyncHandler(
 
     return res.json({
       success: true,
-      message: `Exam setup Successfull ...`,
+      message: `Exam setup Successful`,
       data: "no data",
     });
   }

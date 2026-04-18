@@ -26,7 +26,7 @@ export class UserService {
             },
         });
         if (!User) {
-            throw new Error("user not exist");
+            throw new Error("User not found");
         }
 
         let allPurchases = await prisma.payment.findMany({
@@ -42,7 +42,7 @@ export class UserService {
         let User = await profileService.getProfile(userId);
 
         if (!User) {
-            throw new Error("user not exist");
+            throw new Error("User not found");
         }
 
         return User;
@@ -58,7 +58,7 @@ export class UserService {
         });
 
         if (isUserExist) {
-            throw new Error("user already exist");
+            throw new Error("User already exists");
         }
 
         const hasspaword = await hashPasswordFn(password);
@@ -117,7 +117,7 @@ export class UserService {
         });
 
         if (!User) {
-            throw new CustomError("user not exist");
+            throw new CustomError("User not found");
         }
 
         let { token, hashedToken } = generateResetToken("email");
@@ -171,11 +171,11 @@ export class UserService {
             if (User) {
 
                 if (User?.resetTokenExpires < new Date()) {
-                    throw new Error("user not exist token expired");
+                    throw new Error("User not found — token expired");
                 }
 
             } else {
-                throw new Error("user not exist");
+                throw new Error("User not found");
             }
 
             await tx.social.update({
@@ -208,10 +208,10 @@ export class UserService {
         });
 
         if (!telegram) {
-            throw new Error("user's telegram data not exist");
+            throw new Error("Telegram account not linked to this user");
         }
         if (telegram.link !== telegramid) {
-            throw new Error("user telegram id not match");
+            throw new Error("Telegram ID does not match");
         }
 
         let { token, hashedToken } = generateResetToken("telegramid");
@@ -228,7 +228,7 @@ export class UserService {
         });
 
         if (!update) {
-            throw new Error("token not set");
+            throw new Error("Failed to set token");
         }
 
         const MESSAGE = `
@@ -264,7 +264,7 @@ export class UserService {
             });
 
             if (!User || User?.resetTokenExpires < new Date()) {
-                throw new Error("user not exist or token expired");
+                throw new Error("User not found or token expired");
             }
 
             await tx.user.update({
@@ -300,7 +300,7 @@ export class UserService {
         });
 
         if (!User) {
-            throw new Error("user not exist");
+            throw new Error("User not found");
         }
 
         let { token, hashedToken } = generateResetToken();
@@ -317,7 +317,7 @@ export class UserService {
         });
 
         if (!update) {
-            throw new Error("token not set");
+            throw new Error("Failed to set token");
         }
 
         let message = buildEmailNotification('token', 'success', `Your reset password token is ${token}`, "Reset Password")
@@ -338,7 +338,7 @@ export class UserService {
         });
 
         if (!User || User?.resetTokenExpires < new Date()) {
-            throw new Error("user not exist or token expired");
+            throw new Error("User not found or token expired");
         }
 
         await prisma.user.update({
@@ -364,7 +364,7 @@ export class UserService {
         });
 
         if (!User) {
-            throw new Error("user not exist");
+            throw new Error("User not found");
         }
 
         let veryfypassword = await veryfyhashPasswordFn(password, User.password);
@@ -372,7 +372,7 @@ export class UserService {
         logger.info("veryfypassword", veryfypassword);
 
         if (!veryfypassword) {
-            throw new Error("credientile incurrect");
+            throw new Error("Incorrect credentials");
         }
 
         return User;
@@ -411,7 +411,7 @@ export class UserService {
         }
 
         if (!user.exam_year_id || user.exam_year_id === "not set") {
-            throw new CustomError("User need to update there Targect exam and Year first for exam timeline", 400)
+            throw new CustomError("Please update your target exam and year to view the exam timeline", 400)
         }
 
         const timelineEvents = await prisma.examTimeline.findMany({

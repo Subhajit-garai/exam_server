@@ -68,7 +68,7 @@ async function backupMockAndPyq(req: any, res: any) {
 
     res.status(500).json({
       success: false,
-      message: "surver error bulk question insert",
+      message: "Server error: bulk question insert failed",
     });
   }
 }
@@ -88,7 +88,7 @@ async function insertBulkData(req: any, res: any) {
     if (!result) {
       return res.status(500).json({
         success: false,
-        message: "surver error bulk question insert",
+        message: "Server error: bulk question insert failed",
       });
     }
 
@@ -101,7 +101,7 @@ async function insertBulkData(req: any, res: any) {
 
     res.status(500).json({
       success: false,
-      message: "surver error bulk question insert",
+      message: "Server error: bulk question insert failed",
     });
   }
 }

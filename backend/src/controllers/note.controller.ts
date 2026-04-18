@@ -23,7 +23,7 @@ export const like = asyncHandler(async (req: any, res: any) => {
   if (!updatedContent) {
     return res.status(400).json({
       success: false,
-      message: "error while updateing like , plz try again",
+      message: "Error updating like, please try again",
     });
   }
 
@@ -39,7 +39,7 @@ export const dislike = asyncHandler(async (req: any, res: any) => {
   if (!updatedContent) {
     return res.status(400).json({
       success: false,
-      message: "error while updateing dislike , plz try again",
+      message: "Error updating dislike, please try again",
     });
   }
 
@@ -63,7 +63,7 @@ export const UpdateContentOfTopic = asyncHandler(async (req: any, res: any) => {
   if (!updatedContent) {
     return res.status(400).json({
       success: false,
-      message: "error while updateing Content , plz try again",
+      message: "Error updating content, please try again",
     });
   }
 
@@ -84,7 +84,7 @@ export const CreateTopic = asyncHandler(async (req: any, res: any) => {
   if (!subject) {
     return res.status(400).json({
       success: false,
-      message: "error while creating topic , plz try again",
+      message: "Error creating topic, please try again",
     });
   }
   res.json({ success: true, message: "message", data: "data" });
@@ -105,7 +105,7 @@ export const DeleteTopic = asyncHandler(async (req: any, res: any) => {
   if (!topic) {
     return res.status(400).json({
       success: false,
-      message: "error while deleting topic , plz try again",
+      message: "Error deleting topic, please try again",
     });
   }
   res.json({ success: true, message: "Topic delete processed ", data: id });
@@ -126,7 +126,7 @@ export const DeleteSubject = asyncHandler(async (req: any, res: any) => {
   if (!subject) {
     return res.status(400).json({
       success: false,
-      message: "error while deleting subject , plz try again",
+      message: "Error deleting subject, please try again",
     });
   }
   res.json({ success: true, message: "Subject delete processed ", data: id });
@@ -142,7 +142,7 @@ export const CreateSubject = asyncHandler(async (req: any, res: any) => {
   let subject = await noteService.createSubject(processedData.data);
 
   if (!subject) {
-    throw new Error("subject creation faild");
+    throw new Error("Subject creation failed");
   }
   res.json({ success: true, message: "message", data: "data" });
 });
@@ -171,7 +171,7 @@ export const getAllNoteTopic = asyncHandler(async (req: any, res: any) => {
   if (!topicdatas) {
     return res.status(400).json({
       success: false,
-      message: "error while getting Topics , plz try again",
+      message: "Error fetching topics, please try again",
     });
   }
 
@@ -186,7 +186,7 @@ export const getAllNoteSubjectByCategory = asyncHandler(async (req: any, res: an
   if (!subjectdatas) {
     return res.status(400).json({
       success: false,
-      message: "error while getting Subject , plz try again",
+      message: "Error fetching subjects, please try again",
     });
   }
 
@@ -200,7 +200,7 @@ export const getAllNoteSubjectByExam = asyncHandler(async (req: any, res: any) =
   if (!subjectdatas) {
     return res.status(400).json({
       success: false,
-      message: "error while getting Subject , plz try again",
+      message: "Error fetching subjects, please try again",
     });
   }
 
@@ -241,7 +241,7 @@ export const getTopic = asyncHandler(async (req: any, res: any) => {
   if (!note) {
     return res.status(400).json({
       success: false,
-      message: "error while getting note Content , plz try again",
+      message: "Error fetching note content, please try again",
     });
   }
 
@@ -258,7 +258,7 @@ export const getNote = asyncHandler(async (req: any, res: any) => {
   if (!note) {
     return res.status(400).json({
       success: false,
-      message: "error while getting note Content , plz try again",
+      message: "Error fetching note content, please try again",
     });
   }
 

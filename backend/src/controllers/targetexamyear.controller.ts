@@ -14,7 +14,7 @@ export const getExamYearInfo = asyncHandler(async (req: any, res: any) => {
 
     return res.json({
         success: true,
-        message: `Exam Submited Successfully ...`,
+        message: `Exam Submitted Successfully`,
         data: exam_year,
     });
 });

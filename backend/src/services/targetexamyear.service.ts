@@ -15,7 +15,7 @@ export class TargetExamYearService {
             },
         });
 
-        if (!target_exam_data) throw new Error("select valid exam name ");
+        if (!target_exam_data) throw new Error("Invalid exam name — please select a valid exam");
 
         data.slug = ConvertInSlug(
             `${target_exam_data.shortCode} ${data.year}`
@@ -29,7 +29,7 @@ export class TargetExamYearService {
             },
         });
 
-        if (!target_exam_year) throw new Error("targated_exam_year not created ");
+        if (!target_exam_year) throw new Error("Failed to create target exam year");
         return target_exam_year;
     }
     async updateTargetedExamYear(data: any) {
@@ -40,7 +40,7 @@ export class TargetExamYearService {
         });
 
         if (!isTargetdExam_Year) {
-            throw new Error("Provided exam year id is invalid ");
+            throw new Error("Invalid exam year ID");
         }
 
         let updated_target_exam_year = await prisma.examYear.update({
@@ -81,7 +81,7 @@ export class TargetExamYearService {
             });
         }
 
-        if (!exam_year) throw Error("exam year info not  found");
+        if (!exam_year) throw Error("Exam year info not found");
         return exam_year;
     }
 

@@ -72,7 +72,7 @@ export class NoteService {
                 },
             });
             if (!createAnotherVersion)
-                throw new Error("error while create a version backup");
+                throw new Error("Failed to create version backup");
 
             let updatedContent = await tx.topic.update({
                 where: {
@@ -106,7 +106,7 @@ export class NoteService {
                 },
             });
             if (!createAnotherVersion)
-                throw new Error("error while create a version backup");
+                throw new Error("Failed to create version backup");
 
             let updatedContent = await tx.topic.update({
                 where: {
@@ -141,7 +141,7 @@ export class NoteService {
                 },
             });
             if (!createAnotherVersion)
-                throw new Error("error while create a version backup");
+                throw new Error("Failed to create version backup");
 
             let updatedContent = await tx.topic.update({
                 where: {
@@ -175,7 +175,7 @@ export class NoteService {
             },
         });
 
-        if (!isExist) throw new Error("Topic is not present ");
+        if (!isExist) throw new Error("Topic not found");
 
         let topic = await prisma.topic.delete({
             where: {
@@ -191,7 +191,7 @@ export class NoteService {
             },
         });
 
-        if (!isExist) throw new Error("Subject is not present ");
+        if (!isExist) throw new Error("Subject not found");
 
         let subject = await prisma.subject.delete({
             where: {

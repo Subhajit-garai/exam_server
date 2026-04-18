@@ -42,7 +42,7 @@ export class ProfileService {
         });
 
         if (!User) {
-            throw new Error("user not exist");
+            throw new Error("User not found");
         }
         return User
     }

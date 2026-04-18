@@ -39,7 +39,7 @@ export const getSubcriptionBenifits = async (
     });
 
     if (!user) {
-      throw new CustomError("user information not found");
+      throw new CustomError("User information not found");
     }
     let user_tier = user?.prime?.status;
 
@@ -50,7 +50,7 @@ export const getSubcriptionBenifits = async (
     });
 
     if (!tier) {
-      throw new CustomError("tier information not found");
+      throw new CustomError("Tier information not found");
     }
 
     let tierbenifit = await tx.tierBenefit.findFirst({
@@ -61,7 +61,7 @@ export const getSubcriptionBenifits = async (
     });
 
     if (!tierbenifit) {
-      throw new CustomError("tierbenifit information not found");
+      throw new CustomError("Tier benefit information not found");
     }
 
     // console.log("user info =>", user);
@@ -195,7 +195,7 @@ export const TokenDeduction = async (
             });
             break;
           default:
-            throw new Error("unknown  charge  subscription request");
+            throw new Error("Unknown subscription type");
         }
 
         break;
@@ -207,7 +207,7 @@ export const TokenDeduction = async (
 
         // if subcription don't have  that survice
         if (charge === null)
-          throw new Error("service not avalible  or unknown  charge  request");
+          throw new Error("Service not available or unknown charge type");
     }
 
     // deduction process
@@ -215,7 +215,7 @@ export const TokenDeduction = async (
     console.log("charge -- >", charge);
 
     if (!charge && typeof charge != "number") {
-      throw new Error("invalid  balance");
+      throw new Error("Invalid balance");
     }
 
     const userdata = await tx.user.findUnique({
@@ -230,7 +230,7 @@ export const TokenDeduction = async (
     });
 
     if (!userdata?.balance) {
-      throw new CustomError("userdata not found");
+      throw new CustomError("User balance not found");
     }
     // Step 2: Check if the balance is sufficient
     if (userdata?.balance.amount < charge) {

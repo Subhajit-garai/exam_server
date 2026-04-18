@@ -2,6 +2,7 @@ import { ProcessingStatus, Prisma } from "@repo/prisma/client.js";
 import prisma from "@repo/db/index.js";
 
 export class QuestionProcessingService {
+
     async createProcessedQuestion(userId: string, data: any) {
         let user = await prisma.user.findUnique({
             where: {

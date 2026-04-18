@@ -43,7 +43,7 @@ export const auth = asyncHandler(async (req: any, res: any) => {
 
   res.status(200).json({
     success: true,
-    message: "user created sucessfully ",
+    message: "User authenticated successfully",
     data: User,
   });
 
@@ -77,7 +77,7 @@ export const userSignup = asyncHandler(async (req: any, res: any) => {
 
   res.status(200).json({
     success: true,
-    message: "user created sucessfully ",
+    message: "User created successfully",
     data: {
       name: newUser.name,
       email: newUser.email,
@@ -95,7 +95,7 @@ export const generateEmailValidationToken = asyncHandler(async (req: any, res: a
   await userService.generateEmailValidationToken(email);
   res.status(200).json({
     success: true,
-    message: "validation  token send successfully on your email ",
+    message: "Validation token sent to your email",
   });
 
 
@@ -118,7 +118,7 @@ export const verifyUserEmailValidationToken = asyncHandler(async (req: any, res:
 
   res.status(200).json({
     success: true,
-    message: "user email validate  successfully ",
+    message: "Email validated successfully",
   });
 })
 
@@ -134,7 +134,7 @@ export const generateUserTelegramIdValidationToken = asyncHandler(async (req: an
   await userService.generateUserTelegramIdValidationToken(req.user, telegramid);
   return res.status(200).json({
     success: true,
-    message: "validation  token send successfully on your email ",
+    message: "Validation token sent to your Telegram",
   });
 
 })
@@ -154,7 +154,7 @@ export const verifyUserTelegramIdValidationToken = asyncHandler(async (
 
   res.status(200).json({
     success: true,
-    message: "user password change successfully ",
+    message: "Telegram ID verified successfully",
   });
 })
 
@@ -168,7 +168,7 @@ export const generateUserForgotPasswordToken = asyncHandler(async (req: any, res
   await userService.generateUserForgotPasswordToken(email);
   res.status(200).json({
     success: true,
-    message: "pasword reset token send successfully on your email ",
+    message: "Password reset token sent to your email",
   });
 })
 
@@ -184,7 +184,7 @@ export const verifyUserForgotPasswordToken = asyncHandler(async (req: any, res: 
   await userService.verifyUserForgotPasswordToken(processedData.data);
   res.status(200).json({
     success: true,
-    message: "user password change successfully ",
+    message: "Password changed successfully",
   });
 });
 

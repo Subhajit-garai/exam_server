@@ -20,7 +20,7 @@ export const updateQuestion = async (req: any, res: any) => {
 
       return res.status(401).json({
         success: false,
-        message: "inpute format/value invalid ",
+        message: "Invalid input format/value",
       });
     }
 
@@ -33,14 +33,14 @@ export const updateQuestion = async (req: any, res: any) => {
     }
 
     res.status(200).json({
-      message: "Question updation successfull",
+      message: "Question updated successfully",
     });
   } catch (error) {
     console.log("error : ", error);
 
     res.status(500).json({
       error: error,
-      message: "surver error",
+      message: "Server error",
     });
   }
 };
@@ -97,7 +97,7 @@ export const createQuestion = asyncHandler(async (req: any, res: any) => {
 
   res.status(200).json({
     success: true,
-    message: "Question creation successfull",
+    message: "Question created successfully",
   });
 })
 
@@ -118,7 +118,7 @@ export const getQuestion = async (req: any, res: any) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "surver error",
+      message: "Server error",
     });
   }
 };
@@ -140,7 +140,7 @@ export const getQuestionalldatabyID = async (req: any, res: any) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "surver error",
+      message: "Server error",
     });
   }
 };
@@ -206,7 +206,7 @@ export const backupQuestion = async (req: any, res: any) => {
 
     res.status(500).json({
       success: false,
-      message: "surver error",
+      message: "Server error",
     });
   }
 };

@@ -1,5 +1,5 @@
-import { asyncHandler } from "@/lib/helper/asyncHandler.js";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
 import { TargetExamYearService } from "@/services/targetexamyear.service.js";
 import { create_targated_exam_year_zodSchemea, updare_targated_exam_year_zodSchemea } from "@/zod/exam.zod.js";
 

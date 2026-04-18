@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import { ActivityService } from "../services/activity.service.js";
 import { CompleteActivitySchema, createActivitySchema } from "../zod/activity.zod.js";
-import { asyncHandler } from "@/lib/helper/asyncHandler.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 import { activity_time_range, ActivityLeaderboardService } from "@/services/activity/activity.leaderboard.service.js";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
+
 
 const activityService = new ActivityService();
 const leaderboardService = new ActivityLeaderboardService();
@@ -35,9 +37,9 @@ export const completeDailyChallenge = asyncHandler(async (req: Request, res: Res
     // Validate input
     const validation = CompleteActivitySchema.safeParse(req.body);
     if (!validation.success) {
-        res.status(400).json({ message: "Invalid input", errors: validation.error.errors });
-        return;
+        throw new CustomError("Invalid input", 400);
     }
+
 
     const result = await activityService.completeActivity(validation.data);
     res.status(200).json({
@@ -52,9 +54,9 @@ export const getUserStats = asyncHandler(async (req: any, res: Response) => {
 
     const userId = req.user;
     if (!userId) {
-        res.status(400).json({ message: "User ID is required" });
-        return;
+        throw new CustomError("User ID is required", 400);
     }
+
     const stats = await activityService.getUserStats(userId);
     res.status(200).json({
         success: true,
@@ -70,15 +72,15 @@ export const logActivity = asyncHandler(async (req: any, res: Response) => {
 
     const userId = req.user; // Assuming auth middleware sets this
     if (!userId) {
-        res.status(401).json({ message: "Unauthorized" });
-        return;
+        throw new CustomError("Unauthorized", 401);
     }
+
 
     const validation = createActivitySchema.safeParse(req.body);
     if (!validation.success) {
-        res.status(400).json({ message: "Invalid input", errors: validation.error.errors });
-        return;
+        throw new CustomError("Invalid input", 400);
     }
+
 
     const result = await activityService.createActivity(userId, validation.data);
     res.status(201).json({
@@ -93,9 +95,9 @@ export const getRecentActivities = asyncHandler(async (req: Request, res: Respon
 
     const userId = (req as any).user;
     if (!userId) {
-        res.status(401).json({ message: "Unauthorized" });
-        return;
+        throw new CustomError("Unauthorized", 401);
     }
+
 
     const activities = await activityService.getRecentActivities(userId);
 
@@ -122,9 +124,9 @@ export const getRecentActivities = asyncHandler(async (req: Request, res: Respon
 export const getUserRewards = asyncHandler(async (req: any, res: Response) => {
     const userId = req.user;
     if (!userId) {
-        res.status(401).json({ message: "Unauthorized" });
-        return;
+        throw new CustomError("Unauthorized", 401);
     }
+
 
     const rewards = await activityService.getUserRewards(userId);
     res.status(200).json({
@@ -137,9 +139,9 @@ export const getUserRewards = asyncHandler(async (req: any, res: Response) => {
 export const getActivityHeatmap = asyncHandler(async (req: any, res: Response) => {
     const userId = req.user;
     if (!userId) {
-        res.status(401).json({ message: "Unauthorized" });
-        return;
+        throw new CustomError("Unauthorized", 401);
     }
+
 
     const heatmap = await activityService.getActivityHeatmap(userId);
     res.status(200).json({

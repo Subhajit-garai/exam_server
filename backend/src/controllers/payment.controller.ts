@@ -3,11 +3,13 @@ import {
   tokenPurchase_zod_schema,
   applyCouponZodSchema,
 } from "../zod/payment.zod.js"
-import { asyncHandler } from "@/lib/helper/asyncHandler.js";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
 import { PaymentService } from "../services/payment.service.js";
 import { couponService } from "@/services/coupon.service.js";
-import { logger } from "@/lib/helper/logger.js";
+import { logger } from "@repo/lib/helper/logger.js";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
+
 
 
 const paymentService = new PaymentService();
@@ -62,9 +64,9 @@ export const checkoutToken = asyncHandler(async (req: any, res: any) => {
 });
 
 export const paymentVerification = asyncHandler(async (req: any, res: any) => {
-  try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
+  try {
     await paymentService.paymentVerification(razorpay_order_id, razorpay_payment_id, razorpay_signature);
 
     const referer = req.get("Referer");
@@ -73,24 +75,21 @@ export const paymentVerification = asyncHandler(async (req: any, res: any) => {
     );
   } catch (error: any) {
     if (error.message === "Duplicate payment detected") {
-      return res
-        .status(400)
-        .json({ success: false, message: "Duplicate payment detected" });
+      throw new CustomError("Duplicate payment detected", 400);
     }
     throw error;
   }
 });
+
 
 export const getSubcriptionAndOffer = asyncHandler(
   async (req: any, res: any) => {
     let data = await paymentService.getSubcriptionAndOffer();
 
     if (!data) {
-      return res.status(400).json({
-        success: false,
-        message: "offer not found",
-      });
+      throw new CustomError("offer not found", 404);
     }
+
 
     return res.json({
       success: true,
@@ -108,11 +107,9 @@ export const getSubcriptionAndOfferFormated = asyncHandler(
     let data = await paymentService.getSubcriptionAndOfferFormated();
 
     if (!data) {
-      return res.status(400).json({
-        success: false,
-        message: "offer not found",
-      });
+      throw new CustomError("offer not found", 404);
     }
+
     logger.debug("getSubcriptionAndOfferFormated data:", data);
 
     return res.json({

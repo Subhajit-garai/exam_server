@@ -10,33 +10,30 @@ import {
   updateUserZodSchema,
 } from "../zod/user.zod.js";
 import { UserService } from "../services/user.service.js";
-import { asyncHandler } from "@/lib/helper/asyncHandler.js";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
-import { logger } from "@/lib/helper/logger.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
+import { logger } from "@repo/lib/helper/logger.js";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
+
 
 const userService = new UserService();
 
-export const userPurchases = async (req: any, res: any) => {
-  try {
-    let allPurchases = await userService.userPurchases(req.user);
+export const userPurchases = asyncHandler(async (req: any, res: any) => {
+  let allPurchases = await userService.userPurchases(req.user);
 
-    if (allPurchases) {
-      logger.debug("allPurchases:", allPurchases);
-
-      res.json({
-        success: true,
-        message: "User all Purchases",
-        data: allPurchases,
-      });
-    }
-  } catch (error) {
-    logger.error("Error in userPurchases:", error);
-    res.status(404).json({
-      success: false,
-      message: "Server error",
-    });
+  if (!allPurchases) {
+    throw new CustomError("Purchases not found", 404);
   }
-};
+
+  logger.debug("allPurchases:", allPurchases);
+
+  res.json({
+    success: true,
+    message: "User all Purchases",
+    data: allPurchases,
+  });
+});
+
 
 export const auth = asyncHandler(async (req: any, res: any) => {
   let User = await userService.auth(req.user);

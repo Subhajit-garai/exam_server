@@ -1,17 +1,18 @@
 import { timeinpute } from "../zod/metrix.zod.js";
 import { MetrixService } from "../services/metrix.service.js";
-import { logger } from "@/lib/helper/logger.js";
-
+import { logger } from "@repo/lib/helper/logger.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
+import { SystemStateService } from "../services/system-state.service.js";
 
 const metrixService = new MetrixService();
+const systemStateService = new SystemStateService();
 
-export const test = async (req: any, res: any) => {
-  try {
-    res.json({ success: true, message: "message", data: "data" });
-  } catch (error) {
-    logger.error("Error in metrix test:", error);
-  }
-};
+
+export const test = asyncHandler(async (req: any, res: any) => {
+  res.json({ success: true, message: "message", data: "data" });
+});
+
 
 export const examQuestionAttemp = asyncHandler(async (req: any, res: any) => {
   let data = await metrixService.examQuestionAttemp(req.user, req.query.examid);
@@ -101,17 +102,13 @@ export const getScoreMetrix = asyncHandler(async (req: any, res: any) => {
     !offset ||
     !["week", "month", "day", "hour", "minute"].includes(offset)
   ) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid offset value" });
+    throw new CustomError("Invalid offset value", 400);
   }
 
   if (!startDate || !endDate) {
-    return res.status(400).json({
-      success: false,
-      message: "Start date and end date are required for range filtering",
-    });
+    throw new CustomError("Start date and end date are required for range filtering", 400);
   } else {
+
     startDate = parseInt(startDate);
     endDate = parseInt(endDate);
     if (
@@ -134,9 +131,7 @@ export const getScoreMetrix = asyncHandler(async (req: any, res: any) => {
   });
 });
 
-import { SystemStateService } from "../services/system-state.service.js";
-import { asyncHandler } from "@/lib/helper/asyncHandler.js";
-const systemStateService = new SystemStateService();
+
 
 export const getSubjectScoreMetrix = asyncHandler(async (req: any, res: any) => {
   let userid = req.user;
@@ -148,17 +143,13 @@ export const getSubjectScoreMetrix = asyncHandler(async (req: any, res: any) => 
     !offset ||
     !["week", "month", "day", "hour", "minute"].includes(offset)
   ) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid offset value" });
+    throw new CustomError("Invalid offset value", 400);
   }
 
   if (!startDate || !endDate) {
-    return res.status(400).json({
-      success: false,
-      message: "Start date and end date are required for range filtering",
-    });
+    throw new CustomError("Start date and end date are required for range filtering", 400);
   }
+
 
   const { finaldata, range } = await metrixService.getSubjectScoreMetrix(userid, offset, startDate, endDate);
 

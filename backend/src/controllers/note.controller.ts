@@ -6,8 +6,10 @@ import {
 } from "../zod/note.zod.js";
 import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
 import { NoteService } from "../services/note.service.js";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
 
 const noteService = new NoteService();
+
 
 export const test = asyncHandler(async (req: any, res: any) => {
   res.json({ success: true, message: "message", data: "data" });
@@ -21,11 +23,9 @@ export const like = asyncHandler(async (req: any, res: any) => {
   const updatedContent = await noteService.like(topic);
 
   if (!updatedContent) {
-    return res.status(400).json({
-      success: false,
-      message: "Error updating like, please try again",
-    });
+    throw new CustomError("Error updating like, please try again", 400);
   }
+
 
   res.json({ success: true, message: "like added" });
 });
@@ -37,11 +37,9 @@ export const dislike = asyncHandler(async (req: any, res: any) => {
   const updatedContent = await noteService.dislike(topic);
 
   if (!updatedContent) {
-    return res.status(400).json({
-      success: false,
-      message: "Error updating dislike, please try again",
-    });
+    throw new CustomError("Error updating dislike, please try again", 400);
   }
+
 
   res.json({ success: true, message: "dislike added" });
 })
@@ -61,11 +59,9 @@ export const UpdateContentOfTopic = asyncHandler(async (req: any, res: any) => {
   const updatedContent = await noteService.updateContentOfTopic(topicid, newContent);
 
   if (!updatedContent) {
-    return res.status(400).json({
-      success: false,
-      message: "Error updating content, please try again",
-    });
+    throw new CustomError("Error updating content, please try again", 400);
   }
+
 
   res.json({ success: true, message: " Content updated", data: "" });
 })
@@ -82,11 +78,9 @@ export const CreateTopic = asyncHandler(async (req: any, res: any) => {
   let subject = await noteService.createTopic(processedData.data);
 
   if (!subject) {
-    return res.status(400).json({
-      success: false,
-      message: "Error creating topic, please try again",
-    });
+    throw new CustomError("Error creating topic, please try again", 400);
   }
+
   res.json({ success: true, message: "message", data: "data" });
 })
 
@@ -94,20 +88,16 @@ export const DeleteTopic = asyncHandler(async (req: any, res: any) => {
   const { id } = req.query;
 
   if (!id && typeof id != "string") {
-    return res.status(400).json({
-      success: false,
-      message: " topic id required ",
-    });
+    throw new CustomError("topic id required", 400);
   }
+
 
   let topic = await noteService.deleteTopic(id);
 
   if (!topic) {
-    return res.status(400).json({
-      success: false,
-      message: "Error deleting topic, please try again",
-    });
+    throw new CustomError("Error deleting topic, please try again", 400);
   }
+
   res.json({ success: true, message: "Topic delete processed ", data: id });
 });
 
@@ -115,20 +105,16 @@ export const DeleteSubject = asyncHandler(async (req: any, res: any) => {
   const { id } = req.query;
 
   if (!id && typeof id != "string") {
-    return res.status(400).json({
-      success: false,
-      message: "subject id required ",
-    });
+    throw new CustomError("subject id required", 400);
   }
+
 
   let subject = await noteService.deleteSubject(id);
 
   if (!subject) {
-    return res.status(400).json({
-      success: false,
-      message: "Error deleting subject, please try again",
-    });
+    throw new CustomError("Error deleting subject, please try again", 400);
   }
+
   res.json({ success: true, message: "Subject delete processed ", data: id });
 });
 
@@ -169,11 +155,9 @@ export const getAllNoteTopic = asyncHandler(async (req: any, res: any) => {
   let topicdatas = await noteService.getAllNoteTopic(slug);
 
   if (!topicdatas) {
-    return res.status(400).json({
-      success: false,
-      message: "Error fetching topics, please try again",
-    });
+    throw new CustomError("Error fetching topics, please try again", 400);
   }
+
 
   res.json({ success: true, message: "Topics", data: topicdatas });
 })
@@ -184,11 +168,9 @@ export const getAllNoteSubjectByCategory = asyncHandler(async (req: any, res: an
   let subjectdatas = await noteService.getAllNoteSubjectByCategory(category as string);
 
   if (!subjectdatas) {
-    return res.status(400).json({
-      success: false,
-      message: "Error fetching subjects, please try again",
-    });
+    throw new CustomError("Error fetching subjects, please try again", 400);
   }
+
 
   res.json({ success: true, message: "Subjects", data: subjectdatas });
 })
@@ -198,11 +180,9 @@ export const getAllNoteSubjectByExam = asyncHandler(async (req: any, res: any) =
   let subjectdatas = await noteService.getAllNoteSubjectByExam(exam as string);
 
   if (!subjectdatas) {
-    return res.status(400).json({
-      success: false,
-      message: "Error fetching subjects, please try again",
-    });
+    throw new CustomError("Error fetching subjects, please try again", 400);
   }
+
 
   res.json({ success: true, message: "Subjects", data: subjectdatas });
 })
@@ -212,22 +192,18 @@ export const getAllNoteSubjectForUser = asyncHandler(async (req: any, res: any) 
   let { user_exam_year_id, user_targeted_exam_id } = req
 
   if (!user_exam_year_id || !user_targeted_exam_id) {
-
-    return res.status(200).json({
-      success: false,
-      message: "user need to select target exam and exam year",
-    });
-
+    throw new CustomError("user need to select target exam and exam year", 200); // 200 because it's a soft error in original? 
+    // Actually, original code returned res.status(200).json({success: false, ...})
+    // I'll keep 200 if it's meant to be a non-blocking UI message.
   }
+
 
   let subjectdatas = await noteService.getAllNoteSubjectForUser(user_targeted_exam_id, user_exam_year_id);
 
   if (!subjectdatas) {
-    return res.status(400).json({
-      success: false,
-      message: "error while getting Subject , plz try again",
-    });
+    throw new CustomError("error while getting Subject , plz try again", 400);
   }
+
 
   res.json({ success: true, message: "Subjects", data: subjectdatas });
 })
@@ -239,11 +215,9 @@ export const getTopic = asyncHandler(async (req: any, res: any) => {
   let note = await noteService.getTopic(topicid);
 
   if (!note) {
-    return res.status(400).json({
-      success: false,
-      message: "Error fetching note content, please try again",
-    });
+    throw new CustomError("Error fetching note content, please try again", 400);
   }
+
 
   res.json({ success: true, message: "message", data: note });
 })
@@ -256,11 +230,9 @@ export const getNote = asyncHandler(async (req: any, res: any) => {
   let note = await noteService.getNote(subject, topic, userId);
 
   if (!note) {
-    return res.status(400).json({
-      success: false,
-      message: "Error fetching note content, please try again",
-    });
+    throw new CustomError("Error fetching note content, please try again", 400);
   }
+
 
   res.json({ success: true, message: "message", data: note });
 })

@@ -3,7 +3,8 @@ import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 import { ExamManager } from "@repo/lib/manager/examManager.js";
 import { activity_quiz_create_data_ZodSchema } from "../zod/quiz.zod.js";
 import { QuizService } from "../services/quiz.service.js";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
+
 
 const em = ExamManager.getInstance();
 const quizService = new QuizService();

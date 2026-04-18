@@ -1,19 +1,17 @@
 import { eventSchema } from "../zod/event.zod.js";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
-import { asyncHandler } from "@/lib/helper/asyncHandler.js";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 import { EventService } from "../services/event.service.js";
-import { logger } from "@/lib/helper/logger.js";
+import { logger } from "@repo/lib/helper/logger.js";
+
 
 
 const eventService = new EventService();
 
-export const test = async (req: any, res: any) => {
-  try {
-    res.json({ success: true, message: "message", data: "data" });
-  } catch (error) {
-    logger.error("Error in test:", error);
-  }
-};
+export const test = asyncHandler(async (req: any, res: any) => {
+  res.json({ success: true, message: "message", data: "data" });
+});
+
 
 export const createEvent = asyncHandler(async (req: any, res: any) => {
   let eventdata = eventSchema.safeParse(req.body);
@@ -29,15 +27,11 @@ export const createEvent = asyncHandler(async (req: any, res: any) => {
   res.json({ success: true, message: "event ", data: "data" });
 });
 
-export const getAllEvents = async (req: any, res: any) => {
-  try {
-    let allEvents = await eventService.getAllEvents();
-    res.json({ success: true, message: "message", data: allEvents });
-  } catch (error) {
-    logger.error("Error in getAllEvents:", error);
-    res.status(404).json({ success: false, message: "server error" });
-  }
-};
+export const getAllEvents = asyncHandler(async (req: any, res: any) => {
+  let allEvents = await eventService.getAllEvents();
+  res.json({ success: true, message: "message", data: allEvents });
+});
+
 
 export const updateEvent = asyncHandler(async (req: any, res: any) => {
   const { id } = req.params;

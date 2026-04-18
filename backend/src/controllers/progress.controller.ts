@@ -1,8 +1,10 @@
-import { asyncHandler } from "@/lib/helper/asyncHandler.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 import { ProgressService } from "../services/progress.service.js";
 import { z } from "zod";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
 import { ProgressStatus } from "@repo/prisma/client.js";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
+
 
 const progressService = new ProgressService();
 
@@ -51,8 +53,9 @@ export const getSyllabusProgress = asyncHandler(async (req: any, res: any) => {
     const userId = req.user;
 
     if (!examYearId) {
-        return res.status(400).json({ success: false, message: "Exam Year ID is required" });
+        throw new CustomError("Exam Year ID is required", 400);
     }
+
 
     const result = await progressService.getSyllabusProgress(userId, examYearId);
 

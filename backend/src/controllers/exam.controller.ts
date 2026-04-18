@@ -6,7 +6,9 @@ import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
 import { SubmitedQuestionAnsZodSchema } from "../zod/question.zod.js";
 import { ExamService } from "../services/exam.service.js";
 import { ExamCreateInputeSchema } from "@/zod/user.zod.js";
-import { logger } from "@/lib/helper/logger.js";
+import { logger } from "@repo/lib/helper/logger.js";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
+
 
 
 const examService = new ExamService();
@@ -69,54 +71,40 @@ export const CreateExam = asyncHandler(async (req: any, res: any) => {
 });
 
 
-export const getUserAnsSetOfAnExam = async (req: any, res: any) => {
-  try {
-    let examid = req.query.examid;
-    let userid = req.user;
+export const getUserAnsSetOfAnExam = asyncHandler(async (req: any, res: any) => {
+  let examid = req.query.examid;
+  let userid = req.user;
 
-    let data = await examService.getUserAnsSetOfAnExam(userid, examid);
+  let data = await examService.getUserAnsSetOfAnExam(userid, examid);
 
-    res.json({ success: true, message: "message", data: data });
-  } catch (error) {
-    logger.error("Error in getUserAnsSetOfAnExam:", error);
-  }
-};
+  res.json({ success: true, message: "message", data: data });
+});
 
-export const getUserMetaDataForExam = async (req: any, res: any) => {
-  try {
-    let examid = req.query.examid;
-    let userid = req.user;
 
-    let data = await examService.getUserMetaDataForExam(userid, examid);
+export const getUserMetaDataForExam = asyncHandler(async (req: any, res: any) => {
+  let examid = req.query.examid;
+  let userid = req.user;
 
-    res.json({ success: true, message: "message", data: data });
-  } catch (error) {
-    logger.error("Error in getUserMetaDataForExam:", error);
-  }
-};
+  let data = await examService.getUserMetaDataForExam(userid, examid);
+
+  res.json({ success: true, message: "message", data: data });
+});
+
 
 // working here
 
 //1.0
-export const getTokenSystem = async (req: any, res: any) => {
-  try {
-    let type = req.query.type;
-    let data = await examService.getTokenSystem(req.user, type);
+export const getTokenSystem = asyncHandler(async (req: any, res: any) => {
+  let type = req.query.type;
+  let data = await examService.getTokenSystem(req.user, type);
 
-    res.json({
-      success: true,
-      message: `tokenSystem for exam `,
-      data: data,
-    });
-  } catch (error) {
-    logger.error("Error in getTokenSystem:", error);
+  res.json({
+    success: true,
+    message: `tokenSystem for exam `,
+    data: data,
+  });
+});
 
-    return res.status(400).json({
-      success: false,
-      message: `tokenSystem not created`,
-    });
-  }
-};
 
 // checked 2.0
 export const getCategoryName = asyncHandler(async (req: any, res: any) => {

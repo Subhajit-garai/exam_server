@@ -4,81 +4,62 @@ import {
   questionUpdateZodSchema,
 } from "../zod/question.zod.js";
 import { QuestionService } from "../services/question.service.js";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
-import { asyncHandler } from "@/lib/helper/asyncHandler.js";
-import { logger } from "@/lib/helper/logger.js";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
+import { logger } from "@repo/lib/helper/logger.js";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
+
 
 
 const questionService = new QuestionService();
 
-export const updateQuestion = async (req: any, res: any) => {
-  try {
-    logger.debug("req.body", req.body);
+export const updateQuestion = asyncHandler(async (req: any, res: any) => {
+  logger.debug("req.body", req.body);
 
-    let data = questionUpdateZodSchema.safeParse(req.body);
-    if (!data.success) {
-      logger.warn("Zod validation error", data.error);
-
-      return res.status(401).json({
-        success: false,
-        message: "Invalid input format/value",
-      });
-    }
-
-    let question = await questionService.updateQuestion(req.user, data.data);
-
-    if (!question) {
-      return res.status(400).json({
-        message: "Question not updated ",
-      });
-    }
-
-    res.status(200).json({
-      message: "Question updated successfully",
-    });
-  } catch (error) {
-    logger.error("error:", error);
-
-    res.status(500).json({
-      error: error,
-      message: "Server error",
-    });
+  let data = questionUpdateZodSchema.safeParse(req.body);
+  if (!data.success) {
+    throw ZodDataSafeParse(data);
   }
-};
 
-export const GetQuestionExplanation = async (req: any, res: any) => {
-  try {
-    let questionid = req.query.questionid;
+  let question = await questionService.updateQuestion(req.user, data.data);
 
-    let data = await questionService.getQuestionExplanation(questionid);
-    res.json({ success: true, message: "Question Explanation", data: data });
-  } catch (error) {
-    logger.error("Error in GetQuestionExplanation", error);
+  if (!question) {
+    throw new CustomError("Question not updated", 400);
   }
-};
 
-export const checkQuestion = async (req: any, res: any) => {
-  try {
-    let { title } = req.body;
+  res.status(200).json({
+    success: true,
+    message: "Question updated successfully",
+  });
+});
 
-    let responce = await questionService.checkQuestion(title);
 
-    if (responce.length > 0) {
-      return res.status(200).json({
-        message: "Question already exist",
-        data: responce,
-      });
-    }
+export const GetQuestionExplanation = asyncHandler(async (req: any, res: any) => {
+  let questionid = req.query.questionid;
+
+  let data = await questionService.getQuestionExplanation(questionid);
+  res.json({ success: true, message: "Question Explanation", data: data });
+});
+
+
+export const checkQuestion = asyncHandler(async (req: any, res: any) => {
+  let { title } = req.body;
+
+  let responce = await questionService.checkQuestion(title);
+
+  if (responce.length > 0) {
     return res.status(200).json({
-      message: "Question not exist",
-    });
-  } catch (error) {
-    logger.error("Error in checkQuestion", error);
-    return res.status(400).json({
-      message: "Error in question check",
+      success: true,
+      message: "Question already exist",
+      data: responce,
     });
   }
-};
+  return res.status(200).json({
+    success: true,
+    message: "Question not exist",
+  });
+});
+
 export const createQuestion = asyncHandler(async (req: any, res: any) => {
 
   let data = questionInputZodSchema.safeParse(req.body);
@@ -102,72 +83,49 @@ export const createQuestion = asyncHandler(async (req: any, res: any) => {
   });
 })
 
-export const getQuestion = async (req: any, res: any) => {
-  try {
-    let QuestionId = req.params.id;
-    let responce = await questionService.getQuestion(QuestionId);
+export const getQuestion = asyncHandler(async (req: any, res: any) => {
+  let QuestionId = req.params.id;
+  let responce = await questionService.getQuestion(QuestionId);
 
-    if (!responce) {
-      return res.status(400).json({
-        message: "questions not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: responce,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Server error",
-    });
+  if (!responce) {
+    throw new CustomError("Question not found", 404);
   }
-};
 
-export const getQuestionalldatabyID = async (req: any, res: any) => {
-  try {
-    let QuestionId = req.params.id;
-    let responce = await questionService.getQuestionAllDataById(QuestionId);
+  res.status(200).json({
+    success: true,
+    data: responce,
+  });
+});
 
-    if (!responce) {
-      return res.status(400).json({
-        message: "questions not found",
-      });
-    }
 
-    res.status(200).json({
-      success: true,
-      data: responce,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Server error",
-    });
+export const getQuestionalldatabyID = asyncHandler(async (req: any, res: any) => {
+  let QuestionId = req.params.id;
+  let responce = await questionService.getQuestionAllDataById(QuestionId);
+
+  if (!responce) {
+    throw new CustomError("Question not found", 404);
   }
-};
 
-export const deleteQuestion = async (req: any, res: any) => {
-  try {
-    const questionId = req.params.id;
-    const userId = req.user; // Assuming auth middleware populates this
+  res.status(200).json({
+    success: true,
+    data: responce,
+  });
+});
 
-    const question = await questionService.deleteQuestion(userId, questionId);
 
-    res.status(200).json({
-      success: true,
-      message: "Question deleted successfully",
-      data: question,
-    });
-  } catch (error: any) {
-    logger.error("error:", error);
-    // Determine status code based on error message (simple heuristic)
-    const status = error.message?.includes("Cannot delete") ? 400 : 500;
-    res.status(status).json({
-      success: false,
-      message: error.message || "server error",
-    });
-  }
-};
+export const deleteQuestion = asyncHandler(async (req: any, res: any) => {
+  const questionId = req.params.id;
+  const userId = req.user;
+
+  const question = await questionService.deleteQuestion(userId, questionId);
+
+  res.status(200).json({
+    success: true,
+    message: "Question deleted successfully",
+    data: question,
+  });
+});
+
 
 export const getAllQuestions = asyncHandler(async (req: any, res: any) => {
 
@@ -194,23 +152,15 @@ export const getAllQuestions = asyncHandler(async (req: any, res: any) => {
 
 })
 
-export const backupQuestion = async (req: any, res: any) => {
-  try {
-    const { questions, total } = await questionService.backupQuestion();
+export const backupQuestion = asyncHandler(async (req: any, res: any) => {
+  const { questions, total } = await questionService.backupQuestion();
 
-    res.status(200).json({
-      success: true,
-      data: { questions: questions, total: total },
-    });
-  } catch (error) {
-    logger.error("Error in backupQuestion", error);
+  res.status(200).json({
+    success: true,
+    data: { questions: questions, total: total },
+  });
+});
 
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
-  }
-};
 
 export const getSubjectCounts = asyncHandler(async (req: any, res: any) => {
 

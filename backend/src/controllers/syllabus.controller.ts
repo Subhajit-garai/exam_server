@@ -1,10 +1,12 @@
-import { asyncHandler } from "@/lib/helper/asyncHandler.js";
+import { asyncHandler } from "@repo/lib/helper/asyncHandler.js";
 import {
   SyllabusInputZodSchema,
 } from "@/zod/syllabus.zod.js";
-import { ZodDataSafeParse } from "@/lib/ZodTypeChecker.js";
+import { ZodDataSafeParse } from "@repo/lib/ZodTypeChecker.js";
 import { SyllabusService } from "../services/syllabus.service.js";
 import { logger } from "@repo/lib/helper/logger.js";
+import { CustomError } from "@/middleware/globalErrorHandler.js";
+
 
 const syllabusService = new SyllabusService();
 
@@ -14,11 +16,9 @@ export const CreateSyllabus = asyncHandler(async (req: any, res: any) => {
   let data = SyllabusInputZodSchema.safeParse(req.body);
 
   if (!data.success) {
-    return res.status(401).json({
-      success: false,
-      message: "given credential/input   invalid ",
-    });
+    throw new CustomError("given credential/input invalid", 400);
   }
+
 
   const response = await syllabusService.createSyllabus(data.data);
 

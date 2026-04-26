@@ -1,0 +1,7 @@
+node_modules
+.env
+dist
+dockercompose.copy
+scripts
+/seeds/data/*
+.vscode/*

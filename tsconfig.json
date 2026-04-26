@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@repo/db/*": [
+        "./src/db/*"
+      ],
+      "@repo/lib/*": [
+        "./src/lib/*"
+      ],
+      "@repo/prisma/*": [
+        "./prisma/generated/prisma/*"
+      ] // here prisma is js file not ts so ts compiler should  not add into dist so we generated packages in dist directly
+    },
+    "rootDir": "." /* Specify the root folder within your source files. */,
+    "outDir": "./dist" /* Specify an output folder for all emitted files. */,
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "target": "ES2023",
+    "strict": true,
+    "esModuleInterop": true,
+    "incremental": true,
+    "skipLibCheck": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "**/*.test.ts"
+  ]
+}

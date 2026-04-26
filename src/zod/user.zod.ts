@@ -1,0 +1,119 @@
+import { ExamType, SocialPlatform, Visibility } from "@repo/db/schema/enums.js"
+import z, { date } from "zod";
+
+export const singupZodSchema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  password: z.string(),
+});
+
+export const updateUserZodSchema = z.object({
+  name: z.string().optional(),
+  targeted_exam: z.string().optional(),
+  exam_year: z.string().optional(),
+  academicProfile: z.array(z.object({
+    category: z.string(),
+    exam: z.string(),
+    year: z.string()
+  })).optional(),
+  school: z.string().optional(),
+  standard: z.string().optional(),
+  stream: z.string().optional(),
+});
+
+export const updateAcademicProfileZodSchema = z.object({
+  academicProfile: z.object({
+    category: z.string(),
+    exam: z.string(),
+    year: z.string()
+  }).optional(),
+  school: z.string().optional(),
+  standard: z.string().optional(),
+  stream: z.string().optional(),
+});
+
+export const updateSocialLinksZodSchema = z.object({
+  platform: z.enum(SocialPlatform.enumValues), // Enforce Enum values if possible, or string that maps to it
+  link: z.string().optional(),
+}); // Service transforms these keys to SocialPlatform enum
+
+export type DeleteSocialLinksInput = z.infer<typeof deleteSocialLinksZodSchema>;
+export const deleteSocialLinksZodSchema = z.object({
+  platform: z.enum(SocialPlatform.enumValues), // Enforce Enum values if possible, or string that maps to it
+});
+
+export const singinZodSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
+export const useremailValidationZodSchema = z.object({
+  email: z.string().email(),
+});
+export const usertelegramidValidationZodSchema = z.object({
+  telegramid: z.string(),
+});
+
+export const validateTokenZodSchema = z.object({
+  token: z.string(),
+  email: z.string().email().optional(),
+});
+
+export const forgotpasswordZodSchema = z.object({
+  email: z.string().email(),
+});
+export const forgotpasswordVerifyZodSchema = z.object({
+  email: z.string().email(),
+  ForgotpasswordToken: z.string(),
+  newpassword: z.string(),
+
+});
+
+
+export type ExampatternInputType = z.infer<typeof ExampatternInputZodSchema>;
+export const ExampatternInputZodSchema = z.object({
+  title: z.string(),
+  format: z.enum(["Text", "Image"]),
+  examname: z.string(),
+  examyear: z.string(),
+  syllabus: z.string().optional(),
+  category: z.string(),
+  topics: z.array(z.string()).optional(),
+  difficulty: z.enum(["Easy", "Medium", "Hard"]),
+  part: z.boolean(),
+  checkbox: z.boolean(),
+  part_Count: z.string(),
+  total_questions: z.array(z.number()),
+  checktype: z.enum(["Normal", "Hybrid"]), // confush
+  marks_values: z.array(z.number()),
+  neg_values: z.array(z.number()),
+});
+
+export const ExampatternUpdateZodSchema = ExampatternInputZodSchema.partial().extend({
+  id: z.string(),
+});
+
+// export const ExamCreateInputeSchema = z.object({
+//   name: z.string(),
+//   examname: z.string(),
+//   category: z.string(),
+//   exam_pattern_id: z.string(),
+//   status: z.enum(["Private", "Public"]),
+//   starttime:z.string(),
+//   jointime:z.string().optional(),
+//   duration: z.string().optional(),
+//   date: z.string(),
+
+// });
+export const ExamCreateInputeSchema = z.object({
+  name: z.string(),
+  examname: z.string(),
+  category: z.string(),
+  exam_pattern_id: z.string(),
+  Visibility: z.enum(Visibility.enumValues),
+  starttime: z.string(),
+  jointime: z.string().optional(),
+  duration: z.string().optional(),
+  date: z.string(),
+  examtype: z.enum(ExamType.enumValues) // new
+
+});

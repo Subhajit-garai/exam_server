@@ -1,0 +1,12 @@
+
+docs
+node_modules
+dist
+.gitignore
+tests
+jest.config.js
+seeds
+tests
+prisma/generated
+.env
+scripts

@@ -12,7 +12,7 @@
       ],
       "@repo/prisma/*": [
         "./prisma/generated/prisma/*"
-      ] // here prisma is js file not ts so ts compiler should  not add into dist so we generated packages in dist directly
+      ]
     },
     "rootDir": "." /* Specify the root folder within your source files. */,
     "outDir": "./dist" /* Specify an output folder for all emitted files. */,

@@ -2,7 +2,6 @@ node_modules
 .env
 dist
 compose.yml
-dockercompose.copy
 scripts
 /seeds/data/*
 .vscode/*

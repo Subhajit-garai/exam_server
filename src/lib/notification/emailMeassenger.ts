@@ -16,6 +16,10 @@ class Mailer {
         pass: process.env.EMAIL_PASS?.trim() as string,
       },
     });
+
+    if (this.transporter) {
+      logger.success("Email service started successfully!")
+    }
   }
 
 

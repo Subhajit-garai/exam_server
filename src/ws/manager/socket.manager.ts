@@ -47,9 +47,13 @@ export class SocketManager {
         return SocketManager.instance;
     }
 
-    public init(port: number, path: string = "/quiz") {
-        this.wss = new WebSocketServer({ port, path });
-        logger.info(`SocketManager initialized on port ${port} with path ${path}`);
+
+    // public init(port: number, path: string = "/quiz") {
+    // this.wss = new WebSocketServer({ port, path });
+    // logger.info(`SocketManager initialized on port ${port} with path ${path}`);
+    public init(server: any, path: string = "/quiz") {
+        this.wss = new WebSocketServer({ server, path });
+        logger.info(`SocketManager initialized on existing server with path ${path}`);
 
         const hbInterval = setInterval(() => {
             if (!this.wss) return;

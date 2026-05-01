@@ -121,6 +121,5 @@ server.listen(PORT, () => {
 
 // Initialize SocketManager after server starts listening
 const socketManager = SocketManager.getInstance();
-const WS_PORT = Number(process.env.WS_PORT!);
-socketManager.init(WS_PORT, "/quiz");
+socketManager.init(server, "/ws/quiz");
 (global as any).socketManager = socketManager;

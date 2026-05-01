@@ -176,10 +176,16 @@ export const userSignin = asyncHandler(async (req: any, res: any) => {
     throw ZodDataSafeParse(processedData)
   }
   let User = await userService.userSignin(processedData.data);
+
+  setCookie(res, User.id); //  add for with out email veryfying
+
+
   res.status(200).json({
     success: true,
-    message: "User needs to verify their email. ",
-    email: User.email,
+    message: "Logged in successfully",
+    data: {
+      email: User.email,
+    },
   });
 });
 

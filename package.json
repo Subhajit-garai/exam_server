@@ -16,7 +16,8 @@
     "seed:restore:transformed": "npx tsx seeds/scripts/restore.ts --transformed",
     "seed:backup": "npx tsx seeds/scripts/backup.ts",
     "seed:transform": "npx tsx seeds/scripts/transform.ts",
-    "worker": "tsx src/worker.ts"
+    "worker": "tsx src/worker.ts",
+    "events:local": "tsx seeds/scripts/local-events.ts"
   },
   "keywords": [],
   "author": "",

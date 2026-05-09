@@ -23,13 +23,32 @@ export class QuizAnsTask extends BaseWorkerTask {
 
             // 2. Calculate Score
             let score = 0;
-            if (isMultiple) {
-                const correctAnswers = question.question.ans.split(",");
-                score = userans.filter((a: string) => correctAnswers.includes(a)).length;
+            const correctAnsArray = Array.isArray(question.question.ans) 
+                ? question.question.ans 
+                : String(question.question.ans).split(",");
+            
+            const isMultipleAns = question.question.is_multiple_ans ?? isMultiple;
+
+            if (isMultipleAns) {
+                // Map user answers (shuffled indices) back to original indices
+                const mappedUserAns = userans.map((ans: string) => {
+                    const idx = parseInt(ans) - 1;
+                    return String(question.question.map[idx]);
+                });
+                
+                // For multiple choice, we check how many of the mapped answers are in the correct answers
+                // OR we check if the entire set matches. 
+                // Given the user said "calculate wrong", let's make it 1 point for the whole question if all are correct
+                const isCorrect = mappedUserAns.length === correctAnsArray.length && 
+                                 mappedUserAns.every((a: string) => correctAnsArray.includes(a));
+                score = isCorrect ? 1 : 0;
             } else {
                 // For single choice, we use the map to find the real answer
-                const correctAnsIndex = question.question.map[parseInt(userans[0]) - 1];
-                score = String(correctAnsIndex) === String(question.question.ans) ? 1 : 0;
+                const userAnsIndex = parseInt(userans[0]) - 1;
+                if (!isNaN(userAnsIndex) && question.question.map[userAnsIndex]) {
+                    const correctAnsIndex = question.question.map[userAnsIndex];
+                    score = correctAnsArray.includes(String(correctAnsIndex)) ? 1 : 0;
+                }
             }
 
             // 3. Store Submission
@@ -47,8 +66,7 @@ export class QuizAnsTask extends BaseWorkerTask {
             // 4. Update Leaderboard
             await this.leaderboardManager.updateLeaderboard(quizId, userId, score);
 
-            // 5. Broadcast Updated Leaderboard (handled by QuizManager's throttled broadcast or directly here)
-            // For real-time quizes, we broadcast the update
+            // 5. Broadcast Updated Leaderboard
             const leaderboard = await this.leaderboardManager.getLeaderBoard(quizId);
             const message = {
                 type: "QUIZ_LEADERBOARD",
@@ -57,7 +75,7 @@ export class QuizAnsTask extends BaseWorkerTask {
             };
             await this.redis.publish("WS_BROADCAST", JSON.stringify(message));
 
-            logger.info(`[QUIZ_ANS_TASK] Processed answer for user ${userId} in quiz ${quizId}. Score: ${score}`);
+            logger.info(`[QUIZ_ANS_TASK] Processed answer for user ${userId} in quiz ${quizId}. Score: ${score}. Correct: ${correctAnsArray}`);
 
         } catch (error) {
             logger.error(`[QUIZ_ANS_TASK] Error processing answer:`, error);

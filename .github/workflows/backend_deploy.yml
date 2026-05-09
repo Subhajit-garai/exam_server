@@ -5,8 +5,7 @@
 #     branches: [main]
 #     tags:
 #       - "v*"
-#     paths:
-#       - "backend/**"
+    
 
 # env:
 #   BACKEND_IMAGE: ${{ secrets.BACKEND_IMAGE }}

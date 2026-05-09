@@ -33,7 +33,8 @@ type quiz_question_type = {
   ans: string[],
   explanation: string | null,
   format: string,
-  extra: any
+  extra: any,
+  is_multiple_ans: boolean
 }
 
 
@@ -124,7 +125,7 @@ export class QuizCreateTask extends BaseWorkerTask {
           ...question,
           options: shuffled,
           map: map,
-          is_multiple_ans: false,
+          is_multiple_ans: question.is_multiple_ans || false,
         },
       };
     });

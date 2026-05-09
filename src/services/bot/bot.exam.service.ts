@@ -241,6 +241,7 @@ export class BotExamService {
             options: schema.questions.options,
             extra: schema.questions.extra,
             format: schema.questions.format,
+            is_multiple_ans: schema.questions.is_multiple_answers,
         })
             .from(schema.questions)
             .where(inArray(schema.questions.id, ids));

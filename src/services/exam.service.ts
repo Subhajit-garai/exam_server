@@ -173,11 +173,13 @@ export class ExamService {
     }
 
     async examJoinRequestProcess(userId: string, examId: string) {
-        const [isEmailVerified] = await db.select().from(socials).where(and(eq(socials.user_id, userId), eq(socials.platform, "email"))).limit(1);
 
-        if (!isEmailVerified?.is_verified) {
-            throw new CustomError("The user needs to verify their account to take the given exam");
-        }
+        // temporarily disabled for render deployment 
+        // const [isEmailVerified] = await db.select().from(socials).where(and(eq(socials.user_id, userId), eq(socials.platform, "email"))).limit(1);
+
+        // if (!isEmailVerified?.is_verified) {
+        //     throw new CustomError("The user needs to verify their account to take the given exam");
+        // }
 
         const [isUserGivenThisExam] = await db.select({ id: scores.id }).from(scores).where(and(eq(scores.exam_id, examId), eq(scores.user_id, userId))).limit(1);
 
@@ -202,9 +204,9 @@ export class ExamService {
             }
 
             if (exam.access_type === "Paid") {
-                await db.transaction(async (tx) => {
-                    await TokenDeduction(tx, userId, exam.examtype, "service");
-                });
+                // await db.transaction(async (tx) => {
+                //     await TokenDeduction(tx, userId, exam.examtype, "service");
+                // });
             }
 
             await em.addExam(exam.id);

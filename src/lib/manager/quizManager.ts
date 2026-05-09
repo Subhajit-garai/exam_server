@@ -111,8 +111,13 @@ export class QuizManager {
         await this.redis.sadd(`quiz:users:${quizId}`, userId);
         await this.redis.expire(`quiz:users:${quizId}`, 86400);
         await this.redis.set(`user:profile:${userId}`, JSON.stringify({ name, avatar }), "EX", 86400);
-        await this.redis.zadd(`quiz:leaderboard:${quizId}`, 0, userId);
-        await this.redis.expire(`quiz:leaderboard:${quizId}`, 86400);
+        
+        // Only set score to 0 if the user doesn't already have a score (prevent reset on rejoin)
+        const existingScore = await this.redis.zscore(`quiz:leaderboard:${quizId}`, userId);
+        if (existingScore === null) {
+            await this.redis.zadd(`quiz:leaderboard:${quizId}`, 0, userId);
+            await this.redis.expire(`quiz:leaderboard:${quizId}`, 86400);
+        }
 
         const count = await this.redis.scard(`quiz:users:${quizId}`);
         if (count >= meta.limit) {
@@ -205,15 +210,28 @@ export class QuizManager {
         this.cancelQuizTimer(quizId);
         await this.redis.del(`quiz:active_loop:${quizId}`);
 
+        // Broadcast final leaderboard
+        const leaderboard = await this.LeaderboardManager.getLeaderBoard(quizId);
+        const leaderboardMessage = {
+            type: "QUIZ_LEADERBOARD",
+            payload: { leaderboard },
+            rooms: [quizId]
+        };
+        await this.redis.publish("WS_BROADCAST", JSON.stringify(leaderboardMessage));
+
         const message = {
             type: "QUIZ_ENDED",
-            payload: { quizId },
+            payload: { quizId, leaderboard },
             rooms: [quizId]
         };
 
         await this.redis.publish("WS_BROADCAST", JSON.stringify(message));
-        await this.redis.del(`quiz:data:${quizId}`);
-        await this.redis.del(`quiz:users:${quizId}`);
+        
+        // Instead of immediate deletion, use a short TTL (5 minutes) 
+        // to allow late-arriving results and final fetches
+        await this.redis.expire(`quiz:data:${quizId}`, 300);
+        await this.redis.expire(`quiz:users:${quizId}`, 300);
+        await this.redis.expire(`quiz:leaderboard:${quizId}`, 300);
     }
 
     async sendQuestionToRoom(quizId: string, questionNumber: number, startTime: Date, endTime: Date) {

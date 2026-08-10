@@ -8,8 +8,6 @@ import {
 } from "./types/types.js";
 import { RedisManager } from "@/lib/redis/redisManager.js";
 import { exam_question_format_type } from "./types/ans-prossing-types.js";
-import { logger } from "@/utils/logger.js";
-import { log } from "util";
 import { BotService } from "@/services/bot/bot.service.js";
 
 export class examAnsManager {
@@ -70,7 +68,7 @@ export class examAnsManager {
       status: string;
     }[],
     examid: string,
-    EX: number = 0
+    EX: number = 0,
   ) {
     const StoerPrefix: string = "AnsSheet";
     let ansSheetData: string;
@@ -88,8 +86,10 @@ export class examAnsManager {
       // exam pattern
       let isExist = await this.getExamPattern(examid);
       if (!isExist) {
-        let exam_pattern_id = await this.botService.exam.getExamPatternId(examid);
-        Exampattern = await this.botService.exam.getExamPattern(exam_pattern_id);
+        let exam_pattern_id =
+          await this.botService.exam.getExamPatternId(examid);
+        Exampattern =
+          await this.botService.exam.getExamPattern(exam_pattern_id);
         this.setExamPattern(Exampattern, examid, 18000);
       } else {
         Exampattern = JSON.parse(isExist as string);
@@ -170,7 +170,7 @@ export class examAnsManager {
         `${StoerPrefix}:${examid}:${userid}:${part}:${number}`,
         ansData,
         "EX",
-        EX
+        EX,
       );
   }
 
@@ -182,7 +182,7 @@ export class examAnsManager {
   async getQuestionsInfoFromCatch(
     examid: string,
     userid: string,
-    part: string
+    part: string,
   ) {
     let key = `${"examquestion"}:${examid}:${part}:*`;
 
@@ -209,7 +209,6 @@ export class examAnsManager {
     let keys = await this.ansclient.scanKeys(key);
 
     if (keys.length > 0) {
-
       const values = await this.ansclient.getclient().mget(keys);
       /* [ { number: { ans: null, part: 'part1' } ]*/
       const ans_array = keys.map((key: string, index: number) => {
@@ -224,7 +223,11 @@ export class examAnsManager {
       /*  { cm5nywh32003gbu5gbivsjwfk: { ans: null, part: 'part1' } , {} }*/
 
       const ans = keys.reduce<Record<string, { ans: string; part: string }>>(
-        (acc: Record<string, { ans: string; part: string }>, key: string, index: number) => {
+        (
+          acc: Record<string, { ans: string; part: string }>,
+          key: string,
+          index: number,
+        ) => {
           const keyArr = key.split(":");
           const questionNumber = keyArr[4];
           const part = keyArr[3];
@@ -240,7 +243,7 @@ export class examAnsManager {
 
           return acc;
         },
-        {}
+        {},
       );
       // console.log("ans", ans);
 
@@ -255,7 +258,7 @@ export class examAnsManager {
     not_attempt: number,
     Result: Right_Wrong_set_type,
     subject_wise_result: Right_Wrong_set_type,
-    all_parts_total_questions: number
+    all_parts_total_questions: number,
   ) {
     try {
       // console.log("in data base save function  score is ", Score);
@@ -269,7 +272,10 @@ export class examAnsManager {
         case "Mock":
           {
             console.log("user score adding into db . exam is -> Mock");
-            let Score = await this.botService.score.getUserScore(examid, userid);
+            let Score = await this.botService.score.getUserScore(
+              examid,
+              userid,
+            );
             if (Score) {
               console.log("user score already Stored");
               return 1;
@@ -280,7 +286,10 @@ export class examAnsManager {
         case "PYQ":
           {
             console.log("user score adding into db . exam is -> PYQ");
-            let Score = await this.botService.score.getUserScore(examid, userid);
+            let Score = await this.botService.score.getUserScore(
+              examid,
+              userid,
+            );
 
             if (Score) {
               console.log("user score already Stored");
@@ -291,7 +300,10 @@ export class examAnsManager {
         case "Test":
           {
             console.log("user score adding into db . exam is -> TEST");
-            let Score = await this.botService.score.getUserScore(examid, userid);
+            let Score = await this.botService.score.getUserScore(
+              examid,
+              userid,
+            );
 
             if (Score) {
               console.log("user score already Stored");
@@ -302,7 +314,10 @@ export class examAnsManager {
         case "Dpp":
           {
             console.log("user score adding into db . exam is -> DPP");
-            let Score = await this.botService.score.getUserScore(examid, userid);
+            let Score = await this.botService.score.getUserScore(
+              examid,
+              userid,
+            );
             if (Score) {
               console.log("user score already Stored");
               return 1;
@@ -326,7 +341,11 @@ export class examAnsManager {
         time: new Date(),
       };
 
-      let res = await this.botService.score.setUserScore(examid, userid, userSocre);
+      let res = await this.botService.score.setUserScore(
+        examid,
+        userid,
+        userSocre,
+      );
 
       // if (!res) {
       //   return 0;

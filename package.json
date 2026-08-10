@@ -6,7 +6,7 @@
     "test": "jest",
     "dev": " tsx src/server.ts",
     "build": "tsc && tsc-alias",
-    "start": "node dist/src/server.js",
+    "start": "node dist/server.js",
     "start:dev": "tsc && tsc-alias && node dist/src/server.js",
     "drizzle:gen": "npx drizzle-kit generate",
     "drizzle:push": "npx drizzle-kit push",

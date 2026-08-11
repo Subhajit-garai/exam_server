@@ -1,6 +1,6 @@
 import { Task } from "@/lib/types/types.js";
-import { TaskFactory } from "./tasks/task-factory.js";
 import { logger } from "@/utils/logger.js";
+import { TaskFactory } from "./tasks/task-factory.js";
 import { BaseWorkerTask } from "./tasks/base-task.js";
 
 // Metrics could be added here if needed, or using BullMQ's own metrics
@@ -15,7 +15,7 @@ export async function runWorker(task: Task) {
   } catch (err) {
     logger.error(
       `[Worker] Failed to create event instance for type: ${task.type}`,
-      err
+      err,
     );
     return;
   }

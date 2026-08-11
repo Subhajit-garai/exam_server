@@ -2,7 +2,7 @@ import { BaseWorkerTask } from "./base-task.js";
 import {
   examQuestionManger,
   SelectQuestion_type,
-} from "../lib/ExamQuestionProcessor.js";
+} from "../helper/ExamQuestionProcessor.js";
 import { BotService } from "@/services/bot/bot.service.js";
 import axios from "axios";
 
@@ -33,7 +33,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
             let groupData = await botService.telegram.getGroupInfo(chatid);
             if (!groupData) {
               throw new Error(
-                `No group data found or it may be banned",${chatid}`
+                `No group data found or it may be banned",${chatid}`,
               );
             }
           }
@@ -46,16 +46,13 @@ export class QuizProcessingTask extends BaseWorkerTask {
 
             if (!groupData) {
               throw new Error(
-                `No group data found or it may be banned",${chatid}`
+                `No group data found or it may be banned",${chatid}`,
               );
             }
 
             console.log("is topic ", groupData.isTopic);
 
-
             if (groupData.isTopic) {
-
-
               let topicData: {
                 id: string;
                 groupId: string;
@@ -63,19 +60,19 @@ export class QuizProcessingTask extends BaseWorkerTask {
                 topicId: number;
               } | null = await botService.telegram.getGroupTopicInfo(
                 chatid,
-                "quiz"
+                "quiz",
               );
 
               if (!topicData) {
                 throw new Error(
-                  `No topic data found or it not added, for group ${chatid}`
+                  `No topic data found or it not added, for group ${chatid}`,
                 );
               }
 
               thread_id = topicData?.topicId;
               console.log(
                 "therad id is avalible and thread id is --> ",
-                thread_id
+                thread_id,
               );
             }
           }
@@ -88,11 +85,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
           break;
       }
 
-      let quizConfig = await botService.quiz.getQuizConfig(
-        chatid
-      );
-
-
+      let quizConfig = await botService.quiz.getQuizConfig(chatid);
 
       let {
         total_questions,
@@ -105,7 +98,7 @@ export class QuizProcessingTask extends BaseWorkerTask {
       let data = await QuestionManagerClient.selectQuestions(
         total_questions,
         topics,
-        is_multiple_ans
+        is_multiple_ans,
       );
 
       let Question_array: string[] = [];
@@ -117,10 +110,8 @@ export class QuizProcessingTask extends BaseWorkerTask {
           });
       });
 
-
-      let finalquestions = await botService.exam.getQuestionsByIds(
-        Question_array
-      );
+      let finalquestions =
+        await botService.exam.getQuestionsByIds(Question_array);
       if (finalquestions) {
         console.log("finalquestions are collected , ready to send to bot");
       }

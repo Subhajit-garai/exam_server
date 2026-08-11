@@ -1,7 +1,6 @@
-
 import { BaseWorkerTask } from "./base-task.js";
-import { examAnsManager } from "../lib/ExamAnsProcessor.js";
-import { question_ans_db_save_formt } from "../lib/types/ans-prossing-types.js";
+import { examAnsManager } from "../helper/ExamAnsProcessor.js";
+import { question_ans_db_save_formt } from "../helper/types/ans-prossing-types.js";
 
 // src/workers/ans-processing-task.ts
 export class AnsProcessingTask extends BaseWorkerTask {
@@ -43,9 +42,8 @@ export class AnsProcessingTask extends BaseWorkerTask {
         selectedOption: ans,
       };
 
-      let responsOfDbStorage = await AnsManager.setUserAnsIntoDb(
-        userAnsDbSaveFormat
-      );
+      let responsOfDbStorage =
+        await AnsManager.setUserAnsIntoDb(userAnsDbSaveFormat);
 
       if (!responsOfDbStorage) {
         // push in to queue again

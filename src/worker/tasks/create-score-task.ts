@@ -2,14 +2,14 @@
 
 import { BaseWorkerTask } from "./base-task.js";
 
-import { ansType, Right_Wrong_set_type, Task } from "../lib/types/types.js";
-import { examAnsManager } from "../lib/ExamAnsProcessor.js";
+import { ansType, Right_Wrong_set_type, Task } from "../helper/types/types.js";
+import { examAnsManager } from "../helper/ExamAnsProcessor.js";
 
 export function validateOption(
   ans: string[],
   userAns: string[],
   map: number[],
-  isMultipleAns: boolean = false
+  isMultipleAns: boolean = false,
 ) {
   if (isMultipleAns) {
     let selectedOptions = userAns.map((ans) => {
@@ -41,7 +41,7 @@ export class CreateScoreTask extends BaseWorkerTask {
 
     if (!ANS_SET_EXAM_AND_USER_GIVEN)
       throw Error(
-        `user or exam ans set not recived for examid ${examid} or userid ${userid}`
+        `user or exam ans set not recived for examid ${examid} or userid ${userid}`,
       );
 
     let examAns = ANS_SET_EXAM_AND_USER_GIVEN[0];
@@ -72,7 +72,7 @@ export class CreateScoreTask extends BaseWorkerTask {
         let questions = await ansprocessorClient.getQuestionsInfoFromCatch(
           examid,
           userid,
-          part
+          part,
         );
 
         if (!questions) throw Error("questions not found");
@@ -106,7 +106,7 @@ export class CreateScoreTask extends BaseWorkerTask {
                   ans.ans,
                   user_ans_array,
                   question.question?.map,
-                  true
+                  true,
                 );
 
                 if (result) {
@@ -125,7 +125,7 @@ export class CreateScoreTask extends BaseWorkerTask {
                 let result = validateOption(
                   ans.ans,
                   user_ans,
-                  question.question?.map
+                  question.question?.map,
                 );
                 if (result) {
                   topic_wise_R_W[topic].Right += 1;
@@ -142,7 +142,7 @@ export class CreateScoreTask extends BaseWorkerTask {
             UNATTEMPT += 1;
           }
         });
-      })
+      }),
     );
 
     let { part, marks_values, neg_values, total_questions } = exam_pattern;
@@ -162,7 +162,7 @@ export class CreateScoreTask extends BaseWorkerTask {
       let num =
         RIGHT_WRONG["part1"]?.Right * marks_values[0] -
         RIGHT_WRONG["part1"]?.Wrong /
-        (parseInt(neg_values[0]) < 1 ? 1 : parseInt(neg_values[0]));
+          (parseInt(neg_values[0]) < 1 ? 1 : parseInt(neg_values[0]));
       SCORE += num < 0 ? 0 : num;
     }
 
@@ -171,7 +171,7 @@ export class CreateScoreTask extends BaseWorkerTask {
     // add score in to db
     let all_parts_total_questions: number = total_questions.reduce(
       (sum: number, question: number) => sum + question,
-      0
+      0,
     );
 
     let status = await ansprocessorClient.setUserScore(
@@ -181,7 +181,7 @@ export class CreateScoreTask extends BaseWorkerTask {
       UNATTEMPT,
       RIGHT_WRONG,
       topic_wise_R_W,
-      all_parts_total_questions
+      all_parts_total_questions,
     );
 
     if (!status) {

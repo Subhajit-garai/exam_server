@@ -1,29 +1,29 @@
 import { logger } from "@/utils/logger.js";
 
 import { CronJob } from "cron";
-import { SystemStateService } from "../../../services/system-state.service.js";
+import { SystemStateService } from "@/services/system-state.service.js";
 
 const systemStateService = new SystemStateService();
 
 // Run every midnight
 export const updateSystemStats = new CronJob(
-    "0 0 * * *",
-    async () => {
-        logger.info("Running midnight system stats update (Redis)...");
-        await systemStateService.refreshSystemStats();
-    },
-    null,
-    true,
-    "Asia/Kolkata"
+  "0 0 * * *",
+  async () => {
+    logger.info("Running midnight system stats update (Redis)...");
+    await systemStateService.refreshSystemStats();
+  },
+  null,
+  true,
+  "Asia/Kolkata",
 );
 
 // Function to run on startup to ensure cache is populated
 export const initSystemStats = async () => {
-    try {
-        logger.info("Initializing system stats (Redis check)...");
-        // Just calling getSystemStats will trigger refresh if missing
-        await systemStateService.getSystemStats();
-    } catch (e) {
-        logger.info("Failed to init system stats", e);
-    }
+  try {
+    logger.info("Initializing system stats (Redis check)...");
+    // Just calling getSystemStats will trigger refresh if missing
+    await systemStateService.getSystemStats();
+  } catch (e) {
+    logger.info("Failed to init system stats", e);
+  }
 };

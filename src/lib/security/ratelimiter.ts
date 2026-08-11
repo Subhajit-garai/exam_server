@@ -1,8 +1,7 @@
 import rateLimit from "express-rate-limit";
-import { RedisManager } from "../redis/redisManager.js";
-import { RedisReply, RedisStore, SendCommandFn } from 'rate-limit-redis';
+import { RedisManager } from "@/lib/redis/redisManager.js";
+import { RedisReply, RedisStore, SendCommandFn } from "rate-limit-redis";
 import { logger } from "@/utils/logger.js";
-
 
 let otpLimiter_count = parseInt(process.env.OTP_RATE_LIMIT as string) || 5;
 let signinLimiter_count =
@@ -11,32 +10,34 @@ let passwordResetLimiter_count =
   parseInt(process.env.PASSWORD_RESET_RATE_LIMIT as string) || 5;
 
 logger.info(
-  `Rate limits — OTP: ${otpLimiter_count} | Signin: ${signinLimiter_count} | Password reset: ${passwordResetLimiter_count}`
+  `Rate limits — OTP: ${otpLimiter_count} | Signin: ${signinLimiter_count} | Password reset: ${passwordResetLimiter_count}`,
 );
 
 const getClientIp = (req: any) => {
   // X-Forwarded-For can contain a comma-separated list of IPs
-  const forwardedFor = req.headers['x-forwarded-for'];
-  const realIp = req.headers['x-real-ip'];
+  const forwardedFor = req.headers["x-forwarded-for"];
+  const realIp = req.headers["x-real-ip"];
 
   logger.debug("forwardedFor", forwardedFor);
   logger.debug("realIp", realIp);
 
   if (forwardedFor) {
-    const ips = forwardedFor.split(',');  // get list of IPs
-    return ips[0];  // Return the first one (the original client IP)
+    const ips = forwardedFor.split(","); // get list of IPs
+    return ips[0]; // Return the first one (the original client IP)
   }
 
   logger.debug("req.connection.remoteAddress", req.connection.remoteAddress);
-  return req.connection.remoteAddress;  // Fall back to the connection IP
+  return req.connection.remoteAddress; // Fall back to the connection IP
 };
 
 const redisClient = RedisManager.getInstance().getclient();
 
-const sendCommand: SendCommandFn = (command: string, ...args: (string | number)[]): Promise<RedisReply> => {
+const sendCommand: SendCommandFn = (
+  command: string,
+  ...args: (string | number)[]
+): Promise<RedisReply> => {
   return redisClient.call(command, ...args) as Promise<RedisReply>;
 };
-
 
 // Rate limiter configuration
 export const otpLimiter = rateLimit({
@@ -50,7 +51,7 @@ export const otpLimiter = rateLimit({
   // for storing data into redis catch
   store: new RedisStore({
     prefix: "otp_limit:",
-    sendCommand: sendCommand,// (...args: string[]) => redisClient.call(...args),
+    sendCommand: sendCommand, // (...args: string[]) => redisClient.call(...args),
   }),
   keyGenerator: getClientIp,
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers

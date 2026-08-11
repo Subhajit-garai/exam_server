@@ -1,13 +1,16 @@
-import { QueueManager } from "../queue/queueManager.js";
-import { RedisManager } from "../redis/redisManager.js";
-import { ExamCategory, TaskType } from "../types/types.js";
+import { QueueManager } from "@/lib/queue/queueManager.js";
+import { RedisManager } from "@/lib/redis/redisManager.js";
+import { ExamCategory, TaskType } from "@/lib/types/types.js";
 import { db } from "@repo/db/index.js";
-import {
-  exam_question_format_type,
-} from "../types/questionTypes.js";
+import { exam_question_format_type } from "@/lib/types/questionTypes.js";
 import { shuffleArraySeeded } from "@/utils/shuffle.js";
 import { logger } from "@/utils/logger.js";
-import { exams, exam_patterns, exam_years, target_exams } from "@repo/db/schema/exam.js";
+import {
+  exams,
+  exam_patterns,
+  exam_years,
+  target_exams,
+} from "@repo/db/schema/exam.js";
 import { syllabuses } from "@repo/db/schema/syllabus.js";
 import { question_maps, questions } from "@repo/db/schema/question.js";
 import { eq, and } from "drizzle-orm";
@@ -66,17 +69,19 @@ export class ExamManager {
   // --- Exam Metadata (Redis Hashes) ---
 
   async setExamMetaData(examId: string) {
-    const examData = await db.select({ exam_pattern_id: exams.exam_pattern_id })
+    const examData = await db
+      .select({ exam_pattern_id: exams.exam_pattern_id })
       .from(exams)
       .where(eq(exams.id, examId))
-      .then(res => res[0]);
+      .then((res) => res[0]);
 
     if (!examData) throw new Error("Exam not valid");
 
-    const examPatternInfo = await db.select()
+    const examPatternInfo = await db
+      .select()
       .from(exam_patterns)
       .where(eq(exam_patterns.id, examData.exam_pattern_id))
-      .then(res => res[0]);
+      .then((res) => res[0]);
 
     if (!examPatternInfo) throw new Error("Exam pattern not valid");
 
@@ -111,23 +116,28 @@ export class ExamManager {
 
   // --- Question Management ---
 
-
-  async refresh(id: string, userid: string, Tasktype: TaskType = "CREATE_EXAM") {
-
-    const Examinfo = await db.select({
-      id: exams.id,
-      examtype: exams.exam_type,
-      syllabusid: exam_patterns.syllabus_id
-    })
+  async refresh(
+    id: string,
+    userid: string,
+    Tasktype: TaskType = "CREATE_EXAM",
+  ) {
+    const Examinfo = await db
+      .select({
+        id: exams.id,
+        examtype: exams.exam_type,
+        syllabusid: exam_patterns.syllabus_id,
+      })
       .from(exams)
       .leftJoin(exam_patterns, eq(exams.exam_pattern_id, exam_patterns.id))
       .where(eq(exams.id, id))
-      .then(res => res[0]);
+      .then((res) => res[0]);
 
-    if (!Examinfo) throw Error("exam info not found")
+    if (!Examinfo) throw Error("exam info not found");
 
     if (Examinfo.examtype == "Mock" || Examinfo.examtype == "PYQ") {
-      logger.info(`exam type is ${Examinfo.examtype} , so no need to refresh / add question by random`)
+      logger.info(
+        `exam type is ${Examinfo.examtype} , so no need to refresh / add question by random`,
+      );
       return true;
     }
 
@@ -135,19 +145,19 @@ export class ExamManager {
 
     if (!syllabus_id) throw new Error("Syllabus ID not found");
 
-    const categoryexamdata = await db.select({
-      name: target_exams.name
-    })
+    const categoryexamdata = await db
+      .select({
+        name: target_exams.name,
+      })
       .from(syllabuses)
       .innerJoin(exam_years, eq(syllabuses.exam_year_id, exam_years.id))
       .innerJoin(target_exams, eq(exam_years.target_exam_id, target_exams.id))
       .where(eq(syllabuses.id, syllabus_id))
-      .then(res => res[0]);
+      .then((res) => res[0]);
 
     if (!categoryexamdata) throw new Error("Category Exam not found");
 
-    const categoryexam = categoryexamdata.name.toUpperCase() as ExamCategory
-
+    const categoryexam = categoryexamdata.name.toUpperCase() as ExamCategory;
 
     const Notifystatus = await this.getQueueManager().push({
       type: Tasktype,
@@ -162,49 +172,47 @@ export class ExamManager {
     });
 
     return Notifystatus;
-
   }
 
-
-
-
   async addExam(examId: string) {
-
-    const examQuestionsRaw = await db.select({
-      number: question_maps.number,
-      part: question_maps.part,
-      questionId: questions.id,
-      options: questions.options,
-      title: questions.title,
-      extra: questions.extra,
-      format: questions.format,
-      is_multiple_ans: questions.is_multiple_answers,
-    })
+    const examQuestionsRaw = await db
+      .select({
+        number: question_maps.number,
+        part: question_maps.part,
+        questionId: questions.id,
+        options: questions.options,
+        title: questions.title,
+        extra: questions.extra,
+        format: questions.format,
+        is_multiple_ans: questions.is_multiple_answers,
+      })
       .from(question_maps)
       .innerJoin(questions, eq(question_maps.question_id, questions.id))
       .where(eq(question_maps.exam_id, examId));
 
-    if (!examQuestionsRaw || examQuestionsRaw.length === 0) throw new Error("Exam questions not found");
+    if (!examQuestionsRaw || examQuestionsRaw.length === 0)
+      throw new Error("Exam questions not found");
 
-    const formattedQuestions: exam_question_format_type[] = examQuestionsRaw.map((q) => {
-      if (!q.options) throw Error("Question does not have options");
+    const formattedQuestions: exam_question_format_type[] =
+      examQuestionsRaw.map((q) => {
+        if (!q.options) throw Error("Question does not have options");
 
-      const { shuffled, map } = shuffleArraySeeded(q.options, examId);
+        const { shuffled, map } = shuffleArraySeeded(q.options, examId);
 
-      return {
-        number: q.number,
-        part: q.part,
-        question: {
-          id: q.questionId,
-          options: shuffled,
-          map: map,
-          title: q.title,
-          extra: q.extra as any,
-          format: q.format,
-          is_multiple_ans: q.is_multiple_ans,
-        },
-      };
-    });
+        return {
+          number: q.number,
+          part: q.part,
+          question: {
+            id: q.questionId,
+            options: shuffled,
+            map: map,
+            title: q.title,
+            extra: q.extra as any,
+            format: q.format,
+            is_multiple_ans: q.is_multiple_ans,
+          },
+        };
+      });
 
     await this.setExamMetaData(examId);
 
@@ -214,7 +222,8 @@ export class ExamManager {
       pipeline.set(
         `examquestion:${examId}:${question.part}:${question.number}`,
         JSON.stringify(question),
-        "EX", 86400 // Expire in 24h
+        "EX",
+        86400, // Expire in 24h
       );
     });
     await pipeline.exec();
@@ -226,7 +235,7 @@ export class ExamManager {
     examId: string,
     userId: string,
     part: string | number,
-    currentNumber: number
+    currentNumber: number,
   ) {
     const isValidUser = await this.isUserExist(examId, userId);
     if (!isValidUser) return null;
@@ -251,7 +260,9 @@ export class ExamManager {
     }
 
     if (number > 0) {
-      const questionStr = await this.redis.get(`examquestion:${examId}:${part}:${number}`);
+      const questionStr = await this.redis.get(
+        `examquestion:${examId}:${part}:${number}`,
+      );
       if (!questionStr) throw Error("Question data not found");
 
       const question: exam_question_format_type = JSON.parse(questionStr);
@@ -295,7 +306,7 @@ export class ExamManager {
     part: string,
     ans: string[],
     number: string,
-    isMultiple: boolean
+    isMultiple: boolean,
   ) {
     const isValidUser = await this.isUserExist(examId, userId);
     if (!isValidUser) throw new Error("User is not in this exam");

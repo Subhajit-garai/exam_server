@@ -8,7 +8,7 @@ import { RedisManager } from "@/lib/redis/redisManager.js";
 import { exam_question_format_type } from "../../helper/types/ans-prossing-types.js";
 import { shuffleArraySeeded } from "@/utils/shuffle.js";
 import { logger } from "@/utils/logger.js";
-import { CreationTypes } from "@repo/db/schema/enums.js";
+import { CreationTypes } from "@/db/schema/enums.js";
 import { BotService } from "@/app/bot/bot.service.js";
 
 interface QuizMetaData {

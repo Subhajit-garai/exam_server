@@ -1,7 +1,7 @@
 import { asyncHandler } from "@/utils/asyncHandler.js";
 import { verifyToken } from "@/utils/token.js";
-import { db } from "@repo/db/index.js";
-import { users } from "@repo/db/schema/user.js";
+import { db } from "@/db/index.js";
+import { users } from "@/db/schema/user.js";
 import { eq } from "drizzle-orm";
 
 export const userauthenticate = asyncHandler(

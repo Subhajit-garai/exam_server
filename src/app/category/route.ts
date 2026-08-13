@@ -1,12 +1,12 @@
 import { Router } from "express";
 import {
-    createCategory,
-    updateCategory,
-    deleteCategory,
-    getCategoryById,
-    getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  getCategoryById,
+  getCategories,
 } from "./controller.js";
-import { isAdmin } from "@repo/lib/security/auth.js";
+import { isAdmin } from "@/lib/security/auth.js";
 
 export const categoryPublicRouter = Router();
 export const categoryAdminRouter = Router();

@@ -1,6 +1,10 @@
-import { CreationTypes, ExamStage, ExamStatus, quiz_type } from "@repo/db/schema/enums.js"
+import {
+  CreationTypes,
+  ExamStage,
+  ExamStatus,
+  quiz_type,
+} from "@/db/schema/enums.js";
 import z from "zod";
-
 
 export const create_quiz_data_ZodSchema = z.object({
   is_need_registration: z.boolean().default(false),
@@ -18,7 +22,6 @@ export const create_quiz_data_ZodSchema = z.object({
   quiz_type: z.enum(quiz_type.enumValues),
   chatId: z.string().optional(),
   stage: z.enum(ExamStage.enumValues),
-
 });
 
 export const activity_quiz_create_data_ZodSchema = z.object({
@@ -27,9 +30,10 @@ export const activity_quiz_create_data_ZodSchema = z.object({
   ttl: z.string().optional(),
   topic: z.string(),
   subject: z.string(),
-  mode: z.string()
-})
+  mode: z.string(),
+});
 
-
-export type activity_quiz_create_data_type = z.infer<typeof activity_quiz_create_data_ZodSchema>
-export type createQuizType = z.infer<typeof create_quiz_data_ZodSchema>
+export type activity_quiz_create_data_type = z.infer<
+  typeof activity_quiz_create_data_ZodSchema
+>;
+export type createQuizType = z.infer<typeof create_quiz_data_ZodSchema>;

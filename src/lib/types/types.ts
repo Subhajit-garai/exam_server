@@ -1,8 +1,4 @@
-import {
-  Platform,
-  ExamType,
-  telegramgroupType,
-} from "@repo/db/schema/enums.js";
+import { Platform, ExamType, telegramgroupType } from "@/db/schema/enums.js";
 import dayjs from "dayjs";
 export type ExamMetaData = {
   examid: string;
@@ -18,8 +14,6 @@ export type ExamMetaData = {
 
 export type Questions_type = { [part: string]: string[] };
 export type ExamQuestionsids = { [examid: string]: Questions_type };
-
-
 
 export type ExamCategory = "JECA" | "GATE";
 // export type ExamVariant = "TEXT" | "MOCK" | "DPP" | "QUIZ";
@@ -42,4 +36,3 @@ export interface Task {
   variant?: ExamType;
   retries?: number;
 }
-

@@ -1,10 +1,10 @@
 // src/workers/base-task.ts
-import { Task } from "@repo/lib/types/types.js";
+import { Task } from "@/lib/types/types.js";
 
 export abstract class BaseWorkerTask {
   protected maxRetries = 1; // 3
 
-  constructor(protected task: Task) { }
+  constructor(protected task: Task) {}
 
   // Each subclass must implement this
   abstract execute(): Promise<void>;
@@ -28,7 +28,7 @@ export abstract class BaseWorkerTask {
           console.error(`[${name}] ❌ Max retries reached`);
           throw err;
         }
-        await new Promise(res => setTimeout(res, 1000 * attempts)); // exponential backoff
+        await new Promise((res) => setTimeout(res, 1000 * attempts)); // exponential backoff
       }
     }
   }

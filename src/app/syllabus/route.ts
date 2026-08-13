@@ -13,7 +13,7 @@ import {
   fetchAllsyllabusExamYearid,
   DeleteSyllabus,
 } from "./controller.js";
-import { isAdmin } from "@repo/lib/security/auth.js";
+import { isAdmin } from "@/lib/security/auth.js";
 
 export const syllabusPublicRouter = Router();
 export const syllabusAdminRouter = Router();

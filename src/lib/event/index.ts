@@ -1,5 +1,5 @@
-import { db } from "@repo/db/index.js";
-import { events } from "@repo/db/schema/events.js";
+import { db } from "@/db/index.js";
+import { events } from "@/db/schema/events.js";
 import { eq } from "drizzle-orm";
 
 import { Client } from "pg";

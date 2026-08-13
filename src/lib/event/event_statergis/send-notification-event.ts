@@ -1,9 +1,7 @@
 import { logger } from "@/utils/logger.js";
 
-
-
 import { BaseEvent, events } from "@subhajit60/event-engine";
-import { type eventType } from "@repo/db/schema/enums.js";
+import { type eventType } from "@/db/schema/enums.js";
 
 export class send_notification_event extends BaseEvent<eventType> {
   async push(event: events<eventType>): Promise<void> {
@@ -11,7 +9,6 @@ export class send_notification_event extends BaseEvent<eventType> {
 
     try {
       // here i push task in task queue
-
     } catch (error) {
       logger.info("error in task manager handleAns ", error);
     }

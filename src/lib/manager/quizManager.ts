@@ -3,7 +3,7 @@ import { RedisManager } from "@/lib/redis/redisManager.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { v4 as uuid } from "uuid";
 import { activity_quiz_create_data_type } from "@/zod/quiz.zod.js";
-import { CreationTypes } from "@repo/db/schema/enums.js";
+import { CreationTypes } from "@/db/schema/enums.js";
 import type { Redis } from "ioredis";
 import { LeaderboardManager } from "./leaderboardManager.js";
 import { logger } from "@/utils/logger.js";

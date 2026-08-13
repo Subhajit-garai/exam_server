@@ -1,6 +1,5 @@
-import { diffcultlevel, examformat, Status } from "@repo/db/schema/enums.js"
+import { diffcultlevel, examformat, Status } from "@/db/schema/enums.js";
 import z from "zod";
-
 
 export type questionInput_type = z.infer<typeof questionInputZodSchema>;
 
@@ -30,7 +29,6 @@ export const questionInputZodSchema = z.object({
     .optional()
     .default({}),
 });
-
 
 export const questionUpdateZodSchema = z.object({
   id: z.string(),

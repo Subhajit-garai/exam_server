@@ -1,6 +1,11 @@
 import { Router } from "express";
-import { getAllEvents, createEvent, updateEvent, deleteEvent } from "./controller.js";
-import { isAdmin } from "@repo/lib/security/auth.js";
+import {
+  getAllEvents,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+} from "./controller.js";
+import { isAdmin } from "@/lib/security/auth.js";
 
 export const eventAdminRouter = Router();
 

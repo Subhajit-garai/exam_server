@@ -1,19 +1,17 @@
 import { logger } from "@/utils/logger.js";
 import { ExamManager } from "@/lib/manager/examManager.js";
-import { db } from "@repo/db/index.js";
-import { exams, exam_patterns } from "@repo/db/schema/exam.js";
-import { users } from "@repo/db/schema/user.js";
-import { contest_registers } from "@repo/db/schema/schema.js";
+import { db } from "@/db/index.js";
+import { exams, exam_patterns } from "@/db/schema/exam.js";
+import { users } from "@/db/schema/user.js";
+import { contest_registers } from "@/db/schema/schema.js";
 import { event_exam_data_type } from "@/lib/types/EventTypes.js";
 import dayjs from "dayjs";
 import { eq, and, gte, lt, desc, ilike, sql } from "drizzle-orm";
 
-
 import { BaseEvent, events } from "@subhajit60/event-engine";
-import { type eventType } from "@repo/db/schema/enums.js";
+import { type eventType } from "@/db/schema/enums.js";
 
 export class create_exam_event extends BaseEvent<eventType> {
-
   async push(event: events<eventType>): Promise<void> {
     logger.info("Running create_exam_event with data:", event.payload);
 
@@ -45,20 +43,20 @@ export class create_exam_event extends BaseEvent<eventType> {
       logger.info("---> creating new exam");
 
       const lastExam = await db.query.exams.findFirst({
-        where: ilike(exams.name, 'Test@%'),
+        where: ilike(exams.name, "Test@%"),
         orderBy: [desc(exams.created_at)],
         columns: {
           name: true,
           created_at: true,
           created_by: true,
-        }
+        },
       });
 
       const botUser = await db.query.users.findFirst({
         where: eq(users.email, "bot1@exambuddys.in"),
         columns: {
           id: true,
-        }
+        },
       });
 
       if (time_limit) {
@@ -71,7 +69,7 @@ export class create_exam_event extends BaseEvent<eventType> {
 
         let gap_days = 1;
         if (gap) {
-          gap_days = parseInt(gap.split(' ')[0]);
+          gap_days = parseInt(gap.split(" ")[0]);
         }
 
         for (let index = 0; index < days_count; index++) {
@@ -86,11 +84,11 @@ export class create_exam_event extends BaseEvent<eventType> {
               eq(exams.created_by, botUser?.id as string),
               eq(exams.exam_type, "Test"),
               gte(exams.date, day.startOf("day").toDate()),
-              lt(exams.date, day.endOf("day").toDate())
+              lt(exams.date, day.endOf("day").toDate()),
             ),
             columns: {
               id: true,
-            }
+            },
           });
 
           if (existingExams.length > 0) {
@@ -110,7 +108,7 @@ export class create_exam_event extends BaseEvent<eventType> {
 
       if (!create_exam_count_for_date.length) {
         return logger.info(
-          "all exam creation done , no need to create new ones"
+          "all exam creation done , no need to create new ones",
         );
       }
 
@@ -137,21 +135,21 @@ export class create_exam_event extends BaseEvent<eventType> {
       if (exam_pattern_id) {
         const patternValid = await db.query.exam_patterns.findFirst({
           where: eq(exam_patterns.id, exam_pattern_id),
-          columns: { id: true }
+          columns: { id: true },
         });
 
         if (!patternValid) {
           logger.info("invalid exam_pattern id");
           const jecaPattern = await db.query.exam_patterns.findFirst({
             where: eq(exam_patterns.title, "JECA@PATTERN"),
-            columns: { id: true }
+            columns: { id: true },
           });
 
           if (jecaPattern) {
             exam_pattern_id = jecaPattern.id;
           } else {
             throw new Error(
-              "Exam pattern not valid and given exampattern also not valid , add correct name "
+              "Exam pattern not valid and given exampattern also not valid , add correct name ",
             );
           }
         }
@@ -160,23 +158,29 @@ export class create_exam_event extends BaseEvent<eventType> {
       for (let index = 0; index < create_exam_count_for_date.length; index++) {
         for (let idx = 0; idx < create_exam_count_for_date[index]; idx++) {
           const response = await db.transaction(async (tx) => {
-            const [register] = await tx.insert(contest_registers).values({
-              count: 0,
-              users: []
-            }).returning({ id: contest_registers.id });
+            const [register] = await tx
+              .insert(contest_registers)
+              .values({
+                count: 0,
+                users: [],
+              })
+              .returning({ id: contest_registers.id });
 
-            const [newExam] = await tx.insert(exams).values({
-              name: new_exam_names[index][idx],
-              visibility: Visibility as any,
-              exam_type: examtype as any,
-              start_time: starttime ? starttime[idx] : "08:00 am",
-              join_time: jointime ? jointime : "00:15 m",
-              duration: duration ? duration : "02:00 h",
-              date: dates[index],
-              exam_pattern_id: exam_pattern_id as string,
-              created_by: botUser?.id,
-              register_id: register.id
-            }).returning();
+            const [newExam] = await tx
+              .insert(exams)
+              .values({
+                name: new_exam_names[index][idx],
+                visibility: Visibility as any,
+                exam_type: examtype as any,
+                start_time: starttime ? starttime[idx] : "08:00 am",
+                join_time: jointime ? jointime : "00:15 m",
+                duration: duration ? duration : "02:00 h",
+                date: dates[index],
+                exam_pattern_id: exam_pattern_id as string,
+                created_by: botUser?.id,
+                register_id: register.id,
+              })
+              .returning();
 
             return newExam;
           });

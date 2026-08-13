@@ -1,16 +1,16 @@
 import { Router } from "express";
 import {
-    trackTopicProgress,
-    updateTopicStatus,
-    getSyllabusProgress,
-    getDashboardStats,
-    getStudyHours,
-    getTestsAttempted,
-    getAvgScore,
-    getAccuracy,
-    getUserTopicsProgress
+  trackTopicProgress,
+  updateTopicStatus,
+  getSyllabusProgress,
+  getDashboardStats,
+  getStudyHours,
+  getTestsAttempted,
+  getAvgScore,
+  getAccuracy,
+  getUserTopicsProgress,
 } from "./controller.js";
-import { userauthenticate } from "@repo/lib/security/auth.js";
+import { userauthenticate } from "@/lib/security/auth.js";
 
 export const progressRouter = Router();
 

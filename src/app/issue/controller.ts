@@ -1,7 +1,7 @@
 import zod from "zod";
 import { IssueInpute_zod_type } from "@/zod/issue.zod.js";
 import { IssueService } from "./service.js";
-import { Status } from "@repo/db/schema/enums.js";
+import { Status } from "@/db/schema/enums.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
 import { ZodDataSafeParse } from "@/utils/ZodTypeChecker.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
@@ -13,17 +13,23 @@ export const test = asyncHandler(async (req: any, res: any) => {
   res.json({ success: true, message: "message", data: "data" });
 });
 
-export const GetquestionIssuecount = asyncHandler(async (req: any, res: any) => {
-  let data = zod.string().safeParse(req.query.id);
-  if (!data.success) {
-    throw ZodDataSafeParse(data);
-  }
-  let id = data.data;
+export const GetquestionIssuecount = asyncHandler(
+  async (req: any, res: any) => {
+    let data = zod.string().safeParse(req.query.id);
+    if (!data.success) {
+      throw ZodDataSafeParse(data);
+    }
+    let id = data.data;
 
-  let response = await issueService.getQuestionIssueCount(id);
+    let response = await issueService.getQuestionIssueCount(id);
 
-  res.json({ success: true, message: " total questionIssuecount", data: response });
-});
+    res.json({
+      success: true,
+      message: " total questionIssuecount",
+      data: response,
+    });
+  },
+);
 
 export const RemoveIssue = asyncHandler(async (req: any, res: any) => {
   let data = zod.string().safeParse(req.query.id);
@@ -135,7 +141,12 @@ export const update_issue = asyncHandler(async (req: any, res: any) => {
     throw ZodDataSafeParse(newData);
   }
 
-  let response = await issueService.updateIssue(id, newData.data, req.user, req.userRole);
+  let response = await issueService.updateIssue(
+    id,
+    newData.data,
+    req.user,
+    req.userRole,
+  );
 
   if (!response) {
     throw new CustomError("Issue not updated", 404);
@@ -151,7 +162,11 @@ export const createNewIssue = asyncHandler(async (req: any, res: any) => {
     throw ZodDataSafeParse(data);
   }
 
-  let response = await issueService.createIssue(data.data, req.user, req.userRole);
+  let response = await issueService.createIssue(
+    data.data,
+    req.user,
+    req.userRole,
+  );
 
   res.json({ success: true, message: "message", data: response });
 });

@@ -1,15 +1,15 @@
 import { razorpayInstance } from "@/server.js";
 import crypto from "crypto";
-import { db } from "@repo/db/index.js";
-import { payments, orders } from "@repo/db/schema/payment.js";
-import { subscription_offers } from "@repo/db/schema/offer.js";
-import { tiers } from "@repo/db/schema/tier.js";
-import { coupons, coupon_usages } from "@repo/db/schema/coupon.js";
-import { balances } from "@repo/db/schema/user.js";
-import { target_exams } from "@repo/db/schema/exam.js";
+import { db } from "@/db/index.js";
+import { payments, orders } from "@/db/schema/payment.js";
+import { subscription_offers } from "@/db/schema/offer.js";
+import { tiers } from "@/db/schema/tier.js";
+import { coupons, coupon_usages } from "@/db/schema/coupon.js";
+import { balances } from "@/db/schema/user.js";
+import { target_exams } from "@/db/schema/exam.js";
 import { eq, and, sql } from "drizzle-orm";
 import { logger } from "@/utils/logger.js";
-import { primeStatus, purchaseType } from "@repo/db/schema/enums.js";
+import { primeStatus, purchaseType } from "@/db/schema/enums.js";
 import { isUserHavePrime, ProvideSubcriptionTouser } from "@/utils/payment.js";
 import { couponService } from "../coupon/service.js";
 

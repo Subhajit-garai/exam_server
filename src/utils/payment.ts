@@ -1,8 +1,8 @@
-import { ExamType, primeStatus } from "@repo/db/schema/enums.js";
-import { db } from "@repo/db/index.js";
-import { users, primes, balances } from "@repo/db/schema/user.js";
-import { tiers, tier_benefits } from "@repo/db/schema/tier.js";
-import { subscription_offers } from "@repo/db/schema/offer.js";
+import { ExamType, primeStatus } from "@/db/schema/enums.js";
+import { db } from "@/db/index.js";
+import { users, primes, balances } from "@/db/schema/user.js";
+import { tiers, tier_benefits } from "@/db/schema/tier.js";
+import { subscription_offers } from "@/db/schema/offer.js";
 import { eq, and, sql } from "drizzle-orm";
 import dayjs from "dayjs";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
@@ -19,7 +19,7 @@ export const getDiscountPercent = (markedPrice: number, price: number) => {
 
 export const discountAmount = (
   markedPrice: number,
-  discountPercent: number
+  discountPercent: number,
 ) => {
   return (markedPrice * discountPercent) / 100;
 };
@@ -27,7 +27,7 @@ export const discountAmount = (
 export const getSubcriptionBenifits = async (
   tx: any,
   userid: string,
-  requestSurvice: ExamType
+  requestSurvice: ExamType,
 ) => {
   const run = async (transaction: any) => {
     const userWithPrime = await transaction.query.User.findFirst({
@@ -59,7 +59,7 @@ export const getSubcriptionBenifits = async (
     const tierbenifit = await transaction.query.tier_benefits.findFirst({
       where: and(
         eq(tier_benefits.tier_id, tierData.id),
-        eq(tier_benefits.feature, requestSurvice)
+        eq(tier_benefits.feature, requestSurvice),
       ),
     });
 
@@ -87,7 +87,6 @@ type subcription = {
   time?: string;
 };
 
-
 export const isUserHavePrime = async (userid: string) => {
   let status = await db.query.primes.findFirst({
     where: eq(primes.user_id, userid),
@@ -105,14 +104,14 @@ export const isUserHavePrime = async (userid: string) => {
 export const ProvideSubcriptionTouser = async (
   userid: string,
   plan: primeStatus,
-  razerpay_data: any
+  razerpay_data: any,
 ) => {
   await db.transaction(async (tx) => {
     // adding time and prime status
     let getSubcriptionDetails = await tx.query.subscription_offers.findFirst({
       where: and(
         eq(subscription_offers.type, "SUBSCRIPTION"),
-        eq(subscription_offers.title, plan)
+        eq(subscription_offers.title, plan),
       ),
       columns: {
         price: true,
@@ -131,36 +130,42 @@ export const ProvideSubcriptionTouser = async (
     logger.debug("timeUnit:", timeUnit, "time:", time);
 
     // need dynamic plan and time
-    await tx.update(primes).set({
-      status: plan,
-      expiry: dayjs().add(time, "month").toDate(),
-    }).where(eq(primes.user_id, userid));
+    await tx
+      .update(primes)
+      .set({
+        status: plan,
+        expiry: dayjs().add(time, "month").toDate(),
+      })
+      .where(eq(primes.user_id, userid));
   });
 };
 export const TokenDeduction = async (
   tx: any,
   userid: string,
   data: string,
-  type: "service" | "subscription" = "service"
+  type: "service" | "subscription" = "service",
 ) => {
   const run = async (transaction: any) => {
     let charge: number | null = 0;
 
     switch (type) {
       case "subscription":
-        const allsubcription = await transaction.query.subcriptionOffers.findMany({
-          where: eq(subscription_offers.type, "SUBSCRIPTION"),
-          columns: {
-            title: true,
-            price: true,
-            token: true,
-            time: true,
-          },
-        });
+        const allsubcription =
+          await transaction.query.subcriptionOffers.findMany({
+            where: eq(subscription_offers.type, "SUBSCRIPTION"),
+            columns: {
+              title: true,
+              price: true,
+              token: true,
+              time: true,
+            },
+          });
 
         // if user purchasing subcription
         let subcriptionType = data; // Gold, Silver, Bronze
-        const matchedSub = allsubcription.find((sub: any) => sub.title === subcriptionType);
+        const matchedSub = allsubcription.find(
+          (sub: any) => sub.title === subcriptionType,
+        );
         if (matchedSub) {
           charge = matchedSub.price;
         } else {
@@ -169,7 +174,7 @@ export const TokenDeduction = async (
         break;
 
       default:
-        logger.info("default case triggerd (tokendeduction)", data)
+        logger.info("default case triggerd (tokendeduction)", data);
     }
 
     logger.debug("charge:", charge);
@@ -197,9 +202,13 @@ export const TokenDeduction = async (
       throw new CustomError("Insufficient balance");
     }
 
-    const [updatedBalance] = await transaction.update(balances).set({
-      amount: sql`${balances.amount} - ${charge}`,
-    }).where(eq(balances.user_id, userid)).returning({ amount: balances.amount });
+    const [updatedBalance] = await transaction
+      .update(balances)
+      .set({
+        amount: sql`${balances.amount} - ${charge}`,
+      })
+      .where(eq(balances.user_id, userid))
+      .returning({ amount: balances.amount });
 
     if (updatedBalance) {
       return true;
@@ -214,5 +223,3 @@ export const TokenDeduction = async (
     return await db.transaction(run);
   }
 };
-
-

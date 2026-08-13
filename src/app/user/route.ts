@@ -17,12 +17,16 @@ import {
   verifyUserEmailValidationToken,
 } from "./controller.js";
 import { getUserRewards } from "../activity/controller.js";
-import { otpLimiter, passwordResetLimiter, signinLimiter } from "@repo/lib/security/ratelimiter.js";
+import {
+  otpLimiter,
+  passwordResetLimiter,
+  signinLimiter,
+} from "@/lib/security/ratelimiter.js";
 import {
   IsRazorpayTestAccessOpen,
   IsUserLoginOpen,
   IsUserSignUpOpen,
-} from "@repo/lib/security/Security.js";
+} from "@/lib/security/Security.js";
 import { activityRouter } from "../activity/route.js";
 import { profileRouter } from "../profile/route.js";
 import { genToken } from "@/utils/token.js";

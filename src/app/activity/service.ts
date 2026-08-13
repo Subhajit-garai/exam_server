@@ -2,16 +2,16 @@ import {
   CompleteActivityInput,
   CreateActivityInput,
 } from "@/zod/activity.zod.js";
-import { db } from "@repo/db/index.js";
+import { db } from "@/db/index.js";
 import {
   user_activities,
   daily_challenges,
   user_streaks,
   badges,
   user_badges,
-} from "@repo/db/schema/activity.js";
-import { primes, users } from "@repo/db/schema/user.js";
-import { BadgeRule } from "@repo/db/schema/enums.js";
+} from "@/db/schema/activity.js";
+import { primes, users } from "@/db/schema/user.js";
+import { BadgeRule } from "@/db/schema/enums.js";
 import { eq, desc as drizzleDesc, sql, and, count } from "drizzle-orm";
 import { RedisManager } from "@/lib/redis/redisManager.js";
 import dayjs from "dayjs";

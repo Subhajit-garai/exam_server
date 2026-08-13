@@ -1,21 +1,21 @@
-import { primeStatus, SocialPlatform } from "@repo/db/schema/enums.js";
-import { db } from "@repo/db/index.js";
-import { users, socials, primes, balances } from "@repo/db/schema/user.js";
-import { orders, payments } from "@repo/db/schema/payment.js";
+import { primeStatus, SocialPlatform } from "@/db/schema/enums.js";
+import { db } from "@/db/index.js";
+import { users, socials, primes, balances } from "@/db/schema/user.js";
+import { orders, payments } from "@/db/schema/payment.js";
 import {
   exam_progress,
   dpp_progress,
   quiz_progress,
-} from "@repo/db/schema/progress.js";
-import { exam_timelines } from "@repo/db/schema/examtimeline.js";
-import { tiers, tier_benefits } from "@repo/db/schema/tier.js";
+} from "@/db/schema/progress.js";
+import { exam_timelines } from "@/db/schema/examtimeline.js";
+import { tiers, tier_benefits } from "@/db/schema/tier.js";
 import { eq, and, desc as drizzleDesc, inArray } from "drizzle-orm";
 import {
   Createhash,
   generateResetToken,
   hashPasswordFn,
   veryfyhashPasswordFn,
-} from "@repo/lib/security/hash.js";
+} from "@/lib/security/hash.js";
 import dayjs from "dayjs";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { ProfileService } from "../profile/service.js";

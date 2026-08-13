@@ -1,7 +1,7 @@
 import { Questions_type, Task } from "@/lib/types/types.js";
 import { BaseWorkerTask } from "./base-task.js";
 import { BotService } from "@/app/bot/bot.service.js";
-import { CreationTypes } from "@repo/db/schema/enums.js";
+import { CreationTypes } from "@/db/schema/enums.js";
 import _ from "lodash";
 
 // src/workers/ans-processing-task.ts
@@ -11,7 +11,7 @@ export class MockProcessingTask extends BaseWorkerTask {
 
     // Your logic here
 
-    const botService = new BotService()
+    const botService = new BotService();
 
     let { examid, action } = this.task.payload;
 
@@ -28,20 +28,19 @@ export class MockProcessingTask extends BaseWorkerTask {
 
     const mockSet: any = await botService.exam.setMockQuestionSetStatus(
       examid,
-      "Processing"
+      "Processing",
     );
 
     if (mockSet) {
-
-      let exam_info = await botService.exam.getMockSetExamPattern(
-        examid
-      );
+      let exam_info = await botService.exam.getMockSetExamPattern(examid);
 
       if (!exam_info) {
         new Error("exam_pattern_info not found");
       }
 
-      let MockSetQuestion = await botService.exam.getQuestionsInfoForExam(mockSet.id);
+      let MockSetQuestion = await botService.exam.getQuestionsInfoForExam(
+        mockSet.id,
+      );
 
       // question count checking
       if (!MockSetQuestion) new Error("questions not found in mock set");
@@ -55,13 +54,13 @@ export class MockProcessingTask extends BaseWorkerTask {
 
       // Mock_Questions = mockSet?.questions as Questions_type;
 
-
       if (exam_info?.exam_pattern.total_questions.length > 1) {
         // is pattern have multiple parts
         if (!(Object.keys(Mock_Questions).length > 1)) {
           throw new Error(
-            `Exam pattern have multiple part , but current mock set doesnot have multiple part . part length is --->${Object.keys(Mock_Questions).length
-            }`
+            `Exam pattern have multiple part , but current mock set doesnot have multiple part . part length is --->${
+              Object.keys(Mock_Questions).length
+            }`,
           );
         }
 
@@ -75,7 +74,8 @@ export class MockProcessingTask extends BaseWorkerTask {
         let questions = Mock_Questions[part];
         // done
         if (questions.length > 0) {
-          let questionFullInfo = await botService.exam.getQuestionDetailsForBot(questions);
+          let questionFullInfo =
+            await botService.exam.getQuestionDetailsForBot(questions);
 
           questionFullInfo.map((question) => {
             if (!question_part_count[part]) {
@@ -105,15 +105,17 @@ export class MockProcessingTask extends BaseWorkerTask {
 
       // comparing the mock set info count
 
-      exam_info?.exam_pattern.total_questions.map((num: number, index: number) => {
-        if (num !== questionCount[index]) {
-          console.log(" ----> ", num, questionCount[index], questionCount);
+      exam_info?.exam_pattern.total_questions.map(
+        (num: number, index: number) => {
+          if (num !== questionCount[index]) {
+            console.log(" ----> ", num, questionCount[index], questionCount);
 
-          console.error("question count is not matching for", index + 1);
-        } else {
-          console.log("question count is matching for", index + 1);
-        }
-      });
+            console.error("question count is not matching for", index + 1);
+          } else {
+            console.log("question count is matching for", index + 1);
+          }
+        },
+      );
 
       isprocessingDone = true;
 
@@ -140,11 +142,10 @@ export class MockProcessingTask extends BaseWorkerTask {
       //   isError = true;
       // }
 
-
       // check if all topic question are add at list one
       if (!Object.values(topic_wise_count).every((val) => val >= 1)) {
         console.log(
-          " In mock set's some topic is empty add at leat 1 question per topic .. "
+          " In mock set's some topic is empty add at leat 1 question per topic .. ",
         );
         isError = true;
       }
@@ -157,10 +158,9 @@ export class MockProcessingTask extends BaseWorkerTask {
       console.log(" error ---->", isError);
 
       if (!isError) {
-
         const mockSet: any = await botService.exam.setMockQuestionSetStatus(
           examid,
-          "Done"
+          "Done",
         );
       }
     }

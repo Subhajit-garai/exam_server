@@ -14,7 +14,7 @@ import {
   DeleteSubject,
   DeleteTopic,
 } from "./controller.js";
-import { isAdmin } from "@repo/lib/security/auth.js";
+import { isAdmin } from "@/lib/security/auth.js";
 
 export const notePublicRouter = Router();
 export const noteAdminRouter = Router();

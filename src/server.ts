@@ -5,7 +5,7 @@ import cors from "cors";
 import http from "http";
 import Razorpay from "razorpay";
 import "@/lib/event/index.js";
-import { isAdmin, userauthenticate } from "@repo/lib/security/auth.js";
+import { isAdmin, userauthenticate } from "@/lib/security/auth.js";
 
 // routers from app modules
 import { adminRouter } from "./app/admin/route.js";
@@ -14,7 +14,10 @@ import { paymentVerification } from "./app/payment/controller.js";
 import { metrixRoute } from "./app/metrix/route.js";
 import { paymentRouter } from "./app/payment/route.js";
 import { examPublicRouter, examPatternPublicRouter } from "./app/exam/route.js";
-import { questionPublicRouter, questionProcessingPublicRouter } from "./app/question/route.js";
+import {
+  questionPublicRouter,
+  questionProcessingPublicRouter,
+} from "./app/question/route.js";
 import { CommonuserRoutes, userRouter } from "./app/user/route.js";
 import { notePublicRouter } from "./app/note/route.js";
 import { errorHandler } from "./middleware/globalErrorHandler.js";

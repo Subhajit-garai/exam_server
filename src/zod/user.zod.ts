@@ -1,4 +1,4 @@
-import { ExamType, SocialPlatform, Visibility } from "@repo/db/schema/enums.js"
+import { ExamType, SocialPlatform, Visibility } from "@/db/schema/enums.js";
 import z, { date } from "zod";
 
 export const singupZodSchema = z.object({
@@ -11,22 +11,28 @@ export const updateUserZodSchema = z.object({
   name: z.string().optional(),
   targeted_exam: z.string().optional(),
   exam_year: z.string().optional(),
-  academicProfile: z.array(z.object({
-    category: z.string(),
-    exam: z.string(),
-    year: z.string()
-  })).optional(),
+  academicProfile: z
+    .array(
+      z.object({
+        category: z.string(),
+        exam: z.string(),
+        year: z.string(),
+      }),
+    )
+    .optional(),
   school: z.string().optional(),
   standard: z.string().optional(),
   stream: z.string().optional(),
 });
 
 export const updateAcademicProfileZodSchema = z.object({
-  academicProfile: z.object({
-    category: z.string(),
-    exam: z.string(),
-    year: z.string()
-  }).optional(),
+  academicProfile: z
+    .object({
+      category: z.string(),
+      exam: z.string(),
+      year: z.string(),
+    })
+    .optional(),
   school: z.string().optional(),
   standard: z.string().optional(),
   stream: z.string().optional(),
@@ -65,9 +71,7 @@ export const forgotpasswordVerifyZodSchema = z.object({
   email: z.string().email(),
   ForgotpasswordToken: z.string(),
   newpassword: z.string(),
-
 });
-
 
 export type ExampatternInputType = z.infer<typeof ExampatternInputZodSchema>;
 export const ExampatternInputZodSchema = z.object({
@@ -88,9 +92,10 @@ export const ExampatternInputZodSchema = z.object({
   neg_values: z.array(z.number()),
 });
 
-export const ExampatternUpdateZodSchema = ExampatternInputZodSchema.partial().extend({
-  id: z.string(),
-});
+export const ExampatternUpdateZodSchema =
+  ExampatternInputZodSchema.partial().extend({
+    id: z.string(),
+  });
 
 // export const ExamCreateInputeSchema = z.object({
 //   name: z.string(),
@@ -114,6 +119,5 @@ export const ExamCreateInputeSchema = z.object({
   jointime: z.string().optional(),
   duration: z.string().optional(),
   date: z.string(),
-  examtype: z.enum(ExamType.enumValues) // new
-
+  examtype: z.enum(ExamType.enumValues), // new
 });

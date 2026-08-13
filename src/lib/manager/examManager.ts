@@ -1,7 +1,7 @@
 import { QueueManager } from "@/lib/queue/queueManager.js";
 import { RedisManager } from "@/lib/redis/redisManager.js";
 import { ExamCategory, TaskType } from "@/lib/types/types.js";
-import { db } from "@repo/db/index.js";
+import { db } from "@/db/index.js";
 import { exam_question_format_type } from "@/lib/types/questionTypes.js";
 import { shuffleArraySeeded } from "@/utils/shuffle.js";
 import { logger } from "@/utils/logger.js";
@@ -10,9 +10,9 @@ import {
   exam_patterns,
   exam_years,
   target_exams,
-} from "@repo/db/schema/exam.js";
-import { syllabuses } from "@repo/db/schema/syllabus.js";
-import { question_maps, questions } from "@repo/db/schema/question.js";
+} from "@/db/schema/exam.js";
+import { syllabuses } from "@/db/schema/syllabus.js";
+import { question_maps, questions } from "@/db/schema/question.js";
 import { eq, and } from "drizzle-orm";
 import { exam_question_format_for_ui_type } from "@/ws/types/ws.types.js";
 

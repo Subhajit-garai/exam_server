@@ -4,9 +4,15 @@ import {
   exam_create_event_data_schema,
   quiz_create_event_data_schema,
 } from "@/zod/event.zod.js";
-import { eventRuns, UserRole, eventType } from "@repo/db/schema/enums.js";
+import { eventRuns, UserRole, eventType } from "@/db/schema/enums.js";
 
-type JsonValue = string | number | boolean | { [key: string]: JsonValue } | JsonValue[] | null;
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | { [key: string]: JsonValue }
+  | JsonValue[]
+  | null;
 
 import * as z from "zod";
 
@@ -28,9 +34,6 @@ export type event_exam_data_type = z.infer<
 export type event_Quiz_data_type = z.infer<
   typeof quiz_create_event_data_schema
 >;
-
-
-
 
 // export interface events {
 //   id: string;

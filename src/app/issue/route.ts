@@ -13,7 +13,7 @@ import {
   RemoveIssue,
   updateStatus,
 } from "./controller.js";
-import { isAdmin } from "@repo/lib/security/auth.js";
+import { isAdmin } from "@/lib/security/auth.js";
 
 export const IssuePublicRouter = Router();
 export const IssueAdminRouter = Router();

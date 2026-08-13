@@ -15,7 +15,7 @@ import {
   deleteProcessedQuestion,
   updateProcessedQuestion,
 } from "./controller.js";
-import { isAdmin } from "@repo/lib/security/auth.js";
+import { isAdmin } from "@/lib/security/auth.js";
 
 // Public Routers
 export const questionPublicRouter = Router();

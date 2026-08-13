@@ -1,6 +1,6 @@
-import { db } from "@repo/db/index.js";
-import { app_configs } from "@repo/db/schema/schema.js";
-import { users } from "@repo/db/schema/user.js";
+import { db } from "@/db/index.js";
+import { app_configs } from "@/db/schema/schema.js";
+import { users } from "@/db/schema/user.js";
 import { eq } from "drizzle-orm";
 
 import { z } from "zod";
@@ -72,23 +72,24 @@ export const IsUserSignUpOpen = async (req: any, res: any, next: () => any) => {
   }
 };
 
-export const IsCouponOpen = asyncHandler(async (req: any, res: any, next: () => any) => {
-  const config = await db.query.app_configs.findFirst({
-    where: eq(app_configs.feature, "use-coupon"),
-    columns: {
-      settings: true,
-    },
-  });
+export const IsCouponOpen = asyncHandler(
+  async (req: any, res: any, next: () => any) => {
+    const config = await db.query.app_configs.findFirst({
+      where: eq(app_configs.feature, "use-coupon"),
+      columns: {
+        settings: true,
+      },
+    });
 
-  const parsedSettings = settingsSchema.safeParse(config?.settings);
+    const parsedSettings = settingsSchema.safeParse(config?.settings);
 
-  if (parsedSettings.success && parsedSettings.data.status === "open") {
-    next();
-  } else {
-    throw new CustomError("Coupon service is closed for now", 401);
-  }
-})
-
+    if (parsedSettings.success && parsedSettings.data.status === "open") {
+      next();
+    } else {
+      throw new CustomError("Coupon service is closed for now", 401);
+    }
+  },
+);
 
 export const IsUserLoginOpen = async (req: any, res: any, next: () => any) => {
   try {
@@ -117,13 +118,13 @@ export const IsUserLoginOpen = async (req: any, res: any, next: () => any) => {
 export const IsRazorpayTestAccessOpen = async (
   req: any,
   res: any,
-  next: () => any
+  next: () => any,
 ) => {
   try {
     let { email, password } = req.body;
 
     if (email === process.env.RAZORPAY_TESTACCESS_USER_EMAIL?.trim()) {
-      logger.info("razorpay accessing ....")
+      logger.info("razorpay accessing ....");
 
       const settings = await db.query.app_configs.findFirst({
         where: eq(app_configs.feature, "razorpay-testaccess"),
@@ -157,7 +158,7 @@ export const IsRazorpayTestAccessOpen = async (
           req,
           res,
           next,
-          "User login service is closed for now, connect exambuddy admin"
+          "User login service is closed for now, connect exambuddy admin",
         );
       }
     } else {

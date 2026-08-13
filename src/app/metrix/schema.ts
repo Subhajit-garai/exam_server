@@ -2,8 +2,8 @@ import { relations, sql } from 'drizzle-orm';
 import cuid from 'cuid';
 import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
-import { exams } from './exam.js';
-import { users } from './user.js';
+import { exams } from '../exam/schema.js';
+import { users } from '../user/schema.js';
 
 export const timescale_scores = pgTable('timescale_scores', {
 	id: text('id').notNull().$defaultFn(() => cuid()),
@@ -29,7 +29,6 @@ export const timescale_scoresRelations = relations(timescale_scores, ({ one }) =
 		references: [exams.id]
 	})
 }));
-
 
 export const scores = pgTable('scores', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -57,7 +56,6 @@ export const scoresRelations = relations(scores, ({ one }) => ({
 	})
 }));
 
-
 export const leaderboards = pgTable('leaderboards', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	user_id: text('user_id').references(() => users.id, { onDelete: 'set null', onUpdate: 'cascade' }),
@@ -79,6 +77,3 @@ export const leaderboardsRelations = relations(leaderboards, ({ one }) => ({
 		references: [exams.id]
 	})
 }));
-
-
-

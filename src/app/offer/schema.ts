@@ -2,9 +2,9 @@ import { relations, sql } from 'drizzle-orm';
 import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 import cuid from 'cuid';
 
-import { purchaseType } from './enums.js';
-import { target_exams } from './exam.js';
-import { tiers } from './tier.js';
+import { purchaseType } from '../../db/schema/enums.js';
+import { target_exams } from '../exam/schema.js';
+import { tiers } from '../subscription/schema.js';
 
 export const subscription_offers = pgTable('subscription_offers', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -35,6 +35,3 @@ export const subscription_offersRelations = relations(subscription_offers, ({ on
 		references: [tiers.id]
 	})
 }));
-
-
-

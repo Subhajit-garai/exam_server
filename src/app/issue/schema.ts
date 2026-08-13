@@ -2,8 +2,8 @@ import { relations, sql } from 'drizzle-orm';
 import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 import cuid from 'cuid';
 
-import { IssueType, Status, UserRole } from './enums.js';
-import { users } from './user.js';
+import { IssueType, Status, UserRole } from '../../db/schema/enums.js';
+import { users } from '../user/schema.js';
 
 export const issues = pgTable('issues', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -26,6 +26,3 @@ export const issuesRelations = relations(issues, ({ one }) => ({
 		references: [users.id]
 	})
 }));
-
-
-

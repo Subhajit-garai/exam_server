@@ -2,7 +2,7 @@ import { relations, sql } from 'drizzle-orm';
 import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 import cuid from 'cuid';
 
-import { eventType, eventRuns, UserRole } from './enums.js';
+import { eventType, eventRuns, UserRole } from '../../db/schema/enums.js';
 
 export const events = pgTable('events', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -16,5 +16,3 @@ export const events = pgTable('events', {
 	runs: eventRuns('runs').notNull().default("ONE"),
 	run_at: text('run_at').notNull()
 });
-
-

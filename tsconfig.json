@@ -4,14 +4,14 @@
       "@/*": [
         "./src/*"
       ],
-      "@repo/db/*": [
+      "@/db/*": [
         "./src/db/*"
       ],
-      "@repo/lib/*": [
-        "./src/lib/*"
+      "@/app/*": [
+        "./src/app/*"
       ],
-      "@repo/prisma/*": [
-        "./prisma/generated/prisma/*"
+      "@/lib/*": [
+        "./src/lib/*"
       ]
     },
     "rootDir": "./src" /* Specify the root folder within your source files. */,

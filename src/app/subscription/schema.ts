@@ -2,7 +2,7 @@ import { relations, sql } from 'drizzle-orm';
 import cuid from 'cuid';
 import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
-import { primeStatus, ExamType } from './enums.js';
+import { primeStatus, ExamType } from '../../db/schema/enums.js';
 
 export const tiers = pgTable('tiers', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -14,7 +14,6 @@ export const tiers = pgTable('tiers', {
 export const tiersRelations = relations(tiers, ({ many }) => ({
 	benefits: many(tier_benefits)
 }));
-
 
 export const tier_benefits = pgTable('tier_benefits', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -35,6 +34,3 @@ export const tier_benefitsRelations = relations(tier_benefits, ({ one }) => ({
 		references: [tiers.id]
 	})
 }));
-
-
-

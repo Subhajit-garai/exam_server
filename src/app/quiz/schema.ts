@@ -3,9 +3,9 @@ import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, 
 import cuid from 'cuid';
 import { nanoid } from 'nanoid';
 
-import { quiz_type, ExamStage, CreationTypes, Visibility } from './enums.js';
-import { users } from './user.js';
-import { questions } from './question.js';
+import { quiz_type, ExamStage, CreationTypes, Visibility } from '../../db/schema/enums.js';
+import { users } from '../user/schema.js';
+import { questions } from '../question/schema.js';
 
 export const quizzes = pgTable('quizzes', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -43,7 +43,6 @@ export const quizzesRelations = relations(quizzes, ({ one, many }) => ({
 	question_maps: many(quiz_question_maps)
 }));
 
-
 export const quiz_question_maps = pgTable('quiz_question_maps', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	number: integer('number').notNull(),
@@ -66,7 +65,6 @@ export const quiz_question_mapsRelations = relations(quiz_question_maps, ({ one 
 	})
 }));
 
-
 export const quiz_registers = pgTable('quiz_registers', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	quiz_id: text('quiz_id').unique().default("new_value_not_seted"),
@@ -80,6 +78,3 @@ export const quiz_registersRelations = relations(quiz_registers, ({ one }) => ({
 		references: [quizzes.id]
 	})
 }));
-
-
-

@@ -2,9 +2,9 @@ import { relations, sql } from 'drizzle-orm';
 import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 import cuid from 'cuid';
 
-import { Platform, check, syllabusType } from './enums.js';
-import { syllabuses } from './syllabus.js';
-import { users } from './user.js';
+import { Platform, check, syllabusType } from '../../db/schema/enums.js';
+import { syllabuses } from '../syllabus/schema.js';
+import { users } from '../user/schema.js';
 
 export const bot_quiz_configs = pgTable('bot_quiz_configs', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -40,7 +40,6 @@ export const bot_quiz_configsRelations = relations(bot_quiz_configs, ({ one }) =
 	})
 }));
 
-
 export const bot_infos = pgTable('bot_infos', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	bot_user_id: text('bot_user_id').notNull().unique().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
@@ -54,6 +53,3 @@ export const bot_infosRelations = relations(bot_infos, ({ one }) => ({
 		references: [users.id]
 	})
 }));
-
-
-

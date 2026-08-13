@@ -2,8 +2,8 @@ import { relations } from 'drizzle-orm';
 import cuid from 'cuid';
 import { foreignKey, integer, jsonb, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
-import { ActivityType, BadgeRule } from './enums.js';
-import { users } from './user.js';
+import { ActivityType, BadgeRule } from '../../db/schema/enums.js';
+import { users } from '../user/schema.js';
 
 export const daily_challenges = pgTable('daily_challenges', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -19,7 +19,6 @@ export const daily_challenges = pgTable('daily_challenges', {
 export const daily_challengesRelations = relations(daily_challenges, ({ many }) => ({
 	// Add relations if needed later (e.g. users who completed it)
 }));
-
 
 export const user_activities = pgTable('user_activities', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -38,7 +37,6 @@ export const user_activitiesRelations = relations(user_activities, ({ one }) => 
 	})
 }));
 
-
 export const user_streaks = pgTable('user_streaks', {
 	user_id: text('user_id').notNull().primaryKey().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
 	streak: integer('streak').notNull(),
@@ -53,7 +51,6 @@ export const user_streaksRelations = relations(user_streaks, ({ one }) => ({
 		references: [users.id]
 	})
 }));
-
 
 export const badges = pgTable('badges', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -87,7 +84,6 @@ export const user_badgesRelations = relations(user_badges, ({ one }) => ({
 	})
 }));
 
-
 export const activity_leaderboards = pgTable('activity_leaderboards', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	date: timestamp('date', { precision: 3 }).notNull(),
@@ -106,6 +102,3 @@ export const activity_leaderboardsRelations = relations(activity_leaderboards, (
 		references: [users.id]
 	})
 }));
-
-
-

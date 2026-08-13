@@ -2,8 +2,8 @@ import { relations, sql } from 'drizzle-orm';
 import cuid from 'cuid';
 import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
-import { UserRole, SocialPlatform, primeStatus } from './enums.js';
-import { questions } from './question.js';
+import { UserRole, SocialPlatform, primeStatus } from '../../db/schema/enums.js';
+import { questions } from '../question/schema.js';
 
 export const users = pgTable('users', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -41,7 +41,6 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 	notifications: many(notifications)
 }));
 
-
 export const socials = pgTable('socials', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	user_id: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
@@ -61,7 +60,6 @@ export const socialsRelations = relations(socials, ({ one }) => ({
 	})
 }));
 
-
 export const primes = pgTable('primes', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	status: primeStatus('status').notNull().default("None"),
@@ -78,7 +76,6 @@ export const primesRelations = relations(primes, ({ one }) => ({
 	})
 }));
 
-
 export const balances = pgTable('balances', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	user_id: text('user_id').notNull().unique().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
@@ -93,7 +90,6 @@ export const balancesRelations = relations(balances, ({ one }) => ({
 		references: [users.id]
 	})
 }));
-
 
 export const user_answers = pgTable('user_answers', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -121,7 +117,6 @@ export const user_answersRelations = relations(user_answers, ({ one }) => ({
 	})
 }));
 
-
 export const notifications = pgTable('notifications', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	user_id: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
@@ -140,6 +135,3 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 		references: [users.id]
 	})
 }));
-
-
-

@@ -2,9 +2,9 @@ import { relations, sql } from 'drizzle-orm';
 import cuid from 'cuid';
 import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
-import { SyllabusType } from './enums.js';
-import { exam_years } from './exam.js';
-import { subjects, topics } from './note.js';
+import { SyllabusType } from '../../db/schema/enums.js';
+import { exam_years } from '../exam/schema.js';
+import { subjects, topics } from '../note/schema.js';
 
 export const syllabuses = pgTable('syllabuses', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -22,7 +22,6 @@ export const syllabusesRelations = relations(syllabuses, ({ one, many }) => ({
 	}),
 	subject_maps: many(subject_syllabus_maps)
 }));
-
 
 export const subject_syllabus_maps = pgTable('subject_syllabus_maps', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -46,7 +45,6 @@ export const subject_syllabus_mapsRelations = relations(subject_syllabus_maps, (
 	topic_maps: many(topic_subject_maps)
 }));
 
-
 export const topic_subject_maps = pgTable('topic_subject_maps', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	subject_map_id: text('subject_map_id').notNull().references(() => subject_syllabus_maps.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
@@ -67,6 +65,3 @@ export const topic_subject_mapsRelations = relations(topic_subject_maps, ({ one 
 		references: [topics.id]
 	})
 }));
-
-
-

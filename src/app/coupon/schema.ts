@@ -2,7 +2,7 @@ import { relations, sql } from 'drizzle-orm';
 import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 import cuid from 'cuid';
 
-import { users } from './user.js';
+import { users } from '../user/schema.js';
 
 export const coupons = pgTable('coupons', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -28,7 +28,6 @@ export const couponsRelations = relations(coupons, ({ one, many }) => ({
 	usages: many(coupon_usages)
 }));
 
-
 export const coupon_usages = pgTable('coupon_usages', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	user_id: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
@@ -48,6 +47,3 @@ export const coupon_usagesRelations = relations(coupon_usages, ({ one }) => ({
 		references: [coupons.id]
 	})
 }));
-
-
-

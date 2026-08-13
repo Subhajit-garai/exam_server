@@ -2,9 +2,9 @@ import { relations, sql } from 'drizzle-orm';
 import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 import cuid from 'cuid';
 
-import { users } from './user.js';
-import { ProgressStatus } from './enums.js';
-import { topics } from './note.js';
+import { users } from '../user/schema.js';
+import { ProgressStatus } from '../../db/schema/enums.js';
+import { topics } from '../note/schema.js';
 
 export const exam_progress = pgTable('exam_progress', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -26,7 +26,6 @@ export const exam_progressRelations = relations(exam_progress, ({ one }) => ({
 	})
 }));
 
-
 export const dpp_progress = pgTable('dpp_progress', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	user_id: text('user_id').notNull().unique().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
@@ -44,7 +43,6 @@ export const dpp_progressRelations = relations(dpp_progress, ({ one }) => ({
 	})
 }));
 
-
 export const quiz_progress = pgTable('quiz_progress', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	user_id: text('user_id').notNull().unique().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
@@ -60,7 +58,6 @@ export const quiz_progressRelations = relations(quiz_progress, ({ one }) => ({
 		references: [users.id]
 	})
 }));
-
 
 export const user_topic_progress = pgTable('user_topic_progress', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -83,6 +80,3 @@ export const user_topic_progressRelations = relations(user_topic_progress, ({ on
 		references: [topics.id]
 	})
 }));
-
-
-

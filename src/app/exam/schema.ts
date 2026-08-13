@@ -1,13 +1,13 @@
 import { relations, sql } from 'drizzle-orm';
 import cuid from 'cuid';
 import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
-
-import { ExamScope, ExamStatus, diffcultlevel, check, syllabusType, examformat, access_type, ExamType, ExamStage, CreationTypes, Visibility } from './enums.js';
-import { categories } from './note.js';
-import { syllabuses } from './syllabus.js';
-import { users } from './user.js';
-import { contest_registers } from './schema.js';
 import { nanoid } from 'nanoid';
+
+import { ExamScope, ExamStatus, diffcultlevel, check, syllabusType, examformat, access_type, ExamType, ExamStage, CreationTypes, Visibility } from '../../db/schema/enums.js';
+import { categories } from '../note/schema.js';
+import { syllabuses } from '../syllabus/schema.js';
+import { users } from '../user/schema.js';
+import { contest_registers } from '../../db/schema/schema.js';
 
 export const target_exams = pgTable('target_exams', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -28,7 +28,6 @@ export const target_examsRelations = relations(target_exams, ({ one, many }) => 
 	}),
 	years: many(exam_years)
 }));
-
 
 export const exam_years = pgTable('exam_years', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -54,7 +53,6 @@ export const exam_yearsRelations = relations(exam_years, ({ one }) => ({
 	})
 }));
 
-
 export const exam_patterns = pgTable('exam_patterns', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	title: text('title').unique(),
@@ -76,7 +74,6 @@ export const exam_patterns = pgTable('exam_patterns', {
 	created_by: text('created_by').references(() => users.id, { onDelete: 'set null', onUpdate: 'cascade' })
 });
 
-
 export const exam_patternsRelations = relations(exam_patterns, ({ one, many }) => ({
 	category: one(categories, {
 		fields: [exam_patterns.category_id],
@@ -88,7 +85,6 @@ export const exam_patternsRelations = relations(exam_patterns, ({ one, many }) =
 	}),
 	exams: many(exams)
 }));
-
 
 export const exams = pgTable('exams', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -114,7 +110,6 @@ export const exams = pgTable('exams', {
 	created_by: text('created_by').references(() => users.id, { onDelete: 'set null', onUpdate: 'cascade' })
 });
 
-
 export const examsRelations = relations(exams, ({ one }) => ({
 	pattern: one(exam_patterns, {
 		fields: [exams.exam_pattern_id],
@@ -130,5 +125,21 @@ export const examsRelations = relations(exams, ({ one }) => ({
 	})
 }));
 
+export const exam_timelines = pgTable('exam_timelines', {
+	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
+	title: text('title').notNull(),
+	date: timestamp('date', { precision: 3 }).notNull(),
+	description: text('description'),
+	status: ExamStatus('status').notNull(),
+	notification: text('notification'),
+	created_at: timestamp('created_at', { precision: 3 }).notNull().defaultNow(),
+	updated_at: timestamp('updated_at', { precision: 3 }).notNull(),
+	exam_year_id: text('exam_year_id').notNull().references(() => exam_years.id, { onDelete: 'cascade', onUpdate: 'cascade' })
+});
 
-
+export const exam_timelinesRelations = relations(exam_timelines, ({ one }) => ({
+	exam_year: one(exam_years, {
+		fields: [exam_timelines.exam_year_id],
+		references: [exam_years.id]
+	})
+}));

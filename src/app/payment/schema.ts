@@ -2,10 +2,9 @@ import { relations, sql } from 'drizzle-orm';
 import { boolean, doublePrecision, foreignKey, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 import cuid from 'cuid';
 
-import { purchaseType, primeStatus } from './enums.js';
-import { users } from './user.js';
-import { coupons } from './coupon.js';
-
+import { purchaseType, primeStatus } from '../../db/schema/enums.js';
+import { users } from '../user/schema.js';
+import { coupons } from '../coupon/schema.js';
 
 export const orders = pgTable('orders', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
@@ -32,7 +31,6 @@ export const ordersRelations = relations(orders, ({ one }) => ({
 	})
 }));
 
-
 export const payments = pgTable('payments', {
 	id: text('id').notNull().primaryKey().$defaultFn(() => cuid()),
 	razorpay_order_id: text('razorpay_order_id').notNull().unique(),
@@ -56,6 +54,3 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
 		references: [orders.razorpay_order_id]
 	})
 }));
-
-
-

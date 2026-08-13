@@ -7,7 +7,6 @@ import Razorpay from "razorpay";
 import "@/lib/event/index.js";
 import { isAdmin, userauthenticate } from "@repo/lib/security/auth.js";
 
-
 // routers
 import { adminRouter } from "./routes/admin/adminRouter.js";
 import { IssuePublicRouter } from "./routes/IssueRouter.js";
@@ -29,11 +28,10 @@ import { statsRouter } from "./routes/statsRoutes.js";
 import { categoryPublicRouter } from "./routes/category.routes.js";
 import { progressRouter } from "./routes/progress.routes.js";
 import { logger } from "@/utils/logger.js";
-import { SocketManager } from "./ws/manager/socket.manager.js";
 
-import "./worker.js";
+// import { SocketManager } from "./ws/manager/socket.manager.js";
 
-
+// import "./worker.js";
 
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
   throw new Error("❌ Razorpay keys missing in environment variables");
@@ -45,9 +43,7 @@ export const razorpayInstance = new Razorpay({
 });
 
 export const app = express();
-const server = http.createServer(app);
-
-
+// const server = http.createServer(app);
 
 const trustProxy = process.env.TRUST_PROXY || 1;
 app.set("trust proxy", trustProxy);
@@ -73,15 +69,12 @@ app.use(
       }
     },
     credentials: true, // Enable credentials
-  })
+  }),
 );
 
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-
-
-
 
 app.get("/health", (req, res) => {
   res.send({ message: "i'm healthy now,after you ask" });
@@ -89,8 +82,6 @@ app.get("/health", (req, res) => {
 
 // inportent , it is veryfy and access survece
 app.post("/api/v1/payment/paymentverification", paymentVerification);
-
-
 
 app.use("/api/v1/stats", statsRouter);
 app.use("/api/v1/user", CommonuserRoutes);
@@ -111,15 +102,13 @@ app.use("/api/v1/question-processing", questionProcessingPublicRouter);
 app.use("/api/v1/progress", progressRouter);
 app.use("/api/v1/admin", isAdmin, adminRouter);
 
-
-
 app.use(errorHandler);
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   logger.success(`server is listening on ${PORT}`);
 });
 
-// Initialize SocketManager after server starts listening
-const socketManager = SocketManager.getInstance();
-socketManager.init(server, "/ws/quiz");
-(global as any).socketManager = socketManager;
+// // Initialize SocketManager after server starts listening
+// const socketManager = SocketManager.getInstance();
+// socketManager.init(server, "/ws/quiz");
+// (global as any).socketManager = socketManager;

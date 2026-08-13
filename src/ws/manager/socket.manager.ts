@@ -6,7 +6,7 @@ import { RedisManager } from "@/lib/redis/redisManager.js";
 import { User } from "../user.js";
 import { Room } from "../room.js";
 import { logger } from "@/utils/logger.js";
-import { BotUserService } from "@/services/bot/bot.user.service.js";
+import { BotUserService } from "@/app/bot/bot.user.service.js";
 
 export class SocketManager {
     private static instance: SocketManager;

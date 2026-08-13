@@ -1,4 +1,4 @@
-import { BotService } from "@/services/bot/bot.service.js";
+import { BotService } from "@/app/bot/bot.service.js";
 import { exam_question_map_format } from "./types/types.js";
 import { logger } from "@/utils/logger.js";
 export type SelectQuestionNumber_type = Record<string, number>;

@@ -7,26 +7,22 @@ import Razorpay from "razorpay";
 import "@/lib/event/index.js";
 import { isAdmin, userauthenticate } from "@repo/lib/security/auth.js";
 
-// routers
-import { adminRouter } from "./routes/admin/adminRouter.js";
-import { IssuePublicRouter } from "./routes/IssueRouter.js";
-
-import { paymentVerification } from "./controllers/payment.controller.js";
-import { metrixRoute } from "./routes/metrix.route.js";
-import { paymentRouter } from "./routes/paymentRouter.js";
-import { examPublicRouter } from "./routes/exam/examRoutes.js";
-import { examPatternPublicRouter } from "./routes/exam/examPattern.routes.js";
-import { questionPublicRouter } from "./routes/questionsRoutes.js";
-import { CommonuserRoutes } from "./routes/CommonuserRoutes.js";
-import { notePublicRouter } from "./routes/noteRoute.js";
+// routers from app modules
+import { adminRouter } from "./app/admin/route.js";
+import { IssuePublicRouter } from "./app/issue/route.js";
+import { paymentVerification } from "./app/payment/controller.js";
+import { metrixRoute } from "./app/metrix/route.js";
+import { paymentRouter } from "./app/payment/route.js";
+import { examPublicRouter, examPatternPublicRouter } from "./app/exam/route.js";
+import { questionPublicRouter, questionProcessingPublicRouter } from "./app/question/route.js";
+import { CommonuserRoutes, userRouter } from "./app/user/route.js";
+import { notePublicRouter } from "./app/note/route.js";
 import { errorHandler } from "./middleware/globalErrorHandler.js";
-import { syllabusPublicRouter } from "./routes/syllabusRouter.js";
-import { userRouter } from "./routes/userRouter.js";
-import { quizRouter } from "./routes/quiz.routes.js";
-import { questionProcessingPublicRouter } from "./routes/questionprocessing.routes.js";
-import { statsRouter } from "./routes/statsRoutes.js";
-import { categoryPublicRouter } from "./routes/category.routes.js";
-import { progressRouter } from "./routes/progress.routes.js";
+import { syllabusPublicRouter } from "./app/syllabus/route.js";
+import { quizRouter } from "./app/quiz/route.js";
+import { statsRouter } from "./app/stats/route.js";
+import { categoryPublicRouter } from "./app/category/route.js";
+import { progressRouter } from "./app/progress/route.js";
 import { logger } from "@/utils/logger.js";
 
 // import { SocketManager } from "./ws/manager/socket.manager.js";
@@ -80,7 +76,7 @@ app.get("/health", (req, res) => {
   res.send({ message: "i'm healthy now,after you ask" });
 });
 
-// inportent , it is veryfy and access survece
+// inportent , it is veryfy and access server
 app.post("/api/v1/payment/paymentverification", paymentVerification);
 
 app.use("/api/v1/stats", statsRouter);

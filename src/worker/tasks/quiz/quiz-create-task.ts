@@ -9,7 +9,7 @@ import { exam_question_format_type } from "../../helper/types/ans-prossing-types
 import { shuffleArraySeeded } from "@/utils/shuffle.js";
 import { logger } from "@/utils/logger.js";
 import { CreationTypes } from "@repo/db/schema/enums.js";
-import { BotService } from "@/services/bot/bot.service.js";
+import { BotService } from "@/app/bot/bot.service.js";
 
 interface QuizMetaData {
   id: string;

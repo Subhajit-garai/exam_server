@@ -6,7 +6,7 @@ import {
 import { IExamCreator } from "../base-exam.js";
 
 import { logger } from "@/utils/logger.js";
-import { BotService } from "@/services/bot/bot.service.js";
+import { BotService } from "@/app/bot/bot.service.js";
 
 export class JecaTestExam implements IExamCreator {
   constructor(private payload: any) {}

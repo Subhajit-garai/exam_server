@@ -3,7 +3,7 @@ import {
   examQuestionManger,
   SelectQuestion_type,
 } from "../helper/ExamQuestionProcessor.js";
-import { BotService } from "@/services/bot/bot.service.js";
+import { BotService } from "@/app/bot/bot.service.js";
 import axios from "axios";
 
 // src/workers/ans-processing-task.ts

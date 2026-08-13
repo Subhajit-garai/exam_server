@@ -1,0 +1,35 @@
+import { Router } from "express";
+import { updateAppConfig, SendAppConfig, getAllbotUser } from "../settings/controller.js";
+import { examTimelineAdminRouter, examAdminRouter, examPatternAdminRouter } from "../exam/route.js";
+import { syllabusAdminRouter } from "../syllabus/route.js";
+import { categoryAdminRouter } from "../category/route.js";
+import { eventAdminRouter } from "../event/route.js";
+import { mockRouter } from "../mock/route.js";
+import { questionAdminRouter, questionProcessingAdminRouter } from "../question/route.js";
+import { IssueAdminRouter } from "../issue/route.js";
+import { noteAdminRouter } from "../note/route.js";
+import { offerRouter } from "../offer/route.js";
+import { subscriptionRouter } from "../subscription/route.js";
+import { dashboardRouter } from "../dashboard/route.js";
+import { couponRouter } from "../coupon/route.js";
+
+export const adminRouter = Router();
+
+adminRouter.put("/settings/update/appconfig", updateAppConfig);
+adminRouter.get("/settings/get/appconfig", SendAppConfig);
+adminRouter.get("/bot/get/all", getAllbotUser);
+adminRouter.use("/timeline", examTimelineAdminRouter);
+adminRouter.use("/syllabus", syllabusAdminRouter);
+adminRouter.use("/event", eventAdminRouter);
+adminRouter.use("/category", categoryAdminRouter);
+adminRouter.use("/mock", mockRouter);
+adminRouter.use("/question", questionAdminRouter);
+adminRouter.use("/question-processing", questionProcessingAdminRouter);
+adminRouter.use("/issue", IssueAdminRouter);
+adminRouter.use("/note", noteAdminRouter);
+adminRouter.use("/exam", examAdminRouter);
+adminRouter.use("/exampattern", examPatternAdminRouter);
+adminRouter.use("/offer", offerRouter);
+adminRouter.use("/subscription", subscriptionRouter);
+adminRouter.use("/dashboard", dashboardRouter);
+adminRouter.use("/coupon", couponRouter);

@@ -8,7 +8,7 @@ import {
 } from "./types/types.js";
 import { RedisManager } from "@/lib/redis/redisManager.js";
 import { exam_question_format_type } from "./types/ans-prossing-types.js";
-import { BotService } from "@/services/bot/bot.service.js";
+import { BotService } from "@/app/bot/bot.service.js";
 
 export class examAnsManager {
   AnsStore: AnsStoreType;

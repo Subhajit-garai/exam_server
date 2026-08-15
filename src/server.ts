@@ -8,24 +8,24 @@ import "@/lib/event/index.js";
 import { isAdmin, userauthenticate } from "@/lib/security/auth.js";
 
 // routers from app modules
-import { adminRouter } from "./app/admin/route.js";
-import { IssuePublicRouter } from "./app/issue/route.js";
-import { paymentVerification } from "./app/payment/controller.js";
-import { metrixRoute } from "./app/metrix/route.js";
-import { paymentRouter } from "./app/payment/route.js";
-import { examPublicRouter, examPatternPublicRouter } from "./app/exam/route.js";
+import { adminRouter } from "@/app/admin/route.js";
+import { IssuePublicRouter } from "@/app/issue/route.js";
+import { paymentVerification } from "@/app/payment/controller.js";
+import { metrixRoute } from "@/app/metrix/route.js";
+import { paymentRouter } from "@/app/payment/route.js";
+import { examPublicRouter, examPatternPublicRouter } from "@/app/exam/route.js";
 import {
   questionPublicRouter,
   questionProcessingPublicRouter,
-} from "./app/question/route.js";
-import { CommonuserRoutes, userRouter } from "./app/user/route.js";
-import { notePublicRouter } from "./app/note/route.js";
+} from "@/app/question/route.js";
+import { CommonuserRoutes, userRouter } from "@/app/user/route.js";
+import { notePublicRouter } from "@/app/note/route.js";
 import { errorHandler } from "./middleware/globalErrorHandler.js";
-import { syllabusPublicRouter } from "./app/syllabus/route.js";
-import { quizRouter } from "./app/quiz/route.js";
-import { statsRouter } from "./app/stats/route.js";
-import { categoryPublicRouter } from "./app/category/route.js";
-import { progressRouter } from "./app/progress/route.js";
+import { syllabusPublicRouter } from "@/app/syllabus/route.js";
+import { quizRouter } from "@/app/quiz/route.js";
+import { statsRouter } from "@/app/stats/route.js";
+import { categoryPublicRouter } from "@/app/category/route.js";
+import { progressRouter } from "@/app/progress/route.js";
 import { logger } from "@/utils/logger.js";
 
 // import { SocketManager } from "./ws/manager/socket.manager.js";

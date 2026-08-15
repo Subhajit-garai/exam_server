@@ -5,3 +5,5 @@ compose.yml
 scripts
 /seeds/data/*
 .vscode/*
+
+tsconfig.tsbuildinfo

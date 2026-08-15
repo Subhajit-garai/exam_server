@@ -1,6 +1,10 @@
 import { db, schema } from "@/db/index.js";
-import { QuestionsId } from "@/worker/helper/ExamQuestionProcessor.js";
 import { eq, and, inArray, count, sql } from "drizzle-orm";
+
+export type QuestionsId = {
+  subject_name: string;
+  ids: string[];
+};
 
 export class BotExamService {
   /**

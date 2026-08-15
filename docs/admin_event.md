@@ -1,10 +1,12 @@
 # Admin Event Management API
 
 ## Base URL
-`/api/admin/event`
+`/api/v1/event` or `/api/admin/event`  
 **Middleware**: `isAdmin`
 
-## Endpoints
+---
+
+## 🔌 Endpoints
 
 ### 1. List All Events
 *   **URL**: `/all`
@@ -14,7 +16,7 @@
 ### 2. Create Event
 *   **URL**: `/create`
 *   **Method**: `POST`
-*   **Body**: `EventFormData` (See Types)
+*   **Body**: `EventFormData` (matching `event_create_zod_schema`)
 *   **Response**: Created Event object.
 
 ### 3. Update Event
@@ -30,18 +32,23 @@
 *   **Params**: `id` (Event ID)
 *   **Response**: Success message.
 
-## Data Types
+---
 
-### Event Types
-*   `RUN_NEW_QUIZ`
-*   `CREATE_QUIZ_CONTEST`
-*   `SEND_MESSAGE`
-*   `CREATE_DPP`
-*   `CREATE_EXAM`
-*   `CLEAR_BOT_CACHE`
-*   `ACTIVITY_LEADERBOARD_ARCHIVE`
+## ⚙ Event Strategies & Engine Integration
 
-### Event Payload Structure
-Payload depends on `type`.
-*   **CREATE_EXAM**: `{ starttime: [], count, title, examname, category, ... }`
-*   **SEND_MESSAGE**: `{ to: string, message: string }`
+Events are executed asynchronously via the Event Engine ([`src/lib/event/index.js`](file:///p:/Project/exambuddys/exam_server/src/lib/event/index.ts)) using strategy classes in [`src/lib/event/event_statergis/`](file:///p:/Project/exambuddys/exam_server/src/lib/event/event_statergis/):
+
+| Event Type | Strategy File | Description |
+| :--- | :--- | :--- |
+| `CREATE_EXAM` | `create-exam-event.ts` | Triggers background exam generation and question allocation. |
+| `CREATE_DPP` | `create-dpp-event.ts` | Generates Daily Practice Problem (DPP) sets automatically. |
+| `RUN_TELEGRAM_QUIZ` | `quiz/run-telegram-quiz-event.ts` | Dispatches scheduled Telegram bot quiz tasks. |
+| `RUN_WEBAPP_QUIZ` | `quiz/run-webapp-quiz-event.ts` | Initializes web app live quiz instances. |
+| `ACTIVITY_LEADERBOARD_ARCHIVE` | `activity-leaderboard-event.ts` | Flushes daily Redis leaderboards to PostgreSQL. |
+| `SEND_MESSAGE` | `send-notification-event.ts` | Dispatches multi-channel user notifications (Email/Telegram). |
+
+---
+
+## ⚠️ Deprecations & Migration
+- **Module Relocation**: Event handlers moved to [`src/app/event/`](file:///p:/Project/exambuddys/exam_server/src/app/event/).
+- **Schema Imports**: Use `import { events } from "@/db/schema.js";`.

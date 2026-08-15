@@ -98,7 +98,7 @@ export class QuizManager {
       countDown: 10,
     };
 
-    let key = `quiz:data:${quizId}`;
+    let key = `quiz:meta:${quizId}`;
     const ttlSeconds = (quizdata?.ttl ?? 24) * 3600;
     await this.redis.set(key, JSON.stringify(quizdata), "EX", ttlSeconds);
 
@@ -175,7 +175,7 @@ export class QuizManager {
   }
 
   async getQuizMetaData(quizId: string): Promise<QuizMetaData | null> {
-    const data = await this.redis.get(`quiz:data:${quizId}`);
+    const data = await this.redis.get(`quiz:meta:${quizId}`);
     return data ? JSON.parse(data) : null;
   }
 
@@ -280,7 +280,7 @@ export class QuizManager {
 
     // Instead of immediate deletion, use a short TTL (5 minutes)
     // to allow late-arriving results and final fetches
-    await this.redis.expire(`quiz:data:${quizId}`, 300);
+    await this.redis.expire(`quiz:meta:${quizId}`, 300);
     await this.redis.expire(`quiz:users:${quizId}`, 300);
     await this.redis.expire(`quiz:leaderboard:${quizId}`, 300);
   }
@@ -292,7 +292,7 @@ export class QuizManager {
     endTime: Date,
   ) {
     const questionStr = await this.redis.get(
-      `quizquestion:${quizId}:part1:${questionNumber}`,
+      `quiz:questions:${quizId}:part1:${questionNumber}`,
     );
     if (!questionStr) return;
 
@@ -367,7 +367,7 @@ export class QuizManager {
   }
 
   async getAllActiveQuizzes(): Promise<QuizMetaData[]> {
-    const keys = await this.redis.keys("quiz:data:*");
+    const keys = await this.redis.keys("quiz:meta:*");
     if (keys.length === 0) return [];
 
     const data = await this.redis.mget(keys);

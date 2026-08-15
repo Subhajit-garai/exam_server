@@ -30,8 +30,6 @@ import { logger } from "@/utils/logger.js";
 
 // import { SocketManager } from "./ws/manager/socket.manager.js";
 
-// import "./worker.js";
-
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
   throw new Error("❌ Razorpay keys missing in environment variables");
 }

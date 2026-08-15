@@ -1,8 +1,8 @@
-import { ExamType, primeStatus } from "@/db/schema/enums.js";
+import { ExamType, primeStatus } from "@/db/enums.js";
 import { db } from "@/db/index.js";
-import { users, primes, balances } from "@/db/schema/user.js";
-import { tiers, tier_benefits } from "@/db/schema/tier.js";
-import { subscription_offers } from "@/db/schema/offer.js";
+import { users, primes, balances } from "@/db/schema";
+import { tiers, tier_benefits } from "@/db/schema";
+import { subscription_offers } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import dayjs from "dayjs";
 import { CustomError } from "@/middleware/globalErrorHandler.js";

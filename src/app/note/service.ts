@@ -4,10 +4,12 @@ import {
   subjects,
   categories,
   topic_note_versions,
-} from "@/db/schema/note.js";
-import { user_topic_progress } from "@/db/schema/progress.js";
-import { syllabuses, subject_syllabus_maps } from "@/db/schema/syllabus.js";
-import { target_exams, exam_years } from "@/db/schema/exam.js";
+  user_topic_progress,
+  syllabuses,
+  subject_syllabus_maps,
+  target_exams,
+  exam_years,
+} from "@/db/schema.js";
 import { eq, and, or, inArray, sql, ilike } from "drizzle-orm";
 
 export class NoteService {

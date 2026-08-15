@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { purchaseType } from "@/db/schema/enums.js";
+import { purchaseType } from "@/db/enums.js";
 
 export const offerInputZodSchema = z.object({
   title: z.string().min(1, "Title is required"),

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { purchaseType, primeStatus } from "@/db/schema/enums.js";
+import { purchaseType, primeStatus } from "@/db/enums.js";
 
 export const subscriptionInputZodSchema = z.object({
   title: z.string().min(1, "Title is required"),

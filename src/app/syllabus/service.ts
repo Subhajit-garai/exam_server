@@ -3,10 +3,12 @@ import {
   syllabuses,
   subject_syllabus_maps,
   topic_subject_maps,
-} from "@/db/schema/syllabus.js";
-import { subjects, topics } from "@/db/schema/note.js";
+  subjects,
+  topics,
+  exam_years,
+  target_exams,
+} from "@/db/schema.js";
 import { eq, and } from "drizzle-orm";
-import { exam_years, target_exams } from "@/db/schema/exam.js";
 import {
   AddSubjectInputZodSchemaById,
   AddSubjectInputZodSchemaByName,

@@ -3,7 +3,7 @@ import { ExamManager } from "@/lib/manager/examManager.js";
 import { logger } from "@/utils/logger.js";
 
 import { BaseEvent, events } from "@subhajit60/event-engine";
-import { type eventType } from "@/db/schema/enums.js";
+import { type eventType } from "@/db/enums.js";
 
 export class run_telegram_quiz_event extends BaseEvent<eventType> {
   async push(event: events<eventType>): Promise<void> {

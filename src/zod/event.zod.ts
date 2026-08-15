@@ -8,7 +8,7 @@ import {
   telegramgroupType,
   UserRole,
   Visibility,
-} from "@/db/schema/enums.js";
+} from "@/db/enums.js";
 import { z } from "zod";
 
 const baseEventSchema = z.object({

@@ -2,7 +2,7 @@ import { asyncHandler } from "@/utils/asyncHandler.js";
 import { ProgressService } from "./service.js";
 import { z } from "zod";
 import { ZodDataSafeParse } from "@/utils/ZodTypeChecker.js";
-import { ProgressStatus } from "@/db/schema/enums.js";
+import { ProgressStatus } from "@/db/enums.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 
 const progressService = new ProgressService();

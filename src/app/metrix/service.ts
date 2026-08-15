@@ -3,16 +3,14 @@ import { db } from "@/db/index.js";
 import {
   scores as ScoreTable,
   leaderboards as LeaderboardTable,
-} from "@/db/schema/score.js";
-import {
   exam_progress,
   dpp_progress,
   quiz_progress,
-} from "@/db/schema/progress.js";
-import { users } from "@/db/schema/user.js";
-import { questions } from "@/db/schema/question.js";
-import { exams } from "@/db/schema/exam.js";
-import { user_activities } from "@/db/schema/activity.js";
+  users,
+  questions,
+  exams,
+  user_activities,
+} from "@/db/schema.js";
 import { eq, and, ne, desc, sql, count } from "drizzle-orm";
 import { RedisManager } from "@/lib/redis/redisManager.js";
 import { logger } from "@/utils/logger.js";

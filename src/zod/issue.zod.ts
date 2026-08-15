@@ -1,4 +1,4 @@
-import { IssueType } from "@/db/schema/enums.js";
+import { IssueType } from "@/db/enums.js";
 import z from "zod";
 
 export const IssueInpute_zod_type = z.object({

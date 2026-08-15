@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import { db } from "@/db/index.js";
-import { payments, orders } from "@/db/schema/payment.js";
-import { users } from "@/db/schema/user.js";
+import { payments, orders, users } from "@/db/schema.js";
 import {
   eq,
   gte,

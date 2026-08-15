@@ -4,19 +4,19 @@
       "@/*": [
         "./src/*"
       ],
-      "@/db/schema/enums.js": [
+      "@/db/enums.js": [
         "./src/db/enums.ts"
       ],
-      "@/db/schema/enums": [
+      "@/db/enums": [
         "./src/db/enums.ts"
       ],
-      "@/db/schema/schema.js": [
+      "@/db/schema.js": [
         "./src/db/schema.ts"
       ],
-      "@/db/schema/schema": [
+      "@/db/schema": [
         "./src/db/schema.ts"
       ],
-      "@/db/schema/*": [
+      "@/db/*": [
         "./src/db/schema.ts",
         "./src/db/*"
       ],

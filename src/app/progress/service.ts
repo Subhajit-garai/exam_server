@@ -1,16 +1,18 @@
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { RedisManager } from "@/lib/redis/redisManager.js";
 import { db } from "@/db/index.js";
-import { topics, subjects } from "@/db/schema/note.js";
 import {
+  topics,
+  subjects,
   user_topic_progress,
   exam_progress,
   dpp_progress,
   quiz_progress,
-} from "@/db/schema/progress.js";
-import { syllabuses, subject_syllabus_maps } from "@/db/schema/syllabus.js";
-import { exams } from "@/db/schema/exam.js";
-import { scores } from "@/db/schema/score.js";
+  syllabuses,
+  subject_syllabus_maps,
+  exams,
+  scores,
+} from "@/db/schema.js";
 import {
   eq,
   and,

@@ -1,4 +1,4 @@
-import { diffcultlevel, examformat, Status } from "@/db/schema/enums.js";
+import { diffcultlevel, examformat, Status } from "@/db/enums.js";
 import z from "zod";
 
 export type questionInput_type = z.infer<typeof questionInputZodSchema>;

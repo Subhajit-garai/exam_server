@@ -9,9 +9,10 @@ import {
   user_streaks,
   badges,
   user_badges,
-} from "@/db/schema/activity.js";
-import { primes, users } from "@/db/schema/user.js";
-import { BadgeRule } from "@/db/schema/enums.js";
+  primes,
+  users,
+} from "@/db/schema.js";
+import { BadgeRule } from "@/db/enums.js";
 import { eq, desc as drizzleDesc, sql, and, count } from "drizzle-orm";
 import { RedisManager } from "@/lib/redis/redisManager.js";
 import dayjs from "dayjs";

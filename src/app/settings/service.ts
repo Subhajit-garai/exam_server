@@ -1,7 +1,5 @@
 import { db } from "@/db/index.js";
-import { bot_infos } from "@/db/schema/bot.js";
-import { app_configs } from "@/db/schema/schema.js";
-import { users } from "@/db/schema/user.js";
+import { bot_infos, app_configs, users } from "@/db/schema.js";
 import { eq } from "drizzle-orm";
 
 export class SettingsService {

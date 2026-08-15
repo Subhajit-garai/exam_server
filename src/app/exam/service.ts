@@ -1,16 +1,22 @@
-import { ExamType, Visibility } from "@/db/schema/enums.js";
+import { ExamType, Visibility } from "@/db/enums.js";
 import { db } from "@/db/index.js";
 import {
   exams,
   exam_patterns,
   exam_years,
   target_exams,
-} from "@/db/schema/exam.js";
-import { socials, user_answers } from "@/db/schema/user.js";
-import { scores, leaderboards } from "@/db/schema/score.js";
-import { categories, subjects, topics } from "@/db/schema/note.js";
-import { contest_registers } from "@/db/schema/schema.js";
-import { questions } from "@/db/schema/question.js";
+  socials,
+  user_answers,
+  scores,
+  leaderboards,
+  categories,
+  subjects,
+  topics,
+  contest_registers,
+  questions,
+  syllabuses,
+  exam_timelines,
+} from "@/db/schema.js";
 import {
   eq,
   and,
@@ -31,8 +37,6 @@ import { TokenDeduction } from "@/utils/payment.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { ProgressService } from "../progress/service.js";
 import { logger } from "@/utils/logger.js";
-import { syllabuses } from "@/db/schema/syllabus.js";
-import { exam_timelines } from "@/db/schema/examtimeline.js";
 import { ConvertInSlug } from "@/utils/slug.js";
 
 dayjs.extend(customParseFormat);

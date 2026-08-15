@@ -1,4 +1,4 @@
-import { OfferPlan, primeStatus, purchaseType } from "@/db/schema/enums.js";
+import { OfferPlan, primeStatus, purchaseType } from "@/db/enums.js";
 import z from "zod";
 
 export const subcriptionPurchase_zod_schema = z.object({

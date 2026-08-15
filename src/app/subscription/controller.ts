@@ -5,7 +5,7 @@ import {
 } from "@/zod/subscription.zod.js";
 import { subscriptionService, TierService } from "./service.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
-import { ExamType, primeStatus } from "@/db/schema/enums.js";
+import { ExamType, primeStatus } from "@/db/enums.js";
 
 const tierService = new TierService();
 
@@ -18,13 +18,11 @@ export const createSubscription = asyncHandler(async (req: any, res: any) => {
   const subscription = await subscriptionService.createSubscription(
     result.data,
   );
-  return res
-    .status(201)
-    .json({
-      success: true,
-      message: "Subscription created",
-      data: subscription,
-    });
+  return res.status(201).json({
+    success: true,
+    message: "Subscription created",
+    data: subscription,
+  });
 });
 
 export const getAllSubscriptions = asyncHandler(async (req: any, res: any) => {

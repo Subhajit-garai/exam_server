@@ -1,7 +1,13 @@
 import { db } from "@/db/index.js";
-import { exams, exam_patterns } from "@/db/schema/exam.js";
-import { question_maps, questions } from "@/db/schema/question.js";
-import { categories, subjects, topics } from "@/db/schema/note.js";
+import {
+  exams,
+  exam_patterns,
+  question_maps,
+  questions,
+  categories,
+  subjects,
+  topics,
+} from "@/db/schema.js";
 import { eq, and, or, desc, asc, count, inArray } from "drizzle-orm";
 import { CustomError } from "@/middleware/globalErrorHandler.js";
 import { ExamManager } from "@/lib/manager/examManager.js";

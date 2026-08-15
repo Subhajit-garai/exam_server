@@ -1,8 +1,7 @@
 import { ConvertInSlug } from "@/utils/slug.js";
 import { db } from "@/db/index.js";
-import { categories } from "@/db/schema/note.js";
+import { categories, exam_patterns, target_exams } from "@/db/schema.js";
 import { eq, or, and, not } from "drizzle-orm";
-import { exam_patterns, target_exams } from "@/db/schema/exam.js";
 
 export class CategoryService {
   async createCategory(data: any) {

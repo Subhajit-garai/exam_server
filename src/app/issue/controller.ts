@@ -1,7 +1,7 @@
 import zod from "zod";
 import { IssueInpute_zod_type } from "@/zod/issue.zod.js";
 import { IssueService } from "./service.js";
-import { Status } from "@/db/schema/enums.js";
+import { Status } from "@/db/enums.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
 import { ZodDataSafeParse } from "@/utils/ZodTypeChecker.js";
 import { CustomError } from "@/middleware/globalErrorHandler.js";

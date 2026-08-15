@@ -1,9 +1,4 @@
-import {
-  CreationTypes,
-  ExamStage,
-  ExamStatus,
-  quiz_type,
-} from "@/db/schema/enums.js";
+import { CreationTypes, ExamStage, ExamStatus, quiz_type } from "@/db/enums.js";
 import z from "zod";
 
 export const create_quiz_data_ZodSchema = z.object({

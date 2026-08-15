@@ -1,9 +1,15 @@
 import { db } from "@/db/index.js";
-import { questions, question_maps } from "@/db/schema/question.js";
-import { question_processing } from "@/db/schema/questionprocessing.js";
-import { quiz_question_maps } from "@/db/schema/quiz.js";
-import { user_answers, users } from "@/db/schema/user.js";
-import { subjects, topics, categories } from "@/db/schema/note.js";
+import {
+  questions,
+  question_maps,
+  question_processing,
+  quiz_question_maps,
+  user_answers,
+  users,
+  subjects,
+  topics,
+  categories,
+} from "@/db/schema.js";
 import {
   eq,
   and,

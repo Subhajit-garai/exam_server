@@ -1,6 +1,6 @@
-import { purchaseType } from "@/db/schema/enums.js";
+import { purchaseType } from "@/db/enums.js";
 import { db } from "@/db/index.js";
-import { subscription_offers } from "@/db/schema/offer.js";
+import { subscription_offers } from "@/db/schema.js";
 import { eq, desc } from "drizzle-orm";
 
 export class OfferService {

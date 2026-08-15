@@ -1,4 +1,4 @@
-import { ExamType, SocialPlatform, Visibility } from "@/db/schema/enums.js";
+import { ExamType, SocialPlatform, Visibility } from "@/db/enums.js";
 import z, { date } from "zod";
 
 export const singupZodSchema = z.object({

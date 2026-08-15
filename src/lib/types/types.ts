@@ -1,4 +1,4 @@
-import { Platform, ExamType, telegramgroupType } from "@/db/schema/enums.js";
+import { Platform, ExamType, telegramgroupType } from "@/db/enums.js";
 import dayjs from "dayjs";
 export type ExamMetaData = {
   examid: string;

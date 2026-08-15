@@ -2,9 +2,9 @@ import { db } from "@/db/index.js";
 import { RedisManager } from "@/lib/redis/redisManager.js";
 import dayjs from "dayjs";
 import { logger } from "@/utils/logger.js";
-import { activity_leaderboards } from "@/db/schema/activity.js";
+import { activity_leaderboards } from "@/db/schema.js";
 import { BaseEvent } from "@subhajit60/event-engine";
-import { type eventType } from "@/db/schema/enums.js";
+import { type eventType } from "@/db/enums.js";
 
 export class ActivityLeaderboardEvent extends BaseEvent<eventType> {
   async push(): Promise<void> {

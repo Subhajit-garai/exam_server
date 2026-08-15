@@ -1,8 +1,7 @@
 import dayjs from "dayjs";
 import { db } from "@/db/index.js";
-import { coupons, coupon_usages } from "@/db/schema/coupon.js";
+import { coupons, coupon_usages, users } from "@/db/schema.js";
 import { eq, and, desc as drizzleDesc } from "drizzle-orm";
-import { users } from "@/db/schema/user.js";
 
 export class CouponService {
   async createCoupon(data: any, createdBy: string) {

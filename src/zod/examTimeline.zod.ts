@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ExamStatus } from "@/db/schema/enums.js";
+import { ExamStatus } from "@/db/enums.js";
 
 export const CreateExamTimelineSchema = z.object({
   title: z.string().min(1, "Title is required"),

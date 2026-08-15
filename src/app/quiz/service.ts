@@ -1,5 +1,5 @@
 import { db } from "@/db/index.js";
-import { bot_quiz_configs } from "@/db/schema/bot.js";
+import { bot_quiz_configs } from "@/db/schema.js";
 import { eq } from "drizzle-orm";
 import { QuizManager, QuizMetaData } from "@/lib/manager/quizManager.js";
 import { LeaderboardManager } from "@/lib/manager/leaderboardManager.js";

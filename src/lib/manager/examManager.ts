@@ -10,9 +10,10 @@ import {
   exam_patterns,
   exam_years,
   target_exams,
-} from "@/db/schema/exam.js";
-import { syllabuses } from "@/db/schema/syllabus.js";
-import { question_maps, questions } from "@/db/schema/question.js";
+  syllabuses,
+  question_maps,
+  questions,
+} from "@/db/schema.js";
 import { eq, and } from "drizzle-orm";
 import { exam_question_format_for_ui_type } from "@/ws/types/ws.types.js";
 

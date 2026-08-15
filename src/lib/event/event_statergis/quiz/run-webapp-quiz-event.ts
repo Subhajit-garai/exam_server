@@ -3,7 +3,7 @@ import { QuizManager } from "@/lib/manager/quizManager.js";
 import { event_Quiz_data_type } from "@/lib/types/EventTypes.js";
 
 import { BaseEvent, events } from "@subhajit60/event-engine";
-import { type eventType } from "@/db/schema/enums.js";
+import { type eventType } from "@/db/enums.js";
 
 export class run_webapp_quiz_event extends BaseEvent<eventType> {
   async push(event: events<eventType>): Promise<void> {

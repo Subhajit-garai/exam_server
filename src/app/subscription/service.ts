@@ -1,8 +1,7 @@
 import { db } from "@/db/index.js";
-import { subscription_offers } from "@/db/schema/offer.js";
+import { subscription_offers, tiers, tier_benefits } from "@/db/schema.js";
 import { eq, desc as drizzleDesc, and } from "drizzle-orm";
-import { tiers, tier_benefits } from "@/db/schema/tier.js";
-import { ExamType, primeStatus } from "@/db/schema/enums.js";
+import { ExamType, primeStatus } from "@/db/enums.js";
 
 type BenefitInput = {
   feature: ExamType;

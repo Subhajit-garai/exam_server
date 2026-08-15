@@ -4,7 +4,7 @@ import {
   exam_create_event_data_schema,
   quiz_create_event_data_schema,
 } from "@/zod/event.zod.js";
-import { eventRuns, UserRole, eventType } from "@/db/schema/enums.js";
+import { eventRuns, UserRole, eventType } from "@/db/enums.js";
 
 type JsonValue =
   | string

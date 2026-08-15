@@ -1,7 +1,7 @@
 import { Questions_type, Task } from "@/lib/types/types.js";
 import { BaseWorkerTask } from "./base-task.js";
 import { BotService } from "@/app/bot/bot.service.js";
-import { CreationTypes } from "@/db/schema/enums.js";
+import { CreationTypes } from "@/db/enums.js";
 import _ from "lodash";
 
 // src/workers/ans-processing-task.ts

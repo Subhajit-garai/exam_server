@@ -1,15 +1,13 @@
 import { logger } from "@/utils/logger.js";
 import { ExamManager } from "@/lib/manager/examManager.js";
 import { db } from "@/db/index.js";
-import { exams, exam_patterns } from "@/db/schema/exam.js";
-import { users } from "@/db/schema/user.js";
-import { contest_registers } from "@/db/schema/schema.js";
+import { exams, exam_patterns, users, contest_registers } from "@/db/schema.js";
 import { event_exam_data_type } from "@/lib/types/EventTypes.js";
 import dayjs from "dayjs";
 import { eq, and, gte, lt, desc, ilike } from "drizzle-orm";
 
 import { BaseEvent, events } from "@subhajit60/event-engine";
-import { type eventType } from "@/db/schema/enums.js";
+import { type eventType } from "@/db/enums.js";
 
 export class create_dpp_event extends BaseEvent<eventType> {
   async push(event: events<eventType>): Promise<void> {

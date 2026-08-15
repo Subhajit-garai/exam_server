@@ -5,8 +5,14 @@ import {
   updateSocialLinksZodSchema,
 } from "@/zod/user.zod.js";
 import { db } from "@/db/index.js";
-import { users, socials, primes, balances } from "@/db/schema/user.js";
-import { target_exams, exam_years } from "@/db/schema/exam.js";
+import {
+  users,
+  socials,
+  primes,
+  balances,
+  target_exams,
+  exam_years,
+} from "@/db/schema.js";
 import { eq, and, desc as drizzleDesc } from "drizzle-orm";
 
 type UpdateProfileInput = z.infer<typeof updateAcademicProfileZodSchema>;

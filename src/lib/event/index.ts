@@ -1,17 +1,17 @@
 import { db } from "@/db/index.js";
-import { events } from "@/db/schema/events.js";
 import { eq } from "drizzle-orm";
 
 import { Client } from "pg";
 import { logger } from "@/utils/logger.js";
 import { EventManager } from "@subhajit60/event-engine";
-import { type eventType } from "@/db/schema/enums.js";
+import { type eventType } from "@/db/enums.js";
 import { resetWeeklyLeaderboard } from "./jobs/activity.cron.js";
 import { updateSystemStats, initSystemStats } from "./jobs/stats.cron.js";
 import { create_dpp_event } from "./event_statergis/create-dpp-event.js";
 import { create_exam_event } from "./event_statergis/create-exam-event.js";
 import { send_notification_event } from "./event_statergis/send-notification-event.js";
 import { run_telegram_quiz_event } from "./event_statergis/quiz/run-telegram-quiz-event.js";
+import { events } from "@/db/schema.js";
 
 const EVM = EventManager.getInstance<eventType>();
 

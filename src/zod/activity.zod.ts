@@ -1,4 +1,4 @@
-import { ActivityType } from "@/db/schema/enums.js";
+import { ActivityType } from "@/db/enums.js";
 import { z } from "zod";
 
 export const CompleteActivitySchema = z.object({

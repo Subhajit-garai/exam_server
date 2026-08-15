@@ -1,14 +1,19 @@
-import { primeStatus, SocialPlatform } from "@/db/schema/enums.js";
+import { primeStatus, SocialPlatform } from "@/db/enums.js";
 import { db } from "@/db/index.js";
-import { users, socials, primes, balances } from "@/db/schema/user.js";
-import { orders, payments } from "@/db/schema/payment.js";
 import {
+  users,
+  socials,
+  primes,
+  balances,
+  orders,
+  payments,
   exam_progress,
   dpp_progress,
   quiz_progress,
-} from "@/db/schema/progress.js";
-import { exam_timelines } from "@/db/schema/examtimeline.js";
-import { tiers, tier_benefits } from "@/db/schema/tier.js";
+  exam_timelines,
+  tiers,
+  tier_benefits,
+} from "@/db/schema.js";
 import { eq, and, desc as drizzleDesc, inArray } from "drizzle-orm";
 import {
   Createhash,

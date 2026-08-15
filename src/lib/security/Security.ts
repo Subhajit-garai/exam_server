@@ -1,6 +1,5 @@
 import { db } from "@/db/index.js";
-import { app_configs } from "@/db/schema/schema.js";
-import { users } from "@/db/schema/user.js";
+import { app_configs, users } from "@/db/schema.js";
 import { eq } from "drizzle-orm";
 
 import { z } from "zod";

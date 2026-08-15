@@ -1,6 +1,6 @@
 import { db } from "@/db/index.js";
-import { issues } from "@/db/schema/issue.js";
-import { Status, UserRole } from "@/db/schema/enums.js";
+import { issues } from "@/db/schema.js";
+import { Status, UserRole } from "@/db/enums.js";
 import { eq, sql, count } from "drizzle-orm";
 
 export class IssueService {

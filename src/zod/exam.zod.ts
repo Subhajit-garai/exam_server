@@ -1,4 +1,4 @@
-import { ExamScope, ExamStatus, ExamType } from "@/db/schema/enums.js";
+import { ExamScope, ExamStatus, ExamType } from "@/db/enums.js";
 import { z } from "zod";
 
 export const create_targated_exam_zodSchemea = z.object({

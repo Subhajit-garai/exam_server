@@ -1,4 +1,4 @@
-import { SyllabusType } from "@/db/schema/enums.js";
+import { SyllabusType } from "@/db/enums.js";
 import z from "zod";
 
 export const SyllabusInputZodSchema = z.object({

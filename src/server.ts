@@ -4,7 +4,6 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import http from "http";
 import Razorpay from "razorpay";
-import "@/lib/event/index.js";
 import { isAdmin, userauthenticate } from "@/lib/security/auth.js";
 
 // routers from app modules
@@ -46,7 +45,8 @@ const trustProxy = process.env.TRUST_PROXY || 1;
 app.set("trust proxy", trustProxy);
 const PORT = process.env.PORT || 3000;
 
-let allowedOriginsstr = process.env.ALLOWED_ORIGINS;
+let allowedOriginsstr =
+  process.env.ALLOWED_ORIGINS + "," + process.env.ALLOWED_ADMIN_ORIGINS;
 const allowedOrigins = allowedOriginsstr?.split(",") || [
   "http://localhost:3002",
   "http://localhost:3004",

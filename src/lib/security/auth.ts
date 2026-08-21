@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 export const userauthenticate = asyncHandler(
   async (req: any, res: any, next: () => any) => {
     let token = req.cookies.token;
+
     if (!token) {
       throw new Error("Authentication token required");
     }

@@ -8,6 +8,7 @@ import type { Redis } from "ioredis";
 import { LeaderboardManager } from "./leaderboardManager.js";
 import { logger } from "@/utils/logger.js";
 
+export type quiz_status = "created" | "done" | "running" | "completed";
 export interface QuizMetaData {
   id: string;
   total_questions: number;
@@ -16,7 +17,7 @@ export interface QuizMetaData {
   topic: string | "All";
   subject: string;
   limit: number;
-  status: CreationTypes;
+  status: quiz_status; /// replaced with CreationTypes
   created_by?: string;
   creator_role?: string;
   created_at: Date;
@@ -94,7 +95,7 @@ export class QuizManager {
         : 60,
       ttl: data.ttl ? parseInt(data.ttl) : 24,
       created_at: new Date(),
-      status: "Created",
+      status: "created",
       countDown: 10,
     };
 
@@ -174,9 +175,13 @@ export class QuizManager {
     return exists === 1;
   }
 
-  async getQuizMetaData(quizId: string): Promise<QuizMetaData | null> {
-    const data = await this.redis.get(`quiz:meta:${quizId}`);
-    return data ? JSON.parse(data) : null;
+  async getQuizMetaData(
+    quizId: string,
+    status: quiz_status = "created",
+  ): Promise<QuizMetaData | null> {
+    const data = await this.redis.get(`quiz:meta:${status}:${quizId}`);
+    if (!data) return null;
+    return JSON.parse(data);
   }
 
   async startQuiz(quizId: string) {
@@ -280,7 +285,7 @@ export class QuizManager {
 
     // Instead of immediate deletion, use a short TTL (5 minutes)
     // to allow late-arriving results and final fetches
-    await this.redis.expire(`quiz:meta:${quizId}`, 300);
+    await this.redis.expire(`quiz:meta:running:${quizId}`, 300);
     await this.redis.expire(`quiz:users:${quizId}`, 300);
     await this.redis.expire(`quiz:leaderboard:${quizId}`, 300);
   }
@@ -367,7 +372,7 @@ export class QuizManager {
   }
 
   async getAllActiveQuizzes(): Promise<QuizMetaData[]> {
-    const keys = await this.redis.keys("quiz:meta:*");
+    const keys = await this.redis.keys("quiz:meta:done:*");
     if (keys.length === 0) return [];
 
     const data = await this.redis.mget(keys);

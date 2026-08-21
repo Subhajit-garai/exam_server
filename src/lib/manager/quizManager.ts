@@ -99,7 +99,7 @@ export class QuizManager {
       countDown: 10,
     };
 
-    let key = `quiz:meta:${quizId}`;
+    let key = `quiz:meta:created:${quizId}`;
     const ttlSeconds = (quizdata?.ttl ?? 24) * 3600;
     await this.redis.set(key, JSON.stringify(quizdata), "EX", ttlSeconds);
 
